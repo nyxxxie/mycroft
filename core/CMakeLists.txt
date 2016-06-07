@@ -9,15 +9,12 @@ set(PROJECT_NAME mycroft_core-${MYCROFT_MAJOR_VERSION}.${MYCROFT_MINOR_VERSION})
 project(${PROJECT_NAME} C)
 set(MYCROFT_VERSION "${PROJECT_NAME}")
 
-# Establish directories
-set(SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/src)
-set(INCLUDE_DIR ${SOURCE_DIR} ${CMAKE_CURRENT_SOURCE_DIR}/include)
-
-include_directories(${INCLUDE_DIR})
+set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
 # Source files
 set(SRC
-    ${SOURCE_DIR}/main.c)
+    main.c
+)
 
 # Specify the exe to be built
 add_executable(${PROJECT_NAME} ${SRC})
@@ -32,13 +29,12 @@ set(CMAKE_C_FLAGS
 # configure a header file to pass some of the CMake settings
 # to the source code
 configure_file (
-    "${SOURCE_DIR}/config.h.in"
-    "${SOURCE_DIR}/config.h"
+    "config.h.in"
+    "config.h"
 )
 # Find capstone lib
 include(${CMAKE_SOURCE_DIR}/cmake/FindCapstone.cmake)
 if (CAPSTONE_FOUND)
-    message(STATUS "FOUND THE GOODS")
     include_directories(${CAPSTONE_INCLUDE_DIRS})
     target_link_libraries (${PROJECT_NAME} ${CAPSTONE_LIBRARIES})
 endif (CAPSTONE_FOUND)
