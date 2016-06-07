@@ -1,0 +1,1 @@
+#define MYCROFTD_VERSION ""
