@@ -6,7 +6,7 @@
 #  CAPSTONE_DEFINITIONS - Compiler switches required for using Capstone
 
 find_package(PkgConfig)
-#pkg_check_modules(PC_CAPSTONE QUIET libxml-2.0)
+pkg_check_modules(PC_CAPSTONE QUIET capstone)
 set(CAPSTONE_DEFINITIONS ${PC_CAPSTONE_CFLAGS_OTHER})
 
 find_path(CAPSTONE_INCLUDE_DIR capstone/capstone.h
