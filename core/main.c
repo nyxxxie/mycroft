@@ -10,6 +10,7 @@
 #include <stdint.h>
 
 #include <capstone/capstone.h>
+#include <sqlite3.h>
 
 #include "config.h"
 
@@ -77,6 +78,22 @@ int main(int argc, char *argv[]) {
     }
 
 
+    //TODO: make directories here or in some other function?
+    // .mycroft
+    //         /cache     - contains internal program data
+    //         /resources - contains program resources (images and etc)
+    //         /templates - contains all template files and utils for each template
+    //         /datatypes - contains parsing utils for a datatype
+    //         /disasm    - contains disassembler code for the special asm datatype
+    //         /scripts   - small scripts that can be run on any template
+    //         /plugins   - contains 3rd party code.  each plugin mirrors .mycroft directory.  plugins start with <plugin_name>.py or .so/.dll
+    //         /ui        - contains extra ui windows
+    //            /qt     - qt windows
+    //            /curses - curses windows
+    //         settings.conf
+    //
+    // Templates contain the template definition, util scripts, etc that will
+    // be made available when the template is loaded.
 
 
 
