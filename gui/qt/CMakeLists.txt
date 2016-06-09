@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 2.8.11)
 
 # Project name
-set(PROJECT_NAME mycroftqt)
+set(PROJECT_NAME mycroft-qt)
 project(${PROJECT_NAME})
 
 # Source files
