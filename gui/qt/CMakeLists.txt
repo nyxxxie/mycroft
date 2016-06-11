@@ -8,6 +8,8 @@ project(${PROJECT_NAME})
 set(SRC
     main.cpp
     mainwindow.cpp
+    maineditor.cpp
+    templateeditor.cpp
 )
 
 # Save me from manually including the files ;)
@@ -15,7 +17,7 @@ set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
 # QT5 stuff
 find_package(Qt5Widgets REQUIRED)
-qt5_wrap_ui(UI_HEADERS mainwindow.ui)
+#qt5_wrap_ui(UI_HEADERS mainwindow.ui)
 qt5_add_resources(QRCS resources.qrc)
 set(CMAKE_AUTOMOC ON)
 

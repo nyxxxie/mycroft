@@ -7,6 +7,9 @@
 #include <QSplitter>
 #include <QVBoxLayout>
 #include <QWidget>
+#include "maineditor.h"
+
+// TODO: edit this to just host tabs.  Maybe also modify it to be the initialwindow as well?  (start off small for dragging files and etc, then expand to the hex edit tab view)
 
 class MainWindow : public QMainWindow
 {
@@ -14,18 +17,16 @@ class MainWindow : public QMainWindow
 
     QWidget* window;
     QVBoxLayout* main_layout;
-    QWidget* tools_container, *editor_container;
-    QVBoxLayout* tools_layout, *editor_layout;
+    QWidget* tools_container;
+    QVBoxLayout* tools_layout;
 
     QTextEdit* filebrowser;
     QTextEdit* tools;
-    QTextEdit* hexedit;
-    QTextEdit* templateedit;
+
+    MainEditor* editor;
 
     void InitFilebrowser();
     void InitTools();
-    void InitHexEditor();
-    void InitTemplateEditor();
 
 public:
     MainWindow();
