@@ -13,6 +13,7 @@ class MainEditor : public QWidget {
 
     QTextEdit* hexedit;
     TemplateEditor* tedit;
+
     QVBoxLayout* layout;
     QSplitter* splitter;
 

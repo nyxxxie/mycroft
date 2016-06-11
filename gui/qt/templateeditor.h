@@ -1,21 +1,24 @@
 #ifndef TEMPLATEEDITOR_H
 #define TEMPLATEEDITOR_H
 
-#include <QTreeWidget>
+#include <QString>
+#include <QTreeView>
 
-class TemplateEditor : public QTreeWidget {
+#include "templatemodel.h"
+
+class TemplateEditor : public QTreeView {
 
     Q_OBJECT
 
-private slots:
-
-    void ShowDirectory(QTreeWidgetItem* item, int column);
+    void init();
 
 public:
 
     TemplateEditor();
 
-    void Init();
+    bool parseTemplate(TemplateModel* model, QString template_text);
+    bool parseTemplateFile(TemplateModel* model, QString file);
+
 };
 
 #endif // TEMPLATEEDITOR_H

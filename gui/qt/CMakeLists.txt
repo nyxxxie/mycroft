@@ -10,6 +10,7 @@ set(SRC
     mainwindow.cpp
     maineditor.cpp
     templateeditor.cpp
+    templatemodel.cpp
 )
 
 # Save me from manually including the files ;)
