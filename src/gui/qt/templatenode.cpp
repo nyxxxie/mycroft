@@ -2,7 +2,10 @@
 
 #include <QStringList>
 
-TemplateNode::TemplateNode(const QVector<QVariant> &data, TemplateNode *parent) {
+TemplateNode::TemplateNode(
+    const QVector<QVariant>& data,
+    TemplateNode* parent) {
+
     m_parentitem = parent;
     m_itemdata = data;
 }
@@ -11,7 +14,7 @@ TemplateNode::~TemplateNode() {
     qDeleteAll(m_childitems);
 }
 
-TemplateNode *TemplateNode::child(int number) {
+TemplateNode* TemplateNode::child(int number) {
     return m_childitems.value(number);
 }
 
@@ -42,7 +45,7 @@ bool TemplateNode::insertChildren(int position, int count, int columns) {
 
     for (int row = 0; row < count; ++row) {
         QVector<QVariant> data(columns);
-        TemplateNode *item = new TemplateNode(data, this);
+        TemplateNode* item = new TemplateNode(data, this);
         m_childitems.insert(position, item);
     }
 
@@ -57,13 +60,13 @@ bool TemplateNode::insertColumns(int position, int columns) {
     for (int column = 0; column < columns; ++column)
         m_itemdata.insert(position, QVariant());
 
-    foreach (TemplateNode *child, m_childitems)
+    foreach (TemplateNode* child, m_childitems)
         child->insertColumns(position, columns);
 
     return true;
 }
 
-TemplateNode *TemplateNode::parent() {
+TemplateNode* TemplateNode::parent() {
     return m_parentitem;
 }
 
@@ -86,7 +89,7 @@ bool TemplateNode::removeColumns(int position, int columns) {
     for (int column = 0; column < columns; ++column)
         m_itemdata.remove(position);
 
-    foreach (TemplateNode *child, m_childitems)
+    foreach (TemplateNode* child, m_childitems)
         child->removeColumns(position, columns);
 
     return true;

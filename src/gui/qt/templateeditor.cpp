@@ -1,11 +1,7 @@
 #include <QFile>
 
 #include "templateeditor.h"
-
-//TODO, eliminate these both
-#include "treemodel.h"
-#include "treeitem.h"
-
+#include "templatemodel.h"
 
 /**
  * Starts up the template viewer with the default struct.
@@ -14,13 +10,7 @@ void TemplateEditor::init() {
     //TemplateModel model;
     //parseTemplate(&model, "struct FILE {};");
 
-    QStringList headers;
-    headers << tr("Title") << tr("Description");
-
-    QFile file("default.txt");
-    file.open(QIODevice::ReadOnly);
-    TreeModel* model = new TreeModel(headers, file.readAll());
-    file.close();
+    TemplateModel* model = new TemplateModel();
 
     setModel(model);
     for (int column = 0; column < model->columnCount(); ++column)

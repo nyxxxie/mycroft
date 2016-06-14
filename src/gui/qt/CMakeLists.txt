@@ -12,8 +12,6 @@ set(SRC
     templateeditor.cpp
     templatemodel.cpp
     templatenode.cpp
-    treeitem.cpp
-    treemodel.cpp
 )
 
 # Save me from manually including the files ;)
