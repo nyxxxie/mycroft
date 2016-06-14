@@ -1,4 +1,10 @@
 cmake_minimum_required(VERSION 2.8.11)
 
-add_subdirectory(core)
-add_subdirectory(gui/qt)
+enable_testing()
+
+# Include src files
+add_subdirectory(src)
+
+# Create target to build documentation
+#add_custom_target(doc)
+#add_subdirectory(doc)

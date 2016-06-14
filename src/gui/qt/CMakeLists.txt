@@ -11,6 +11,7 @@ set(SRC
     maineditor.cpp
     templateeditor.cpp
     templatemodel.cpp
+    templatenode.cpp
     treeitem.cpp
     treemodel.cpp
 )
