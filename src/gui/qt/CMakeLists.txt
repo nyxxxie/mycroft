@@ -1,5 +1,9 @@
 cmake_minimum_required(VERSION 2.8.11)
 
+# Version
+set(MYCROFT_QT_MAJOR_VERSION 0)
+set(MYCROFT_QT_MINOR_VERSION 1)
+
 # Project name
 set(PROJECT_NAME mycroft-qt)
 project(${PROJECT_NAME})
