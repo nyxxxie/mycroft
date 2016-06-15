@@ -6,12 +6,12 @@ set(MYCROFT_CORE_MINOR_VERSION 1)
 
 # Project name
 set(PROJECT_NAME mcore)
-project(${PROJECT_NAME} C)
+project(${PROJECT_NAME})
 set(MYCROFT_VERSION "${PROJECT_NAME}")
 
 # Source files
 set(SRC
-    main.c
+    template.c
 )
 
 # Save me from manually including the files ;)
@@ -19,13 +19,13 @@ set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
 # configure a header file to pass some of the CMake settings
 # to the source code
-configure_file (
+configure_file(
     "config.h.in"
     "config.h"
 )
 
-# Specify the exe to be built
-add_executable(${PROJECT_NAME} ${SRC})
+# Specify the library to be built
+add_library(${PROJECT_NAME} STATIC ${SRC})
 
 # Find capstone lib
 include(${CMAKE_SOURCE_DIR}/cmake/FindCapstone.cmake)

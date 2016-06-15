@@ -12,3 +12,7 @@ add_subdirectory(src)
 # Create target to build documentation
 #add_custom_target(doc)
 #add_subdirectory(doc)
+
+# Dependencies
+add_dependencies(mycroft-cli mcore)
+add_dependencies(mycroft-qt mcore)
