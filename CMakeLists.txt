@@ -12,6 +12,12 @@ enable_testing()
 # Include the directory with all our code
 add_subdirectory(src)
 
+# Include the third party code library
+add_subdirectory(third_party)
+
+# Add testing stuff
+add_subdirectory(tests)
+
 # Create target to build documentation
 #add_custom_target(doc)
 #add_subdirectory(doc)

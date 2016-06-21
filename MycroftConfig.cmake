@@ -25,3 +25,6 @@ if(DEFINED MYCROFT_MAN_PATH)
 else()
    set(MYCROFT_MAN_PATH ${CMAKE_INSTALL_PREFIX}/share/man CACHE PATH "mycroft manpage directory")
 endif()
+
+set(MYCROFT_CORE_SRC_DIR ${CMAKE_SOURCE_DIR}/src/core
+)
