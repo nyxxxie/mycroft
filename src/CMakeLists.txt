@@ -4,3 +4,7 @@ include_directories(${CMAKE_SOURCE_DIR}/include)
 
 add_subdirectory(core)
 add_subdirectory(client)
+
+# Dependencies
+add_dependencies(mycroft-cli mcore)
+add_dependencies(mycroft-qt mcore)
