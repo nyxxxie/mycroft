@@ -5,6 +5,7 @@ set(CMAKE_BUILD_TYPE RELEASE)
 include(${CMAKE_SOURCE_DIR}/cmake/FindCapstone.cmake)
 include(${CMAKE_SOURCE_DIR}/cmake/FindSQLite3.cmake)
 
+# TODO: ADD "INSTALL" in these directory names
 # setting MYCROFT_DATA_PATH
 if(DEFINED MYCROFT_DATA_PATH)
     set(MYCROFT_DATA_PATH ${MYCROFT_DATA_PATH} CACHE PATH "mycroft share directory")
@@ -26,5 +27,8 @@ else()
    set(MYCROFT_MAN_PATH ${CMAKE_INSTALL_PREFIX}/share/man CACHE PATH "mycroft manpage directory")
 endif()
 
-set(MYCROFT_CORE_SRC_DIR ${CMAKE_SOURCE_DIR}/src/core
-)
+# Set project directory locations
+set(MYCROFT_CORE_DIR ${CMAKE_SOURCE_DIR}/src/core)
+set(MYCROFT_CLIENT_DIR ${CMAKE_SOURCE_DIR}/src/client)
+set(MYCROFT_TEST_DIR ${CMAKE_SOURCE_DIR}/tests)
+set(MYCROFT_TEST_RESOURCES_DIR ${CMAKE_SOURCE_DIR}/tests/resources) # TODO: add some code that copies these into the build directory by default (or pass them somehow to tests)

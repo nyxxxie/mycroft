@@ -11,7 +11,11 @@ set(MYCROFT_VERSION "${PROJECT_NAME}")
 
 # Source files
 set(SRC
-    template.c
+    core.c
+    file.c
+    config.c
+    config_parse.c
+    database.c
 )
 
 # Save me from manually including the files ;)
@@ -28,14 +32,12 @@ configure_file(
 add_library(${PROJECT_NAME} STATIC ${SRC})
 
 # Find capstone lib
-include(${CMAKE_SOURCE_DIR}/cmake/FindCapstone.cmake)
 if (CAPSTONE_FOUND)
     include_directories(${CAPSTONE_INCLUDE_DIRS})
     target_link_libraries(${PROJECT_NAME} ${CAPSTONE_LIBRARIES})
 endif (CAPSTONE_FOUND)
 
 # Find sqlite3 lib
-include(${CMAKE_SOURCE_DIR}/cmake/FindSQLite3.cmake)
 if (SQLITE3_FOUND)
     include_directories(${SQLITE3_INCLUDE_DIRS})
     target_link_libraries(${PROJECT_NAME} ${SQLITE3_LIBRARIES})

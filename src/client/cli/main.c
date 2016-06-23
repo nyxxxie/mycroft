@@ -5,29 +5,34 @@
  */
 
 #include <stdio.h>
-#include <argp.h>
-#include <stdio.h>
 #include <stdint.h>
-#include <mycroft/template.h>
+#include <stdlib.h>
+#include <argp.h>
+#include <signal.h>
+#include <mycroft/mycroft.h>
 #include "config.h"
 
- /* Argp strings */
+/** Argp strings */
 const char* argp_program_version = MYCROFTD_VERSION;
 const char* argp_program_bug_address = "nyxxie at protonmail.ch";
 static char doc[] = "Linux-based reverse engineering tool.";
+static char args_doc[] = "filename";
 
-/* Argp options */
+/** Argp options */
 static struct argp_option options[] = {
     {"file", 'f', "FILE", 0, "File to play with."},
+    {"config", 'c', "FILE", 0, "Config file to load settings from."},
     {0}
 };
 
-/* Arguement values to pass to main func */
+/** Arguement values to pass to main func */
 typedef struct {
-    char* file;
+    int arg_num;
+    char* target_file;
+    char* config_file;
 } arguments_t;
 
-/* Option parser */
+/** Option parser */
 static error_t parse_opt(int key, char* arg, struct argp_state* state) {
     /* Get the input arguement from argp_parse, which we know is a pointer
      * to our arguments structure. */
@@ -35,7 +40,19 @@ static error_t parse_opt(int key, char* arg, struct argp_state* state) {
 
     switch (key) {
     case 'f':
-        arguments->file = arg;
+        arguments->target_file = arg;
+        break;
+
+    case 'c':
+        arguments->config_file = arg;
+        break;
+
+    case ARGP_KEY_ARG:
+        if (state->arg_num >= 1)
+            argp_usage (state);
+        else
+            arguments->target_file = arg;
+
         break;
 
     default:
@@ -45,7 +62,7 @@ static error_t parse_opt(int key, char* arg, struct argp_state* state) {
     return 0;
 }
 
-static struct argp argp = {options, parse_opt, 0, doc};
+static struct argp argp = {options, parse_opt, args_doc, doc};
 
 /* Main function */
 char shellcode[] = {
@@ -61,22 +78,56 @@ char shellcode[] = {
     "\xcd\x80"                      /* int    0x80       */
 };
 
+static mycroft_context_t* ctx;
+
+/** Cleanup function */
+void cleanup() {
+    mycroft_free(ctx);
+    printf("Cleaned up successfully.\n");
+}
+
+/** Signal handler */
+void signal_callback_handler(int signum) {
+   printf("Caught signal %d\n",signum);
+   cleanup();
+   exit(signum);
+}
+
+/** Entry point */
 int main(int argc, char *argv[]) {
 
     /* Create args */
     arguments_t arguments;
-    arguments.file = 0;
+    arguments.arg_num = 0;
+    arguments.target_file = '\0';
+    arguments.config_file = '\0';
 
     /* Parse arguments */
     argp_parse(&argp, argc, argv, 0, 0, &arguments);
 
+    /* Init mycroft core */
+    ctx = mycroft_init_cfg(arguments.config_file);
+    if (ctx == NULL) {
+        fprintf(stderr, "Failed to create template struct!\n");
+        exit(1);
+    }
+    printf("Initialized core...\n");
+
+    /* Init signal handler */
+    signal(SIGINT, signal_callback_handler);
+    printf("Created signal handler...\n");
+
     /* Print file name for testing! */
-    if (arguments.file != 0) {
-        printf("FILE %s\n", arguments.file);
+    if (arguments.target_file != 0) {
+        printf("FILE %s\n", arguments.target_file);
+        mycroft_open_file(ctx, arguments.target_file);
+    }
+    else {
+        printf("Starting with no file.\n");
     }
 
-    template_root_t* root = NULL; //TODO: make an alloc function for these
-    int res = mycroft_parse_template_str(root, "templaaaaaate");
+    /* Cleanup */
+    cleanup();
 
     return 0;
 }
