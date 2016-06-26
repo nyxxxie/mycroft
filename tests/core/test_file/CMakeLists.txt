@@ -27,3 +27,4 @@ add_test(
     NAME ${TEST_CORE_FILE}
     COMMAND ${TEST_CORE_FILE}
 )
+add_dependencies(${TEST_BUILD_TARGET} ${TEST_CORE_FILE})

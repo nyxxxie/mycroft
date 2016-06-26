@@ -7,6 +7,7 @@ include(MycroftConfig.cmake)
 set(MYCROFT_PACKAGE_MAJOR_VERSION 0)
 set(MYCROFT_PACKAGE_MINOR_VERSION 1)
 
+# Enable testing
 enable_testing()
 
 # Include the directory with all our code
