@@ -4,10 +4,21 @@ cmake_minimum_required(VERSION 2.8.11)
 set(MYCROFT_CORE_MAJOR_VERSION 0)
 set(MYCROFT_CORE_MINOR_VERSION 1)
 
+# Find requried libs
+find_package(OpenSSL REQUIRED)
+find_package(Capstone REQUIRED)
+find_package(SQLite3 REQUIRED)
+
 # Project name
 set(PROJECT_NAME mcore)
 project(${PROJECT_NAME})
 set(MYCROFT_VERSION "${PROJECT_NAME}")
+
+include_directories(
+    ${SQLITE3_INCLUDE_DIRS}
+    ${OPENSSL_INCLUDE_DIRS}
+    ${CAPSTONE_INCLUDE_DIRS}
+)
 
 # Source files
 set(SRC
@@ -31,14 +42,8 @@ configure_file(
 # Specify the library to be built
 add_library(${PROJECT_NAME} STATIC ${SRC})
 
-# Find capstone lib
-if (CAPSTONE_FOUND)
-    include_directories(${CAPSTONE_INCLUDE_DIRS})
-    target_link_libraries(${PROJECT_NAME} ${CAPSTONE_LIBRARIES})
-endif (CAPSTONE_FOUND)
-
-# Find sqlite3 lib
-if (SQLITE3_FOUND)
-    include_directories(${SQLITE3_INCLUDE_DIRS})
-    target_link_libraries(${PROJECT_NAME} ${SQLITE3_LIBRARIES})
-endif (SQLITE3_FOUND)
+# Link essential libraries
+target_link_libraries(${PROJECT_NAME}
+    ${SQLITE3_LIBRARIES} 
+    ${CAPSTONE_LIBRARIES}
+)

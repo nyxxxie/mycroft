@@ -2,8 +2,8 @@ set(MAIN_PROJECT_NAME mycroft)
 
 set(CMAKE_BUILD_TYPE RELEASE)
 
-include(${CMAKE_SOURCE_DIR}/cmake/FindCapstone.cmake)
-include(${CMAKE_SOURCE_DIR}/cmake/FindSQLite3.cmake)
+# Set module path
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_SOURCE_DIR}/cmake)
 
 # TODO: ADD "INSTALL" in these directory names
 # setting MYCROFT_DATA_PATH

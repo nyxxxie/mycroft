@@ -1,9 +1,13 @@
 cmake_minimum_required(VERSION 2.8.11)
 
+# Find required libs
+find_package(OpenSSL REQUIRED)
+
 # File test
 set(TEST_NAME test_core_file)
 add_executable(${TEST_NAME} main.cpp file.cpp)
-target_link_libraries(${TEST_NAME} mcore gtest)
+include_directories(${OPENSSL_INCLUDE_DIRS})
+target_link_libraries(${TEST_NAME} mcore gtest ${OPENSSL_LIBRARIES})
 add_dependencies(${TEST_BUILD_TARGET} ${TEST_NAME})
 add_test(${TEST_NAME} ${TEST_NAME})
 
