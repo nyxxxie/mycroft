@@ -3,3 +3,4 @@ include_directories(
 )
 
 add_subdirectory(test_file)
+add_subdirectory(test_database)
