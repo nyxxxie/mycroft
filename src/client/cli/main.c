@@ -27,7 +27,7 @@ static struct argp_option options[] = {
 
 /** Arguement values to pass to main func */
 typedef struct {
-    int arg_num;
+    int   arg_num;
     char* target_file;
     char* config_file;
 } arguments_t;
@@ -78,7 +78,7 @@ char shellcode[] = {
     "\xcd\x80"                      /* int    0x80       */
 };
 
-static mycroft_context_t* ctx;
+static mc_ctx_t* ctx;
 
 /** Cleanup function */
 void cleanup() {
