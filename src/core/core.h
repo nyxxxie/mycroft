@@ -6,10 +6,10 @@
 #include "config.h"
 #include "database.h"
 
-typedef struct mycroft_context_t {
-    mycroft_config_values_t config;
-    mycroft_database_t      db;
-    mycroft_file_t          file;
+typedef struct mc_ctx_t {
+    mc_config_t config;
+    mc_mdb_t    db;
+    mc_file_t   file;
 };
 
-#endif // CORE_H
+#endif // MYCROFT_CORE_H

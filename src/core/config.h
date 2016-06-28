@@ -6,9 +6,12 @@
 typedef struct {
     int db_save_local;
     int db_strip_orig_ext;
-} mycroft_config_values_t;
+} mc_config_t;
+mc_config_t g_config;
 
-void load_config(mycroft_config_values_t* config, const char* custom_location);
+void cfg_init_global();
+void cfg_load_default_values(mc_config_t* config);
+void cfg_load_file(mc_config_t* config, const char* custom_location);
 
 // TODO: might need to add a cleanup function for string variables that we 
 //       malloc?

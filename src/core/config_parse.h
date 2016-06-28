@@ -4,6 +4,6 @@
 #include <stdio.h>
 #include "config.h"
 
-int config_parse(FILE* fp, mycroft_config_values_t* config);
+int config_parse(FILE* fp, mc_config_t* config);
 
 #endif // MYCROFT_CONFIG_PARSE_H
