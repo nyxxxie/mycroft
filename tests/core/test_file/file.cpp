@@ -15,32 +15,32 @@ TEST(file_basic, file_exists_invalid) {
 }
 
 TEST(file_basic, file_open_valid) {
-    mycroft_file_t m;
+    mc_file_t m;
     int res = file_open(&m, "res/testfile1");
     ASSERT_EQ(res, 0);
 }
 
 TEST(file_basic, file_open_invalid) {
-    mycroft_file_t m;
+    mc_file_t m;
     int res = file_open(&m, "thisfiledoesntexist");
     ASSERT_LT(res, 0);
 }
 
 TEST(file_basic, file_open_emptystr) {
-    mycroft_file_t m;
+    mc_file_t m;
     int res = file_open(&m, "");
     ASSERT_LT(res, 0);
 }
 
 TEST(file_basic, file_open_nullstr) {
-    mycroft_file_t m;
+    mc_file_t m;
     int res = file_open(&m, NULL);
     ASSERT_LT(res, 0);
 }
 
 TEST(file_mgmt, file_get_cursor) {
 
-    mycroft_file_t m;
+    mc_file_t m;
     int res = file_open(&m, "res/testfile1");
     ASSERT_EQ(res, 0);
 
@@ -50,7 +50,7 @@ TEST(file_mgmt, file_get_cursor) {
 
 TEST(file_mgmt, file_set_cursor) {
 
-    mycroft_file_t m;
+    mc_file_t m;
     int res = file_open(&m, "res/testfile1");
     ASSERT_EQ(res, 0);
 
@@ -62,7 +62,7 @@ TEST(file_mgmt, file_set_cursor) {
 
 TEST(file_mgmt, file_set_cursor_invalid_pos) {
 
-    mycroft_file_t m;
+    mc_file_t m;
     int res = file_open(&m, "res/testfile1");
     ASSERT_EQ(res, 0);
 
@@ -72,7 +72,7 @@ TEST(file_mgmt, file_set_cursor_invalid_pos) {
 
 TEST(file_mgmt, file_cursor_manip) {
 
-    mycroft_file_t m;
+    mc_file_t m;
     int res = file_open(&m, "res/testfile1");
     ASSERT_EQ(res, 0);
 
@@ -82,7 +82,7 @@ TEST(file_mgmt, file_cursor_manip) {
 
 TEST(file_read, file_read_pos) {
 
-    mycroft_file_t m;
+    mc_file_t m;
     int res = file_open(&m, "res/testfile1");
     ASSERT_EQ(res, 0);
 
@@ -96,7 +96,7 @@ TEST(file_read, file_read_pos) {
 
 TEST(file_read, file_read_pos_offset) {
 
-    mycroft_file_t m;
+    mc_file_t m;
     int res = file_open(&m, "res/testfile1");
     ASSERT_EQ(res, 0);
 
@@ -112,7 +112,7 @@ TEST(file_read, file_read_pos_multi) {
 
     uint8_t expected[] = {0x61, 0x62, 0x63, 0x64};
 
-    mycroft_file_t m;
+    mc_file_t m;
     int res = file_open(&m, "res/testfile1");
     ASSERT_EQ(res, 0);
 
@@ -133,7 +133,7 @@ TEST(file_read, file_read_pos_multi) {
 
 TEST(file_read, file_read_pos_bad_offset) {
 
-    mycroft_file_t m;
+    mc_file_t m;
     int res = file_open(&m, "res/testfile1");
     ASSERT_EQ(res, 0);
 
@@ -144,7 +144,7 @@ TEST(file_read, file_read_pos_bad_offset) {
 
 TEST(file_read, file_read_pos_off_end) {
 
-    mycroft_file_t m;
+    mc_file_t m;
     int res = file_open(&m, "res/testfile1");
     ASSERT_EQ(res, 0);
 
@@ -155,7 +155,7 @@ TEST(file_read, file_read_pos_off_end) {
 
 TEST(file_read, file_write_pos) {
 
-    mycroft_file_t m;
+    mc_file_t m;
     int res = file_open(&m, "res/testfile1");
     ASSERT_EQ(res, 0);
 
@@ -172,7 +172,7 @@ TEST(file_read, file_write_pos) {
 
 TEST(file_read, file_write_pos_offset) {
 
-    mycroft_file_t m;
+    mc_file_t m;
     int res = file_open(&m, "res/testfile1");
     ASSERT_EQ(res, 0);
 
@@ -189,7 +189,7 @@ TEST(file_read, file_write_pos_offset) {
 
 TEST(file_read, file_write_pos_bad_offset) {
 
-    mycroft_file_t m;
+    mc_file_t m;
     int res = file_open(&m, "res/testfile1");
     ASSERT_EQ(res, 0);
 
