@@ -14,7 +14,7 @@ int file_exists(const char* file_name) {
     }
 }
 
-int file_init(mycroft_file_t* file, const char* file_name) {
+int file_init(mc_file_t* file, const char* file_name) {
 
     file->fp = NULL;
     file->size = 0;
@@ -31,7 +31,7 @@ int file_init(mycroft_file_t* file, const char* file_name) {
     return 0;
 }
 
-int file_open(mycroft_file_t* file, const char* file_name) {
+int file_open(mc_file_t* file, const char* file_name) {
 
     if (file_name == 0 || strlen(file_name) == 0) {
         return -1;
@@ -50,6 +50,7 @@ int file_open(mycroft_file_t* file, const char* file_name) {
     int nsize = strlen(file_name);
     file->path = (char*)malloc(nsize + 1);
     strcpy(file->path, file_name);
+    file->name = basename(file->path);
 
     /* Get file size */
     fseek(file->fp, 0, SEEK_END);
@@ -59,7 +60,7 @@ int file_open(mycroft_file_t* file, const char* file_name) {
     return 0;
 }
 
-int file_close(mycroft_file_t* file) {
+int file_close(mc_file_t* file) {
     if (file->fp != NULL) {
         fclose(file->fp);
     }
@@ -67,12 +68,12 @@ int file_close(mycroft_file_t* file) {
     return 0;
 }
 
-int file_get_cursor(mycroft_file_t* file) {
+int file_get_cursor(mc_file_t* file) {
     //file->cursor = ftell(file->fp);
     return file->cursor;
 }
 
-int file_set_cursor(mycroft_file_t* file, int cursor) {
+int file_set_cursor(mc_file_t* file, int cursor) {
 
     if (cursor > file->size) {
         fprintf(stderr, "Tried to set cursor past the end of the file.");
@@ -90,11 +91,15 @@ int file_set_cursor(mycroft_file_t* file, int cursor) {
     return 0;
 }
 
-fsize_t file_size(mycroft_file_t* file) {
+fsize_t file_size(mc_file_t* file) {
     return file->size;
 }
 
-int file_read_pos(mycroft_file_t* file, fsize_t offset, fsize_t amount, uint8_t* outbuf) {
+char* file_name(mc_file_t* file) {
+    return file->name;
+}
+
+int file_read_pos(mc_file_t* file, fsize_t offset, fsize_t amount, uint8_t* outbuf) {
 
     /* Make sure that we don't read off the end of the file */
     if ((offset + amount) >= file->size) {
@@ -137,7 +142,7 @@ int file_read_pos(mycroft_file_t* file, fsize_t offset, fsize_t amount, uint8_t*
     return 0;
 }
 
-int file_write_pos(mycroft_file_t* file, fsize_t offset, fsize_t amount, uint8_t* outbuf) {
+int file_write_pos(mc_file_t* file, fsize_t offset, fsize_t amount, uint8_t* outbuf) {
 
     /* Make sure that we don't write past file contents */
     if ((offset + amount) >= file->size) {
