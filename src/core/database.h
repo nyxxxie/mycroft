@@ -4,14 +4,27 @@
 #include <sqlite3.h>
 #include "file.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 typedef struct {
     sqlite3* db;
-} mycroft_database_t;
+} mc_mdb_t;
 
-int db_load_from_file(mycroft_database_t* mdb, const char* db_file);
-int db_create_file(mycroft_database_t* mdb, const char* db_file);
-int db_close(mycroft_database_t* mdb);
+/* Init/free functions */
+int mdb_init(mc_mdb_t* mdb);
+int mdb_close(mc_mdb_t* mdb);
+int mdb_load_target(mc_mdb_t* mdb, mc_file_t* target_file);
+//int mdb_load_mdb(mc_mdb_t* mdb, const char* mdb_file);
 
-int db_set_target_file(mycroft_database_t* mdb, mycroft_file_t* file);
+/* Raw db functions */
+sqlite3* db_get_backend(mc_mdb_t* mdb);
+
+/* Data query functions */
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif // MYCROFT_DATABASE_H
