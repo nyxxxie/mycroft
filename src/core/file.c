@@ -2,44 +2,61 @@
 #include <string.h>
 #include "file.h"
 
+
+/**
+ * Handy utility function for determining whether or not a given file exists.
+ * Please note that using this function before file_open is unnecessary;
+ * file_open already performs this check internally.
+ *
+ * @param file_name File to check.
+ *
+ * @return Returns 0 if the file exists, -1 otherwise.
+ */
 int file_exists(const char* file_name) {
 
     FILE* fp;
     if ((fp = fopen(file_name, "r")) != NULL) {
         fclose(fp);
-        return 0; //File exists
+        return 0;
     }
     else {
-        return -1; //File not found
+        return -1;
     }
 }
 
-int file_init(mc_file_t* file, const char* file_name) {
+/**
+* Initializes an mc_file_t struct.  It is REQURIED that this function is called
+* prior to using any other function that takes the same mc_file_t struct as an
+* argument.  Failure to do so will yeild undefined behavior.
+*
+* @param file mc_file_t struct to initialize.
+*
+* @return Returns 0 on success, -1 on error.
+*/
+int file_init(mc_file_t* file) {
 
     file->fp = NULL;
     file->size = 0;
     file->cursor = 0;
-
-    file->path = (char*)malloc(strlen(file_name));
-    if (file->path == NULL) {
-        return -1;
-    }
-    strcpy(file->path, file_name);
-
-    file->name = file->path;  //TODO: figure out how to get basename
-
+    file->name = NULL;
+    file->path = NULL;
     return 0;
 }
 
 int file_open(mc_file_t* file, const char* file_name) {
 
+    /* Make sure we're passed a nonempty path */
     if (file_name == 0 || strlen(file_name) == 0) {
         return -1;
     }
 
-    if (file_init(file, file_name) < 0) {
+    /* Fill the file name and path members of the mc_file_t struct */
+    file->path = (char*)malloc(strlen(file_name));
+    if (file->path == NULL) {
         return -1;
     }
+    strcpy(file->path, file_name);
+    file->name = file->path;  //TODO: figure out how to get basename
 
     /* Try to open file */
     if ((file->fp = fopen(file->path, "rb+")) == NULL) {
@@ -63,6 +80,10 @@ int file_open(mc_file_t* file, const char* file_name) {
 int file_close(mc_file_t* file) {
     if (file->fp != NULL) {
         fclose(file->fp);
+    }
+
+    if (file->path != NULL) {
+        free(file->path);
     }
 
     return 0;
@@ -99,7 +120,21 @@ char* file_name(mc_file_t* file) {
     return file->name;
 }
 
-int file_read_pos(mc_file_t* file, fsize_t offset, fsize_t amount, uint8_t* outbuf) {
+int file_read(mc_file_t* file, fsize_t amount, uint8_t* outbuf) {
+
+    /* Read desired content */
+    long int res = fread(outbuf, 1, amount, file->fp);
+    if (res != amount) {
+        if (ferror(file->fp)) {
+            perror("DEBUG: Error in file_write_pos");
+            return -1;
+        }
+    }
+
+    return res;
+}
+
+int file_read_value(mc_file_t* file, fsize_t offset, fsize_t amount, uint8_t* outbuf) {
 
     /* Make sure that we don't read off the end of the file */
     if ((offset + amount) >= file->size) {
@@ -142,7 +177,11 @@ int file_read_pos(mc_file_t* file, fsize_t offset, fsize_t amount, uint8_t* outb
     return 0;
 }
 
-int file_write_pos(mc_file_t* file, fsize_t offset, fsize_t amount, uint8_t* outbuf) {
+int file_write(mc_file_t* file, fsize_t amount, uint8_t* outbuf) {
+
+}
+
+int file_write_value(mc_file_t* file, fsize_t offset, fsize_t amount, uint8_t* outbuf) {
 
     /* Make sure that we don't write past file contents */
     if ((offset + amount) >= file->size) {
