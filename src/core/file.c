@@ -10,7 +10,7 @@
  *
  * @param file_name File to check.
  *
- * @return Returns 0 if the file exists, -1 otherwise.
+ * @return Returns 0 on success, negative value on error.
  */
 int file_exists(const char* file_name) {
 
@@ -25,14 +25,14 @@ int file_exists(const char* file_name) {
 }
 
 /**
-* Initializes an mc_file_t struct.  It is REQURIED that this function is called
-* prior to using any other function that takes the same mc_file_t struct as an
-* argument.  Failure to do so will yeild undefined behavior.
-*
-* @param file mc_file_t struct to initialize.
-*
-* @return Returns 0 on success, -1 on error.
-*/
+ * Initializes an mc_file_t struct.  It is REQURIED that this function is called
+ * prior to using any other function that takes the same mc_file_t struct as an
+ * argument.  Failure to do so will yeild undefined behavior.
+ *
+ * @param file mc_file_t struct to initialize.
+ *
+ * @return Returns 0 on success, negative value on error.
+ */
 int file_init(mc_file_t* file) {
 
     file->fp = NULL;
@@ -43,6 +43,16 @@ int file_init(mc_file_t* file) {
     return 0;
 }
 
+/**
+ * Opens a file.  Make sure you call file_init before using this function and
+ * call file_close after you're done with the file you've opened.  Do not call
+ * this function twice on the same struct without closing and reinitializing it.
+ *
+ * @param file mc_file_t struct to operate on.
+ * @param file_name File to open.
+ *
+ * @return Returns 0 on success, negative value on error.
+ */
 int file_open(mc_file_t* file, const char* file_name) {
 
     /* Make sure we're passed a nonempty path */
@@ -77,6 +87,14 @@ int file_open(mc_file_t* file, const char* file_name) {
     return 0;
 }
 
+/**
+ * Closes a file.  Make sure to call this when you're done with a file
+ * otherwise you'll leak memory and orphan a FILE* pointer.
+ *
+ * @param file mc_file_t struct to close.
+ *
+ * @return Returns 0 on success, negative value on error.
+ */
 int file_close(mc_file_t* file) {
     if (file->fp != NULL) {
         fclose(file->fp);
@@ -89,11 +107,27 @@ int file_close(mc_file_t* file) {
     return 0;
 }
 
+/**
+ * Get file custor position.  This is where the file will be reading/writing
+ * from.
+ *
+ * @param file mc_file_t struct to operate on.
+ *
+ * @return Returns 0 on success, negative value on error.
+ */
 int file_get_cursor(mc_file_t* file) {
     //file->cursor = ftell(file->fp);
     return file->cursor;
 }
 
+/**
+ * Set file cursor position.  This will determine where we start
+ * reading/writing from.
+ *
+ * @param file mc_file_t struct to operate on.
+ *
+ * @return Returns 0 on success, negative value on error.
+ */
 int file_set_cursor(mc_file_t* file, int cursor) {
 
     if (cursor > file->size) {
@@ -112,14 +146,49 @@ int file_set_cursor(mc_file_t* file, int cursor) {
     return 0;
 }
 
+/**
+ * Returns the size of the file.
+ *
+ * @param file mc_file_t struct to operate on.
+ *
+ * @return Returns the file size.
+ */
 fsize_t file_size(mc_file_t* file) {
     return file->size;
 }
 
+/**
+ * Returns the name of the file.
+ *
+ * @param file mc_file_t struct to operate on.
+ *
+ * @return Returns the file name.
+ */
 char* file_name(mc_file_t* file) {
     return file->name;
 }
 
+/**
+ * Returns the path of the file.
+ *
+ * @param file mc_file_t struct to operate on.
+ *
+ * @return Returns the file path.
+ */
+char* file_path(mc_file_t* file) {
+    return file->path;
+}
+
+/**
+ * Reads bytes from a file.  Will move the cursor to the end of the file.
+ * This function is suitable for reading large amount of bytes.
+ *
+ * @param file mc_file_t struct to operate on.
+ * @param amount Amount of bytes to read.
+ * @param outbuf Buffer to place bytes in.
+ *
+ * @return Returns 0 on success, negative value on error.
+ */
 int file_read(mc_file_t* file, fsize_t amount, uint8_t* outbuf) {
 
     /* Read desired content */
@@ -134,6 +203,19 @@ int file_read(mc_file_t* file, fsize_t amount, uint8_t* outbuf) {
     return res;
 }
 
+/**
+ * Tries to read a value in the file.  This function is meant to be used to
+ * read a single value or struct from a file.  If you want to read a lot of
+ * bytes, use a combination of file_read and file_set_cursor.  This function
+ * doesn't change the cursor position.
+ *
+ * @param file mc_file_t struct to operate on.
+ * @param offset Offset into the file to start reading at.
+ * @param amount Amount of bytes to read.
+ * @param outbuf Buffer to place bytes in.
+ *
+ * @return Returns 0 on success, negative value on error.
+ */
 int file_read_value(mc_file_t* file, fsize_t offset, fsize_t amount, uint8_t* outbuf) {
 
     /* Make sure that we don't read off the end of the file */
@@ -177,10 +259,34 @@ int file_read_value(mc_file_t* file, fsize_t offset, fsize_t amount, uint8_t* ou
     return 0;
 }
 
+/**
+ * Writes bytes to a file.  Will move the cursor to the end of the file.
+ * This function is suitable for writing large amount of bytes.
+ *
+ * @param file mc_file_t struct to operate on.
+ * @param amount Amount of bytes to write.
+ * @param outbuf Buffer to place bytes in.
+ *
+ * @return Returns 0 on success, negative value on error.
+ */
 int file_write(mc_file_t* file, fsize_t amount, uint8_t* outbuf) {
 
 }
 
+/**
+ * Tries to write a value to the file.  This function is meant to be used to
+ * write a single value or struct to a file.  If you want to read a lot of
+ * bytes, use a combination of file_read and file_set_cursor.  This function
+ * doesn't change the cursor position.  This will overwite whatever value is
+ * at the offset position.
+ *
+ * @param file mc_file_t struct to operate on.
+ * @param offset Offset into the file to start reading at.
+ * @param amount Amount of bytes to read.
+ * @param outbuf Buffer to place bytes in.
+ *
+ * @return Returns 0 on success, negative value on error.
+ */
 int file_write_value(mc_file_t* file, fsize_t offset, fsize_t amount, uint8_t* outbuf) {
 
     /* Make sure that we don't write past file contents */
