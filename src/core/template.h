@@ -2,6 +2,7 @@
 #define MYCROFT_TEMPLATE_H
 
 #include <stdint.h>
+#include "core.h"
 
 #define MC_TEMPLATE_ENTRY  0
 #define MC_TEMPLATE_STRUCT 1
@@ -10,6 +11,10 @@
 #define MC_TEMPLATE_SNAME_MAX_SIZE 255
 #define MC_TEMPLATE_TNAME_MAX_SIZE 64
 #define MC_TEMPLATE_COMMENT_MAX_SIZE 255
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 /** Generic entry.  Only really useful for accessing the type specifier. */
 typedef struct {
@@ -51,6 +56,10 @@ void mycroft_template_free(mc_template_t* t);
 /* Template loading/creation */
 void mycroft_template_create(mc_template_t* t);
 int  mycroft_template_parse_str(mc_template_t* t, char* template_str);
-int  mycroft_template_parse_file(mc_template_t* t, char* template_file);
+int  mycroft_template_parse_file(mc_template_t* t, mc_file_t* file);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif // TEMPLATE_H

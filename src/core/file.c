@@ -1,7 +1,8 @@
+#include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include <libgen.h>
 #include "file.h"
-
 
 /**
  * Handy utility function for determining whether or not a given file exists.

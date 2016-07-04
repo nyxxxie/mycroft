@@ -44,6 +44,7 @@ add_library(${PROJECT_NAME} STATIC ${SRC})
 
 # Link essential libraries
 target_link_libraries(${PROJECT_NAME}
-    ${SQLITE3_LIBRARIES} 
+    ${SQLITE3_LIBRARIES}
+    ${OPENSSL_LIBRARIES}
     ${CAPSTONE_LIBRARIES}
 )

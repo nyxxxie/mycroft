@@ -1,8 +1,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-
+#include <openssl/sha.h>
 #include "database.h"
+#include "file.h"
 
 /**
  * This function initializes a given mycroft db context.  You MUST call this
@@ -15,6 +16,7 @@
  */
 int mdb_init(mc_mdb_t* mdb) {
     mdb->db = NULL;
+    mdb->filename = NULL;
     return 0;
 }
 
@@ -31,97 +33,289 @@ int mdb_close(mc_mdb_t* mdb) {
     if (mdb->db != NULL)
         sqlite3_close(mdb->db);
 
-    return 0;
-}
-
-int mdb_create_default_tables(mc_mdb_t* mdb) {
-    const char* create_queries[]  = {
-        "CREATE TABLE project_info("
-        "key    TEXT               "
-        "value  TEXT               ",
-        "CREATE TABLE project_settings("
-        "key    TEXT                   "
-        "value  TEXT                   ",
-    };
-
-    printf("str_amnt = %i\n", sizeof(create_queries));
-    for (int i = 0; i < sizeof(create_queries); i++) {
-        printf("%i: %s\n", i, create_queries[i]);
-    }
+    if (mdb->filename != NULL)
+        free(mdb->filename);
 
     return 0;
 }
-
-int mdb_set_project_info(mc_mdb_t* mdb) {
-
-    return -1;
-}
-
-int mdb_set_config_info(mc_mdb_t* mdb) {
-
-    return -1;
-}
-
 
 /**
- * Loads an mycroft db context given a target file.  Will attempt to find the
- * db on disk if it exists, otherwise it will be created.
+ * Creates the default tables for a mdb.
  *
- * @param mdb Mycroft db context to close.
- * @param target_file File to use.
+ * @param mdb Mycroft db context to operate on.
  *
  * @return Returns 0 on success, negative value on error.
  */
-int mdb_load_target(mc_mdb_t* mdb, mc_file_t* target_file) {
+int mdb_create_default_tables(mc_mdb_t* mdb) {
 
-    /* Copy file path to our db path */
-    char* target_filename = file_name(target_file);
-    char* mdb_filename = (char*)malloc(strlen(target_filename) + 5);
-    if (mdb_filename == NULL) {
-        fprintf(stderr, "Failed to allocate space for mdb_filename");
-        return -1;
-    }
-    strncpy(mdb_filename, target_filename, strlen(target_filename));
+    const char* create_queries[] = {
+        "CREATE TABLE project_info("
+        "key    TEXT    UNIQUE,"
+        "value  TEXT)",
+        "CREATE TABLE project_conf("
+        "key    TEXT    UNIQUE,"
+        "value  TEXT)",
+    };
 
-    /* Strip the file extension if we need to */
-    //if (ctx->config.db_strip_orig_ext) {
-    //    //TODO: I don't think we should actually make this an option
-    //    char* lastslash = strrchr(mdb_filename, '/');
-    //    char* lastdot = strrchr(mdb_filename, '.');
-    //    if (lastslash < lastdot) {
-    //        mdb_filename[lastdot-mdb_filename] = '\0';
-    //    }
-    //}
+    for (int i = 0; i < 2; i++) {
 
-    /* Append the database extension */
-    int b = strlen(mdb_filename);
-    mdb_filename[b]   = '.';
-    mdb_filename[b+1] = 'm';
-    mdb_filename[b+2] = 'd';
-    mdb_filename[b+3] = 'b';
-    mdb_filename[b+4] = '\0';
+        sqlite3_stmt* stmt;
+        int rc = 0;
 
-    /* Check to see if the mdb file exists */
-    int exists = (file_exists(mdb_filename) == 0);
+        printf("asdf %i\n", i);
+        if ((rc = sqlite3_prepare_v2(mdb->db,
+            create_queries[i], -1,
+            &stmt, NULL)) != SQLITE_OK) {
 
-    /* Open/create sqlite db */
-    int rc = sqlite3_open(mdb_filename, &mdb->db);
-    if (rc != SQLITE_OK) {
-        fprintf(stderr, "Couldn't open mdb file \"%s\": %s\n",
-            mdb_filename, sqlite3_errmsg(mdb->db));
-        free(mdb_filename);
-        return -1;
-    }
-    free(mdb_filename);
-
-    /* If we're making the db, we need to add tables and project info */
-    if (!exists) {
-        if (mdb_create_default_tables(mdb) < 0 ||
-            mdb_set_project_info(mdb) < 0 ||
-            mdb_set_config_info(mdb) < 0) {
+            fprintf(stderr, "mdb_create_default_table.sqlite3_prepare_v2: %s\n",
+                sqlite3_errmsg(mdb->db));
 
             return -1;
         }
+
+        rc = sqlite3_step(stmt);
+        if (rc != SQLITE_OK) {
+            fprintf(stderr, "mdb_create_default_table.sqlite3_step: %s\n",
+                sqlite3_errmsg(mdb->db));
+
+            return -1;
+        }
+
+        rc = sqlite3_finalize(stmt);
+        if (rc != SQLITE_OK) {
+            fprintf(stderr, "mdb_create_default_table.sqlite3_finalize: %s\n",
+                sqlite3_errmsg(mdb->db));
+
+            return -1;
+        }
+    }
+
+    return 0;
+}
+
+/**
+ * Creates a new mdb file.  Will fail if the db file exists.
+ *
+ * @param mdb Mycroft db context to operate on.
+ * @param filename Mycroft db file to use.
+ *
+ * @return Returns 0 on success, negative value on error.
+ */
+int mdb_create_db(mc_mdb_t* mdb, const char* filename) {
+
+    /* Ensure that the file doesn't already exist */
+    if (file_exists(filename) == 0) {
+        return -1;
+    }
+
+    /* Create sqlite db */
+    int rc = sqlite3_open_v2(
+        filename, &mdb->db,
+        SQLITE_OPEN_READWRITE|SQLITE_OPEN_CREATE, NULL);
+    if (rc != SQLITE_OK) {
+        fprintf(stderr, "mdb_create_db.sqlite3_open_v2(\"%s\"): %s\n",
+            filename, sqlite3_errmsg(mdb->db));
+
+        return -1;
+    }
+
+    /* Create the default tables */
+    rc = mdb_create_default_tables(mdb);
+    if (rc < 0) {
+        return rc;
+    }
+
+    return 0;
+}
+
+/**
+ * Opens an existing mdb file.  Will fail if the db file doesn't exist.
+ *
+ * @param mdb Mycroft db context to operate on.
+ * @param filename Mycroft db file to use.
+ *
+ * @return Returns 0 on success, negative value on error.
+ */
+int mdb_load_db(mc_mdb_t* mdb, const char* filename) {
+
+    /* Create sqlite db */
+    int rc = sqlite3_open_v2(
+        filename, &mdb->db,
+        SQLITE_OPEN_READWRITE, NULL);
+    if (rc != SQLITE_OK) {
+        fprintf(stderr, "mdb_load_db.sqlite3_open_v2(\"%s\"): %s\n",
+            filename, sqlite3_errmsg(mdb->db));
+        return -1;
+    }
+
+    return 0;
+}
+
+int mdb_set_project(mc_mdb_t* mdb, mc_ctx_t* ctx) {
+
+    char* tmp = NULL;
+
+    /* Set the file's name and size in the db. */
+    tmp = file_name(ctx->file);
+    mdb_set_pinfo_entry(mdb, "file_name", tmp, strlen(tmp));
+    tmp = file_path(ctx->file);
+    mdb_set_pinfo_entry(mdb, "file_path", tmp, strlen(tmp));
+    fsize_t fsize = file_size(ctx->file);
+    mdb_set_pinfo_entry(mdb, "file_size", (uint8_t*)&fsize, sizeof(fsize_t));
+
+    /* Hash the file and set the property in the table */
+    SHA256_CTX shactx;
+    SHA256_Init(&shactx);
+
+    char readbuf[1024];
+    while (1) {
+        int amnt = file_read(ctx->file, sizeof(readbuf), readbuf);
+        if (amnt == 0) {
+            break;
+        }
+        else if (amnt < 0) {
+            return -1;
+        }
+
+        SHA256_Update(&shactx, readbuf, amnt);
+    }
+
+    char hash[SHA_DIGEST_LENGTH];
+    SHA256_Final(hash, &shactx);
+
+    mdb_set_pinfo_entry(mdb, "file_hash", hash, sizeof(hash));
+
+    /* */
+
+    return 0;
+}
+
+int mdb_load_project(mc_mdb_t* mdb, mc_ctx_t* ctx) {
+
+}
+
+/**
+ * Inserts a key/value pair into the project_info table in the mdb.  Updates
+ * the value if it already exists.
+ *
+ * @param mdb Mycroft db context to operate on.
+ * @param key Entry key.
+ * @param value Entry value.
+ *
+ * @return Returns 0 on success, negative value on error.
+ */
+int mdb_set_pinfo_entry(mc_mdb_t* mdb, char* key, uint8_t* value, int size) {
+
+    const char* insert_query =
+        "INSERT INTO project_info"
+        "    (key, value)"
+        "VALUES"
+        "    (?, ?)"
+        "ON DUPLICATE KEY UPDATE"
+        "    value = VALUES(value)";
+
+    int rc = 0;
+    sqlite3_stmt* stmt;
+
+    /* Prepate SQL statement */
+    rc = sqlite3_prepare_v2(mdb->db, insert_query, -1, &stmt, NULL);
+    if (rc != SQLITE_OK) {
+        fprintf(stderr, "mdb_insert_pinfo_entry.sqlite3_prepare_v2: %s\n",
+            sqlite3_errmsg(mdb->db));
+
+        return -1;
+    }
+
+    /* Bind values to SQL statement */
+    if (sqlite3_bind_text(stmt, 0, key, -1, SQLITE_TRANSIENT) != SQLITE_OK ||
+        sqlite3_bind_blob(stmt, 1, value, size, SQLITE_TRANSIENT) != SQLITE_OK) {
+
+        fprintf(stderr, "mdb_insert_pinfo_entry.sqlite3_bind_text: %s\n",
+            sqlite3_errmsg(mdb->db));
+
+        return -1;
+    }
+
+    /* Perform SQL statement */
+    rc = sqlite3_step(stmt);
+    if (rc != SQLITE_OK) {
+        fprintf(stderr, "mdb_insert_pinfo_entry.sqlite3_step: %s\n",
+            sqlite3_errmsg(mdb->db));
+
+        return -1;
+    }
+
+    /* Delete SQL statement */
+    rc = sqlite3_finalize(stmt);
+    if (rc != SQLITE_OK) {
+        fprintf(stderr, "mdb_insert_pinfo_entry.sqlite3_finalize: %s\n",
+            sqlite3_errmsg(mdb->db));
+
+        return -1;
+    }
+
+    return 0;
+
+}
+
+/**
+ * Inserts a key/value pair into the project_conf table in the mdb.  Updates
+ * the value if it already exists.
+ *
+ * @param mdb Mycroft db context to operate on.
+ * @param key Entry key.
+ * @param value Entry value.
+ *
+ * @return Returns 0 on success, negative value on error.
+ */
+int mdb_set_pconf_entry(mc_mdb_t* mdb, char* key, uint8_t* value, int size) {
+
+    const char* insert_query =
+        "INSERT INTO project_conf"
+        "    (key, value)"
+        "VALUES"
+        "    (?, ?)"
+        "ON DUPLICATE KEY UPDATE"
+        "    value = VALUES(value)";
+
+    int rc = 0;
+    sqlite3_stmt* stmt;
+
+    /* Prepate SQL statement */
+    rc = sqlite3_prepare_v2(mdb->db, insert_query, -1, &stmt, NULL);
+    if (rc != SQLITE_OK) {
+        fprintf(stderr, "mdb_insert_pconf_entry.sqlite3_prepare_v2: %s\n",
+            sqlite3_errmsg(mdb->db));
+
+        return -1;
+    }
+
+    /* Bind values to SQL statement */
+    if (sqlite3_bind_text(stmt, 0, key, -1, SQLITE_TRANSIENT) != SQLITE_OK ||
+        sqlite3_bind_blob(stmt, 1, value, size, SQLITE_TRANSIENT) != SQLITE_OK) {
+
+        fprintf(stderr, "mdb_insert_pconf_entry.sqlite3_bind_text: %s\n",
+            sqlite3_errmsg(mdb->db));
+
+        return -1;
+    }
+
+    /* Perform SQL statement */
+    rc = sqlite3_step(stmt);
+    if (rc != SQLITE_OK) {
+        fprintf(stderr, "mdb_insert_pconf_entry.sqlite3_step: %s\n",
+            sqlite3_errmsg(mdb->db));
+
+        return -1;
+    }
+
+    /* Delete SQL statement */
+    rc = sqlite3_finalize(stmt);
+    if (rc != SQLITE_OK) {
+        fprintf(stderr, "mdb_insert_pconf_entry.sqlite3_finalize: %s\n",
+            sqlite3_errmsg(mdb->db));
+
+        return -1;
     }
 
     return 0;

@@ -3,15 +3,12 @@
 #include <string.h>
 #include <libgen.h>
 #include <unistd.h>
-
 #include "core.h"
 #include "config.h"
+#include "database.h"
+#include "file.h"
 
 mc_ctx_t* mycroft_init() {
-    return mycroft_init_cfg("\0");
-}
-
-mc_ctx_t* mycroft_init_cfg(const char* config_filename) {
 
     /* Create the context */
     mc_ctx_t* ctx = (mc_ctx_t*)malloc(sizeof(mc_ctx_t));
@@ -20,47 +17,77 @@ mc_ctx_t* mycroft_init_cfg(const char* config_filename) {
         return NULL;
     }
 
-    /* Quick and dirty way to init all values to 0 */
-    memset(ctx, sizeof(mc_ctx_t), 0);
+    ctx->config = (mc_config_t*)malloc(sizeof(mc_config_t));
+    if (ctx->config == NULL) {
+        perror("Failed to allocate space for mc_ctx_t");
+        return NULL;
+    }
 
-    /* Load config */
-    load_config(&g_config, config_filename);
-    ctx->config = g_config;     //TODO: maybe just make config global?
+    ctx->db = (mc_mdb_t*)malloc(sizeof(mc_mdb_t));
+    if (ctx->db == NULL) {
+        perror("Failed to allocate space for mc_ctx_t");
+        return NULL;
+    }
+
+    ctx->file = (mc_file_t*)malloc(sizeof(mc_file_t));
+    if (ctx->file == NULL) {
+        perror("Failed to allocate space for mc_ctx_t");
+        return NULL;
+    }
+
     return ctx;
 }
 
-void mycroft_free(mc_ctx_t* state) {
-    file_close(&state->file);
-    mdb_close(&state->db);
-    free(state);
-}
+void mycroft_free(mc_ctx_t* ctx) {
+    if (ctx != NULL) {
+        if (ctx->file != NULL) {
+            file_close(ctx->file);
+            free(ctx->file);
+        }
 
-//int mycroft_open_mdb(mc_ctx_t* ctx, const char* mdb_file) {
-//
-//    /* Check if mdb file exists */
-//    if (file_exists(mdb_file) == 0) {
-//        printf("DEBUG: Couldn't find  mdb file \"%s\"\n", mdb_file);
-//        return -1;
-//    }
-//
-//    if (mdb_load_mdb(&ctx->db, mdb_file) < 0) {
-//        return -1;
-//    }
-//
-//    return 0;
-//}
+        if (ctx->db != NULL) {
+            mdb_close(ctx->db);
+            free(ctx->db);
+        }
+
+        free(ctx);
+    }
+}
 
 int mycroft_open_file(mc_ctx_t* ctx, const char* target_filename) {
 
-    //TODO: this could probably be neater :/
     /* Open target file */
-    if (file_open(&ctx->file, target_filename) < 0) {
+    if (file_open(ctx->file, target_filename) < 0) {
         return -1;
     }
 
-    /* Open mdb file */
-    mdb_init(&ctx->db);
-    if (mdb_load_target(&ctx->db, &ctx->file)) {
-        return -1;
+    /* Generate the mdb filename from the target's filename */
+    int b = strlen(target_filename);
+    char mdb_filename[b + 5];
+    strcpy(mdb_filename, target_filename);
+    mdb_filename[b]   = '.';
+    mdb_filename[b+1] = 'm';
+    mdb_filename[b+2] = 'd';
+    mdb_filename[b+3] = 'b';
+    mdb_filename[b+4] = '\0';
+
+    /* Try to open/create the mdb file */
+    mdb_init(ctx->db);
+    if (file_exists(mdb_filename) == 0) {
+        if (mdb_load_db(ctx->db, mdb_filename) < 0) {
+            return -1;
+        }
+        if (mdb_set_project(ctx->db, ctx) < 0) {
+            return -1;
+        }
+    } else {
+        if (mdb_create_db(ctx->db, mdb_filename) < 0) {
+            return -1;
+        }
+        if (mdb_load_project(ctx->db, ctx) < 0) {
+            return -1;
+        }
     }
+
+    return 0;
 }

@@ -2,16 +2,12 @@
 #include "config.h"
 #include "config_parse.h"
 
-void cfg_init_global() {
-    load_config(&g_config, NULL);
-}
-
 void load_default_values(mc_config_t* config) {
     config->db_save_local     = 0;
     config->db_strip_orig_ext = 0;
 }
 
-void load_config(mc_config_t* config, const char* custom_location) {
+void cfg_load_file(mc_config_t* config, const char* custom_location) {
 
     FILE* fp = NULL;
 
@@ -39,3 +35,8 @@ void load_config(mc_config_t* config, const char* custom_location) {
         load_default_values(config);
     }
 }
+
+void cfg_init_global() {
+    cfg_load_file(&g_config, NULL);
+}
+

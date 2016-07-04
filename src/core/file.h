@@ -3,6 +3,7 @@
 
 #include <stdint.h>
 #include <stdio.h>
+#include "core.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -23,7 +24,7 @@ typedef struct {
 } editor_buffer_t;
 
 /** Contains info for an open file */
-typedef struct {
+struct mc_file_t {
     char*   name;
     char*   path;
     FILE*   fp;
@@ -31,7 +32,7 @@ typedef struct {
     fsize_t cursor;
 
     editor_buffer_t buf;
-} mc_file_t;
+};
 
 /* Util functions */
 int file_exists(const char* file);
@@ -46,6 +47,7 @@ int file_get_cursor(mc_file_t* file);
 int file_set_cursor(mc_file_t* file, int cursor);
 fsize_t file_size(mc_file_t* file);
 char* file_name(mc_file_t* file);
+char* file_path(mc_file_t* file);
 
 /* Read/write functions */
 int file_read(mc_file_t* file, fsize_t amount, uint8_t* outbuf);
