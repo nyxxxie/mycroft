@@ -93,6 +93,11 @@ void signal_callback_handler(int signum) {
    exit(signum);
 }
 
+/** Command processer */
+int process_command(char* command, char* argv[], int argc) {
+
+}
+
 /** Entry point */
 int main(int argc, char *argv[]) {
 
@@ -105,17 +110,17 @@ int main(int argc, char *argv[]) {
     /* Parse arguments */
     argp_parse(&argp, argc, argv, 0, 0, &arguments);
 
+    /* Init signal handler */
+    signal(SIGINT, signal_callback_handler);
+    printf("Created signal handler...\n");
+
     /* Init mycroft core */
-    ctx = mycroft_init_cfg(arguments.config_file);
+    ctx = mycroft_init();
     if (ctx == NULL) {
         fprintf(stderr, "Failed to create template struct!\n");
         exit(1);
     }
     printf("Initialized core...\n");
-
-    /* Init signal handler */
-    signal(SIGINT, signal_callback_handler);
-    printf("Created signal handler...\n");
 
     /* Print file name for testing! */
     if (arguments.target_file != 0) {
@@ -123,7 +128,23 @@ int main(int argc, char *argv[]) {
         mycroft_open_file(ctx, arguments.target_file);
     }
     else {
-        printf("Starting with no file.\n");
+        printf("Please specify a file.\n");
+        return 1;
+    }
+    printf("Opened file...\n");
+
+    /* Main command loop */
+    while (1) {
+
+        /* Print input prompt */
+        printf("[0x%08x] :: ");
+
+        /* Take input */
+
+        /* Process command */
+        //process_command(cmd, args, argc);
+
+        /* Process custom commands */
     }
 
     /* Cleanup */
