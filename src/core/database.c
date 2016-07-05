@@ -51,10 +51,10 @@ int mdb_create_default_tables(mc_mdb_t* mdb) {
     const char* create_queries[] = {
         "CREATE TABLE project_info("
         "key    TEXT    UNIQUE,"
-        "value  TEXT)",
+        "value  BLOB)",
         "CREATE TABLE project_conf("
         "key    TEXT    UNIQUE,"
-        "value  TEXT)",
+        "value  BLOB)",
     };
 
     for (int i = 0; i < 2; i++) {
@@ -62,7 +62,6 @@ int mdb_create_default_tables(mc_mdb_t* mdb) {
         sqlite3_stmt* stmt;
         int rc = 0;
 
-        printf("asdf %i\n", i);
         if ((rc = sqlite3_prepare_v2(mdb->db,
             create_queries[i], -1,
             &stmt, NULL)) != SQLITE_OK) {
@@ -74,7 +73,7 @@ int mdb_create_default_tables(mc_mdb_t* mdb) {
         }
 
         rc = sqlite3_step(stmt);
-        if (rc != SQLITE_OK) {
+        if (rc != SQLITE_DONE) {
             fprintf(stderr, "mdb_create_default_table.sqlite3_step: %s\n",
                 sqlite3_errmsg(mdb->db));
 
@@ -157,11 +156,17 @@ int mdb_set_project(mc_mdb_t* mdb, mc_ctx_t* ctx) {
 
     /* Set the file's name and size in the db. */
     tmp = file_name(ctx->file);
-    mdb_set_pinfo_entry(mdb, "file_name", tmp, strlen(tmp));
+    if (mdb_set_pinfo_entry(mdb, "file_name", tmp, strlen(tmp))) {
+        return -1;
+    }
     tmp = file_path(ctx->file);
-    mdb_set_pinfo_entry(mdb, "file_path", tmp, strlen(tmp));
+    if (mdb_set_pinfo_entry(mdb, "file_path", tmp, strlen(tmp))) {
+        return -1;
+    }
     fsize_t fsize = file_size(ctx->file);
-    mdb_set_pinfo_entry(mdb, "file_size", (uint8_t*)&fsize, sizeof(fsize_t));
+    if (mdb_set_pinfo_entry(mdb, "file_size", (uint8_t*)&fsize, sizeof(fsize_t))) {
+        return -1;
+    }
 
     /* Hash the file and set the property in the table */
     SHA256_CTX shactx;
@@ -183,7 +188,9 @@ int mdb_set_project(mc_mdb_t* mdb, mc_ctx_t* ctx) {
     char hash[SHA_DIGEST_LENGTH];
     SHA256_Final(hash, &shactx);
 
-    mdb_set_pinfo_entry(mdb, "file_hash", hash, sizeof(hash));
+    if (mdb_set_pinfo_entry(mdb, "file_hash", hash, sizeof(hash))) {
+        return -1;
+    }
 
     /* */
 
@@ -207,12 +214,8 @@ int mdb_load_project(mc_mdb_t* mdb, mc_ctx_t* ctx) {
 int mdb_set_pinfo_entry(mc_mdb_t* mdb, char* key, uint8_t* value, int size) {
 
     const char* insert_query =
-        "INSERT INTO project_info"
-        "    (key, value)"
-        "VALUES"
-        "    (?, ?)"
-        "ON DUPLICATE KEY UPDATE"
-        "    value = VALUES(value)";
+        "REPLACE INTO project_info (key, value)"
+        "VALUES (?1, ?2)";
 
     int rc = 0;
     sqlite3_stmt* stmt;
@@ -227,8 +230,8 @@ int mdb_set_pinfo_entry(mc_mdb_t* mdb, char* key, uint8_t* value, int size) {
     }
 
     /* Bind values to SQL statement */
-    if (sqlite3_bind_text(stmt, 0, key, -1, SQLITE_TRANSIENT) != SQLITE_OK ||
-        sqlite3_bind_blob(stmt, 1, value, size, SQLITE_TRANSIENT) != SQLITE_OK) {
+    if (sqlite3_bind_text(stmt, 1, key, -1, SQLITE_TRANSIENT) != SQLITE_OK ||
+        sqlite3_bind_blob(stmt, 2, value, size, SQLITE_TRANSIENT) != SQLITE_OK) {
 
         fprintf(stderr, "mdb_insert_pinfo_entry.sqlite3_bind_text: %s\n",
             sqlite3_errmsg(mdb->db));
@@ -238,7 +241,7 @@ int mdb_set_pinfo_entry(mc_mdb_t* mdb, char* key, uint8_t* value, int size) {
 
     /* Perform SQL statement */
     rc = sqlite3_step(stmt);
-    if (rc != SQLITE_OK) {
+    if (rc != SQLITE_DONE) {
         fprintf(stderr, "mdb_insert_pinfo_entry.sqlite3_step: %s\n",
             sqlite3_errmsg(mdb->db));
 
@@ -271,12 +274,8 @@ int mdb_set_pinfo_entry(mc_mdb_t* mdb, char* key, uint8_t* value, int size) {
 int mdb_set_pconf_entry(mc_mdb_t* mdb, char* key, uint8_t* value, int size) {
 
     const char* insert_query =
-        "INSERT INTO project_conf"
-        "    (key, value)"
-        "VALUES"
-        "    (?, ?)"
-        "ON DUPLICATE KEY UPDATE"
-        "    value = VALUES(value)";
+        "REPLACE INTO project_info (key, value)"
+        "VALUES (?, ?)";
 
     int rc = 0;
     sqlite3_stmt* stmt;
@@ -302,7 +301,7 @@ int mdb_set_pconf_entry(mc_mdb_t* mdb, char* key, uint8_t* value, int size) {
 
     /* Perform SQL statement */
     rc = sqlite3_step(stmt);
-    if (rc != SQLITE_OK) {
+    if (rc != SQLITE_DONE) {
         fprintf(stderr, "mdb_insert_pconf_entry.sqlite3_step: %s\n",
             sqlite3_errmsg(mdb->db));
 
