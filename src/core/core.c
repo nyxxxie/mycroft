@@ -19,35 +19,41 @@ mc_ctx_t* mycroft_init() {
 
     ctx->config = (mc_config_t*)malloc(sizeof(mc_config_t));
     if (ctx->config == NULL) {
-        perror("Failed to allocate space for mc_ctx_t");
+        perror("Failed to allocate space for mc_config_t");
         return NULL;
     }
+    cfg_init(ctx->config);
 
     ctx->db = (mc_mdb_t*)malloc(sizeof(mc_mdb_t));
     if (ctx->db == NULL) {
-        perror("Failed to allocate space for mc_ctx_t");
+        perror("Failed to allocate space for mc_mdb_t");
         return NULL;
     }
+    mdb_init(ctx->db);
 
     ctx->file = (mc_file_t*)malloc(sizeof(mc_file_t));
     if (ctx->file == NULL) {
-        perror("Failed to allocate space for mc_ctx_t");
+        perror("Failed to allocate space for mc_file_t");
         return NULL;
     }
+    file_init(ctx->file);
 
     return ctx;
 }
 
 void mycroft_free(mc_ctx_t* ctx) {
     if (ctx != NULL) {
-        if (ctx->file != NULL) {
-            file_close(ctx->file);
-            free(ctx->file);
+        if (ctx->config != NULL) {
+            cfg_close(ctx->config);
+            free(ctx->config);
         }
-
         if (ctx->db != NULL) {
             mdb_close(ctx->db);
             free(ctx->db);
+        }
+        if (ctx->file != NULL) {
+            file_close(ctx->file);
+            free(ctx->file);
         }
 
         free(ctx);
@@ -60,14 +66,15 @@ int mycroft_open_config(mc_ctx_t* ctx, const char* target_filename) {
 
 int mycroft_open_file(mc_ctx_t* ctx, const char* target_filename) {
 
+    int b = strlen(target_filename);
+    char mdb_filename[b + 5];
+
     /* Open target file */
     if (file_open(ctx->file, target_filename) < 0) {
         return -1;
     }
 
     /* Generate the mdb filename from the target's filename */
-    int b = strlen(target_filename);
-    char mdb_filename[b + 5];
     strcpy(mdb_filename, target_filename);
     mdb_filename[b]   = '.';
     mdb_filename[b+1] = 'm';
