@@ -1,9 +1,102 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <openssl/sha.h>
 #include "database.h"
 #include "file.h"
+
+#define MDB_TABLE_PROJECT_INFO "project_info"
+#define MDB_TABLE_PROJECT_CONF "project_conf"
+
+/** Query used by mdb_kv_put_* functions to insert a kv pair */
+static char* kv_put_query =
+    "INSERT OR REPLACE INTO ? (key, value)"
+    "VALUES (?, ?)";
+
+static char* kv_get_query =
+    "SELECT value"
+    "FROM ?"
+    "WHERE key == ?";
+
+int stmt_cleanup(mc_mdb_t* mdb, sqlite3_stmt* stmt) {
+
+    int rc = sqlite3_finalize(stmt);
+    if (rc != SQLITE_OK) {
+        fprintf(stderr, "stmt_cleanup.sqlite3_finalize: %s\n",
+            __func__, sqlite3_errmsg(mdb->db));
+
+        return -1;
+    }
+
+    return 0;
+}
+
+int stmt_put_init(mc_mdb_t* mdb, sqlite3_stmt** stmt) {
+
+    int rc = sqlite3_prepare_v2(mdb->db, kv_put_query, -1, stmt, NULL);
+    if (rc != SQLITE_OK) {
+        fprintf(stderr, "stmt_get_init.sqlite3_prepare_v2: %s\n",
+            sqlite3_errmsg(mdb->db));
+
+        return -1;
+    }
+
+    return 0;
+}
+
+int stmt_put_run(mc_mdb_t* mdb, sqlite3_stmt* stmt) {
+
+    int rc = sqlite3_step(stmt);
+    if (rc != SQLITE_DONE) {
+        fprintf(stderr, "stmt_get_run.sqlite3_step: %s\n",
+            sqlite3_errmsg(mdb->db));
+
+        return -1;
+    }
+
+    return 0;
+}
+
+int stmt_get_perform(mc_mdb_t* mdb, sqlite3_stmt** stmt, const char* table, const char* key) {
+
+    int rc = 0;
+
+    /* Create SQL prepared statement */
+    rc = sqlite3_prepare_v2(mdb->db, kv_get_query, -1, stmt, NULL);
+    if (rc != SQLITE_OK) {
+
+        fprintf(stderr, "stmt_get_perform.sqlite3_prepare_v2: %s\n",
+            sqlite3_errmsg(mdb->db));
+
+        return -1;
+    }
+
+    /* Bind values to SQL statement */
+    if (sqlite3_bind_text(*stmt, 1, table, -1, SQLITE_TRANSIENT) != SQLITE_OK ||
+        sqlite3_bind_text(*stmt, 2, key, -1, SQLITE_TRANSIENT) != SQLITE_OK) {
+
+        fprintf(stderr, "stmt_get_perform.sqlite3_bind_text: %s\n",
+            sqlite3_errmsg(mdb->db));
+
+        return -1;
+    }
+
+    /* Perform SQL operation */
+    rc = sqlite3_step(*stmt);
+    if (rc != SQLITE_DONE) {
+        if (rc == SQLITE_ROW) {
+            fprintf(stderr, "stmt_get_perform.sqlite_step: Somehow query returned"
+                "multiple rows.  Report this.");
+        }
+        else {
+            fprintf(stderr, "stmt_get_perform.sqlite3_step: %s\n",
+                sqlite3_errmsg(mdb->db));
+        }
+
+        return -1;
+    }
+
+    return 0;
+}
 
 /**
  * This function initializes a given mycroft db context.  You MUST call this
@@ -155,16 +248,13 @@ int mdb_set_project(mc_mdb_t* mdb, mc_ctx_t* ctx) {
     char* tmp = NULL;
 
     /* Set the file's name and size in the db. */
-    tmp = file_name(ctx->file);
-    if (mdb_set_pinfo_entry(mdb, "file_name", tmp, strlen(tmp))) {
+    if (mdb_set_file_name(mdb, file_name(ctx->file))) {
         return -1;
     }
-    tmp = file_path(ctx->file);
-    if (mdb_set_pinfo_entry(mdb, "file_path", tmp, strlen(tmp))) {
+    if (mdb_set_file_path(mdb, file_path(ctx->file))) {
         return -1;
     }
-    fsize_t fsize = file_size(ctx->file);
-    if (mdb_set_pinfo_entry(mdb, "file_size", (uint8_t*)&fsize, sizeof(fsize_t))) {
+    if (mdb_set_file_size(mdb, file_size(ctx->file))) {
         return -1;
     }
 
@@ -185,14 +275,12 @@ int mdb_set_project(mc_mdb_t* mdb, mc_ctx_t* ctx) {
         SHA256_Update(&shactx, readbuf, amnt);
     }
 
-    char hash[SHA_DIGEST_LENGTH];
-    SHA256_Final(hash, &shactx);
+    mdb_hash_t hash;
+    SHA256_Final(hash.bytes, &shactx);
 
-    if (mdb_set_pinfo_entry(mdb, "file_hash", hash, sizeof(hash))) {
+    if (mdb_set_file_hash(mdb, &hash)) {
         return -1;
     }
-
-    /* */
 
     return 0;
 }
@@ -201,119 +289,258 @@ int mdb_load_project(mc_mdb_t* mdb, mc_ctx_t* ctx) {
 
 }
 
-/**
- * Inserts a key/value pair into the project_info table in the mdb.  Updates
- * the value if it already exists.
- *
- * @param mdb Mycroft db context to operate on.
- * @param key Entry key.
- * @param value Entry value.
- *
- * @return Returns 0 on success, negative value on error.
- */
-int mdb_set_pinfo_entry(mc_mdb_t* mdb, char* key, uint8_t* value, int size) {
+int mdb_set_file_size(mc_mdb_t* mdb, int size) {
+    return mdb_kv_put_int(mdb, MDB_TABLE_PROJECT_INFO, "file_size", size);
+}
 
-    const char* insert_query =
-        "REPLACE INTO project_info (key, value)"
-        "VALUES (?1, ?2)";
+int mdb_get_file_size(mc_mdb_t* mdb, int* size) {
+    return mdb_kv_get_int(mdb, MDB_TABLE_PROJECT_INFO, "file_size", size);
+}
+
+int mdb_set_file_name(mc_mdb_t* mdb, const char* name) {
+    return mdb_kv_put_str(mdb, MDB_TABLE_PROJECT_INFO, "file_name", name);
+}
+
+int mdb_get_file_name(mc_mdb_t* mdb, membuf_t* name) {
+    return mdb_kv_get_str(mdb, MDB_TABLE_PROJECT_INFO, "file_name", name);
+}
+
+int mdb_set_file_path(mc_mdb_t* mdb, const char* path) {
+    return mdb_kv_put_str(mdb, MDB_TABLE_PROJECT_INFO, "file_path", path);
+}
+
+int mdb_get_file_path(mc_mdb_t* mdb, membuf_t* path) {
+    return mdb_kv_get_str(mdb, MDB_TABLE_PROJECT_INFO, "file_path", path);
+}
+
+int mdb_set_file_hash(mc_mdb_t* mdb, mdb_hash_t* hash) {
+    return mdb_kv_put_raw(mdb, MDB_TABLE_PROJECT_INFO, "file_hash", hash->bytes, sizeof(hash));
+}
+
+int mdb_get_file_hash(mc_mdb_t* mdb, mdb_hash_t* hash) {
 
     int rc = 0;
     sqlite3_stmt* stmt;
 
-    /* Prepate SQL statement */
-    rc = sqlite3_prepare_v2(mdb->db, insert_query, -1, &stmt, NULL);
-    if (rc != SQLITE_OK) {
-        fprintf(stderr, "mdb_insert_pinfo_entry.sqlite3_prepare_v2: %s\n",
-            sqlite3_errmsg(mdb->db));
-
+    /* Perform query */
+    rc = stmt_get_perform(mdb, &stmt, MDB_TABLE_PROJECT_INFO, "file_hash");
+    if (rc < 0) {
         return -1;
     }
 
-    /* Bind values to SQL statement */
-    if (sqlite3_bind_text(stmt, 1, key, -1, SQLITE_TRANSIENT) != SQLITE_OK ||
-        sqlite3_bind_blob(stmt, 2, value, size, SQLITE_TRANSIENT) != SQLITE_OK) {
+    /* Copy column text to hash */
+    void* bytes = sqlite3_column_blob(stmt, 1);  // sqlite frees these bytes later, so we need to copy them
+    memcpy(hash->bytes, bytes, sizeof(hash));
 
-        fprintf(stderr, "mdb_insert_pinfo_entry.sqlite3_bind_text: %s\n",
-            sqlite3_errmsg(mdb->db));
-
-        return -1;
-    }
-
-    /* Perform SQL statement */
-    rc = sqlite3_step(stmt);
-    if (rc != SQLITE_DONE) {
-        fprintf(stderr, "mdb_insert_pinfo_entry.sqlite3_step: %s\n",
-            sqlite3_errmsg(mdb->db));
-
-        return -1;
-    }
-
-    /* Delete SQL statement */
-    rc = sqlite3_finalize(stmt);
-    if (rc != SQLITE_OK) {
-        fprintf(stderr, "mdb_insert_pinfo_entry.sqlite3_finalize: %s\n",
-            sqlite3_errmsg(mdb->db));
-
+    /* Clean up */
+    rc = stmt_cleanup(mdb, stmt);
+    if (rc < 0) {
         return -1;
     }
 
     return 0;
-
 }
 
-/**
- * Inserts a key/value pair into the project_conf table in the mdb.  Updates
- * the value if it already exists.
- *
- * @param mdb Mycroft db context to operate on.
- * @param key Entry key.
- * @param value Entry value.
- *
- * @return Returns 0 on success, negative value on error.
- */
-int mdb_set_pconf_entry(mc_mdb_t* mdb, char* key, uint8_t* value, int size) {
+int mdb_validate(mc_mdb_t* mdb) {
+    return -1;  // TODO: implement
+}
 
-    const char* insert_query =
-        "REPLACE INTO project_info (key, value)"
-        "VALUES (?, ?)";
+int mdb_kv_put_int(mc_mdb_t* mdb, const char* table, const char* key, int val) {
 
     int rc = 0;
     sqlite3_stmt* stmt;
 
-    /* Prepate SQL statement */
-    rc = sqlite3_prepare_v2(mdb->db, insert_query, -1, &stmt, NULL);
-    if (rc != SQLITE_OK) {
-        fprintf(stderr, "mdb_insert_pconf_entry.sqlite3_prepare_v2: %s\n",
-            sqlite3_errmsg(mdb->db));
-
+    /* Initialize the sql statement */
+    rc = stmt_put_init(mdb, &stmt);
+    if (rc < 0) {
         return -1;
     }
 
     /* Bind values to SQL statement */
-    if (sqlite3_bind_text(stmt, 0, key, -1, SQLITE_TRANSIENT) != SQLITE_OK ||
-        sqlite3_bind_blob(stmt, 1, value, size, SQLITE_TRANSIENT) != SQLITE_OK) {
+    if (sqlite3_bind_text(stmt, 1, table, -1, SQLITE_TRANSIENT) != SQLITE_OK ||
+        sqlite3_bind_text(stmt, 2, key, -1, SQLITE_TRANSIENT) != SQLITE_OK ||
+        sqlite3_bind_int(stmt, 3, val) != SQLITE_OK) {
 
-        fprintf(stderr, "mdb_insert_pconf_entry.sqlite3_bind_text: %s\n",
+        fprintf(stderr, "mdb_kv_put_int.sqlite3_bind_text: %s\n",
             sqlite3_errmsg(mdb->db));
 
         return -1;
     }
 
-    /* Perform SQL statement */
-    rc = sqlite3_step(stmt);
-    if (rc != SQLITE_DONE) {
-        fprintf(stderr, "mdb_insert_pconf_entry.sqlite3_step: %s\n",
+    /* Perform SQL operation */
+    rc = stmt_put_run(mdb, stmt);
+    if (rc < 0) {
+        return -1;
+    }
+
+    /* Clean up */
+    rc = stmt_cleanup(mdb, stmt);
+    if (rc < 0) {
+        return -1;
+    }
+
+    return 0;
+}
+
+int mdb_kv_put_str(mc_mdb_t* mdb, const char* table, const char* key, const char* val) {
+
+    int rc = 0;
+    sqlite3_stmt* stmt;
+
+    /* Initialize the sql statement */
+    rc = stmt_put_init(mdb, &stmt);
+    if (rc < 0) {
+        return -1;
+    }
+
+    /* Bind values to SQL statement */
+    if (sqlite3_bind_text(stmt, 1, table, -1, SQLITE_TRANSIENT) != SQLITE_OK ||
+        sqlite3_bind_text(stmt, 2, key, -1, SQLITE_TRANSIENT) != SQLITE_OK ||
+        sqlite3_bind_text(stmt, 3, val, strlen(val), SQLITE_TRANSIENT) != SQLITE_OK) {
+
+        fprintf(stderr, "mdb_kv_put_str.sqlite3_bind_text: %s\n",
             sqlite3_errmsg(mdb->db));
 
         return -1;
     }
 
-    /* Delete SQL statement */
-    rc = sqlite3_finalize(stmt);
-    if (rc != SQLITE_OK) {
-        fprintf(stderr, "mdb_insert_pconf_entry.sqlite3_finalize: %s\n",
+    /* Perform SQL operation */
+    rc = stmt_put_run(mdb, stmt);
+    if (rc < 0) {
+        return -1;
+    }
+
+    /* Clean up */
+    rc = stmt_cleanup(mdb, stmt);
+    if (rc < 0) {
+        return -1;
+    }
+
+    return 0;
+}
+
+int mdb_kv_put_raw(mc_mdb_t* mdb, const char* table, const char* key, void* val, int size) {
+
+    int rc = 0;
+    sqlite3_stmt* stmt;
+
+    /* Initialize the sql statement */
+    rc = stmt_put_init(mdb, &stmt);
+    if (rc < 0) {
+        return -1;
+    }
+
+    /* Bind values to SQL statement */
+    if (sqlite3_bind_text(stmt, 1, table, -1, SQLITE_TRANSIENT) != SQLITE_OK ||
+        sqlite3_bind_text(stmt, 2, key, -1, SQLITE_TRANSIENT) != SQLITE_OK ||
+        sqlite3_bind_blob(stmt, 3, val, size, SQLITE_TRANSIENT) != SQLITE_OK) {
+
+        fprintf(stderr, "mdb_kv_put_raw.sqlite3_bind_text: %s\n",
             sqlite3_errmsg(mdb->db));
 
+        return -1;
+    }
+
+    /* Perform SQL operation */
+    rc = stmt_put_run(mdb, stmt);
+    if (rc < 0) {
+        return -1;
+    }
+
+    /* Clean up */
+    rc = stmt_cleanup(mdb, stmt);
+    if (rc < 0) {
+        return -1;
+    }
+
+    return 0;
+}
+
+int mdb_kv_get_int(mc_mdb_t* mdb, const char* table, const char* key, int* val) {
+
+    int rc = 0;
+    sqlite3_stmt* stmt;
+
+    /* Perform query */
+    rc = stmt_get_perform(mdb, &stmt, table, key);
+    if (rc < 0) {
+        return -1;
+    }
+
+    /* Get desired SQL value */
+    *val = sqlite3_column_int(stmt, 1);
+
+    /* Clean up */
+    rc = stmt_cleanup(mdb, stmt);
+    if (rc < 0) {
+        return -1;
+    }
+
+    return 0;
+}
+
+int mdb_kv_get_str(mc_mdb_t* mdb, const char* table, const char* key, membuf_t* buf) {
+
+    int rc = 0;
+    sqlite3_stmt* stmt;
+
+    /* Perform query */
+    rc = stmt_get_perform(mdb, &stmt, table, key);
+    if (rc < 0) {
+        return -1;
+    }
+
+    /* Init membuf */
+    rc = membuf_init(buf, MEMBUF_HEAP);
+    if (rc < 0) {
+        return -1;
+    }
+
+    /* Copy column text to membuf */
+    rc = membuf_copybytes(buf,
+        sqlite3_column_text(stmt, 1),
+        sqlite3_column_bytes(stmt, 1) + 1);
+    if (rc < 0) {
+        return -1;
+    }
+
+    /* Clean up */
+    rc = stmt_cleanup(mdb, stmt);
+    if (rc < 0) {
+        return -1;
+    }
+
+    return 0;
+}
+
+int mdb_kv_get_raw(mc_mdb_t* mdb, const char* table, const char* key, membuf_t* buf) {
+
+    int rc = 0;
+    sqlite3_stmt* stmt;
+
+    /* Perform query */
+    rc = stmt_get_perform(mdb, &stmt, table, key);
+    if (rc < 0) {
+        return -1;
+    }
+
+    /* Init membuf */
+    rc = membuf_init(buf, MEMBUF_HEAP);
+    if (rc < 0) {
+        return -1;
+    }
+
+    /* Copy column text to membuf */
+    rc = membuf_copybytes(buf,
+        sqlite3_column_blob(stmt, 1),
+        sqlite3_column_bytes(stmt, 1));
+    if (rc < 0) {
+        return -1;
+    }
+
+    /* Clean up */
+    rc = stmt_cleanup(mdb, stmt);
+    if (rc < 0) {
         return -1;
     }
 

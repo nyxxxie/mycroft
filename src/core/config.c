@@ -7,7 +7,17 @@ void load_default_values(mc_config_t* config) {
     config->db_strip_orig_ext = 0;
 }
 
+void cfg_init(mc_config_t* ctx) {
+    load_default_values(ctx);
+}
+
+void cfg_close(mc_config_t* ctx) {
+
+}
+
 void cfg_load_file(mc_config_t* config, const char* custom_location) {
+
+    //TODO: change this to make it more neat
 
     FILE* fp = NULL;
 

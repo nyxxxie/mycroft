@@ -16,6 +16,10 @@ struct mc_config_t {
 
 static mc_config_t g_config;
 
+/* Init/free */
+void cfg_init(mc_config_t* ctx);
+void cfg_close(mc_config_t* ctx);
+
 void cfg_init_global();
 void cfg_load_default_values(mc_config_t* config);
 void cfg_load_file(mc_config_t* config, const char* custom_location);

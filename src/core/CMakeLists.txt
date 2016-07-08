@@ -27,6 +27,7 @@ set(SRC
     config.c
     config_parse.c
     database.c
+    membuf.c
 )
 
 # Save me from manually including the files ;)
