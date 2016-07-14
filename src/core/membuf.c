@@ -34,4 +34,6 @@ int membuf_close(membuf_t* mb) {
     if (mb->data != NULL) {
         free(mb->data);
     }
+
+    return 0;
 }
