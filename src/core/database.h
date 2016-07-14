@@ -16,8 +16,9 @@ struct mc_mdb_t {
     sqlite3* db;
 };
 
+#define MDB_HASH_SIZE SHA_DIGEST_LENGTH
 typedef struct {
-    unsigned char bytes[SHA_DIGEST_LENGTH];
+    unsigned char bytes[MDB_HASH_SIZE];
 } mdb_hash_t;
 
 /* Init/free functions */

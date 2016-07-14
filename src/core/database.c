@@ -350,7 +350,7 @@ int mdb_get_file_path(mc_mdb_t* mdb, membuf_t* path) {
 }
 
 int mdb_set_file_hash(mc_mdb_t* mdb, mdb_hash_t* hash) {
-    return mdb_kv_put_raw(mdb, MDB_TABLE_PROJECT_INFO, "file_hash", hash->bytes, sizeof(hash));
+    return mdb_kv_put_raw(mdb, MDB_TABLE_PROJECT_INFO, "file_hash", hash->bytes, MDB_HASH_SIZE);
 }
 
 int mdb_get_file_hash(mc_mdb_t* mdb, mdb_hash_t* hash) {
@@ -365,8 +365,8 @@ int mdb_get_file_hash(mc_mdb_t* mdb, mdb_hash_t* hash) {
     }
 
     /* Copy column text to hash */
-    void* bytes = sqlite3_column_blob(stmt, 1);  // sqlite frees these bytes later, so we need to copy them
-    memcpy(hash->bytes, bytes, sizeof(hash));
+    void* bytes = sqlite3_column_blob(stmt, 0);  // sqlite frees these bytes later, so we need to copy them
+    memcpy(hash->bytes, bytes, MDB_HASH_SIZE);
 
     /* Clean up */
     rc = stmt_cleanup(mdb, stmt);

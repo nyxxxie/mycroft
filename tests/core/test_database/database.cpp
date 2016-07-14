@@ -181,12 +181,12 @@ TEST(db, get_file_hash) {
     ASSERT_EQ(mdb_load_db(&mdb, "res/buttdb1"), 0);
 
     mdb_hash_t expected_hash;
-    memset(expected_hash.bytes, 'x', sizeof(expected_hash.bytes));
+    memset(expected_hash.bytes, 'x', MDB_HASH_SIZE);
 
     mdb_hash_t hash;
     mdb_get_file_hash(&mdb, &hash);
 
-    ASSERT_EQ(memcmp(hash.bytes, expected_hash.bytes, sizeof(hash.bytes)), 0);
+    ASSERT_EQ(memcmp(hash.bytes, expected_hash.bytes, MDB_HASH_SIZE), 0);
 
     ASSERT_EQ(mdb_close(&mdb), 0);
 }
