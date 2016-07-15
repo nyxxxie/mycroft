@@ -1,13 +1,13 @@
 #ifndef MYCROFT_CONFIG_H
 #define MYCROFT_CONFIG_H
 
-#include "core.h"
-
-#define CMAKE_INSTALL_PREFIX ""
-
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+#include "core.h"
+
+#define CMAKE_INSTALL_PREFIX ""
 
 struct mc_config_t {
     int db_save_local;

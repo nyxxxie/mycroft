@@ -1,13 +1,13 @@
 #ifndef MYCROFT_FILE_H
 #define MYCROFT_FILE_H
 
-#include <stdint.h>
-#include <stdio.h>
-#include "core.h"
-
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+#include <stdint.h>
+#include <stdio.h>
+#include "core.h"
 
 /** Size used by internal file functions */
 typedef long int fsize_t;
