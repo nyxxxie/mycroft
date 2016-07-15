@@ -6,14 +6,14 @@
 #include <QSplitter>
 #include <QVBoxLayout>
 
-#include "hexedit.h"
+#include "hexeditor.h"
 #include "templateeditor.h"
 
 class MainEditor : public QWidget {
 
     Q_OBJECT
 
-    QTextEdit* hexedit;
+    HexEditor* hexedit;
     TemplateEditor* tedit;
 
     QVBoxLayout* layout;

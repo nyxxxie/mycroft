@@ -13,6 +13,7 @@ set(SRC
     main.cpp
     mainwindow.cpp
     maineditor.cpp
+    hexeditor.cpp
     templateeditor.cpp
     templatemodel.cpp
     templatenode.cpp
