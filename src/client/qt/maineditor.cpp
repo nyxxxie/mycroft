@@ -5,7 +5,7 @@ void MainEditor::InitTemplateEditor() {
 }
 
 void MainEditor::InitHexEditor() {
-    hexedit = new QTextEdit();
+    hexedit = new HexEditor();
 }
 
 MainEditor::MainEditor() : QWidget() {
@@ -20,8 +20,13 @@ MainEditor::MainEditor() : QWidget() {
     splitter->addWidget(hexedit);
     splitter->addWidget(tedit);
 
+    /* Make the bottom editor maintain split size on window resize */
+    splitter->setStretchFactor(0, 1);
+    splitter->setStretchFactor(1, 0);
+
+    /* Place split in layout */
     layout = new QVBoxLayout();
-    layout->setContentsMargins(0,0,0,0);
+    layout->setContentsMargins(0,0,0,0); // removes the weird border
     layout->addWidget(splitter);
 
     setLayout(layout);

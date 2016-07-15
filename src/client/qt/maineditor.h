@@ -1,10 +1,12 @@
 #ifndef MAINEDITOR_H
 #define MAINEDITOR_H
 
+#include <QWidget>
 #include <QTextEdit>
 #include <QSplitter>
 #include <QVBoxLayout>
 
+#include "hexedit.h"
 #include "templateeditor.h"
 
 class MainEditor : public QWidget {
