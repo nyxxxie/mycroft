@@ -71,6 +71,116 @@ int stmt_put_run(mc_mdb_t* mdb, sqlite3_stmt* stmt) {
     return 0;
 }
 
+int mdb_kv_put_int(mc_mdb_t* mdb, const char* table, const char* key, int val) {
+
+    int rc = 0;
+    sqlite3_stmt* stmt;
+
+    /* Initialize the sql statement */
+    rc = stmt_put_init(mdb, &stmt, table);
+    if (rc < 0) {
+        return -1;
+    }
+
+    // TODO: refactor these functions to just take a sqlite_value or w/e.
+    //       then we can just pass that and make the rest of this generic.
+
+    /* Bind values to SQL statement */
+    if (sqlite3_bind_text(stmt, 1, key, -1, SQLITE_TRANSIENT) != SQLITE_OK ||
+        sqlite3_bind_int(stmt, 2, val) != SQLITE_OK) {
+
+        fprintf(stderr, "mdb_kv_put_int.sqlite3_bind_text: %s\n",
+            sqlite3_errmsg(mdb->db));
+
+        return -1;
+    }
+
+    /* Perform SQL operation */
+    rc = stmt_put_run(mdb, stmt);
+    if (rc < 0) {
+        return -1;
+    }
+
+    /* Clean up */
+    rc = stmt_cleanup(mdb, stmt);
+    if (rc < 0) {
+        return -1;
+    }
+
+    return 0;
+}
+
+int mdb_kv_put_str(mc_mdb_t* mdb, const char* table, const char* key, const char* val) {
+
+    int rc = 0;
+    sqlite3_stmt* stmt;
+
+    /* Initialize the sql statement */
+    rc = stmt_put_init(mdb, &stmt, table);
+    if (rc < 0) {
+        return -1;
+    }
+
+    /* Bind values to SQL statement */
+    if (sqlite3_bind_text(stmt, 1, key, -1, SQLITE_TRANSIENT) != SQLITE_OK ||
+        sqlite3_bind_text(stmt, 2, val, strlen(val), SQLITE_TRANSIENT) != SQLITE_OK) {
+
+        fprintf(stderr, "mdb_kv_put_str.sqlite3_bind_text: %s\n",
+            sqlite3_errmsg(mdb->db));
+
+        return -1;
+    }
+
+    /* Perform SQL operation */
+    rc = stmt_put_run(mdb, stmt);
+    if (rc < 0) {
+        return -1;
+    }
+
+    /* Clean up */
+    rc = stmt_cleanup(mdb, stmt);
+    if (rc < 0) {
+        return -1;
+    }
+
+    return 0;
+}
+
+int mdb_kv_put_raw(mc_mdb_t* mdb, const char* table, const char* key, void* val, int size) {
+
+    int rc = 0;
+    sqlite3_stmt* stmt;
+
+    /* Initialize the sql statement */
+    rc = stmt_put_init(mdb, &stmt, table);
+    if (rc < 0) {
+        return -1;
+    }
+
+    /* Bind values to SQL statement */
+    if (sqlite3_bind_text(stmt, 1, key, -1, SQLITE_TRANSIENT) != SQLITE_OK ||
+        sqlite3_bind_blob(stmt, 2, val, size, SQLITE_TRANSIENT) != SQLITE_OK) {
+
+        fprintf(stderr, "mdb_kv_put_raw.sqlite3_bind_text: %s\n",
+            sqlite3_errmsg(mdb->db));
+
+        return -1;
+    }
+
+    /* Perform SQL operation */
+    rc = stmt_put_run(mdb, stmt);
+    if (rc < 0) {
+        return -1;
+    }
+
+    /* Clean up */
+    rc = stmt_cleanup(mdb, stmt);
+    if (rc < 0) {
+        return -1;
+    }
+
+    return 0;
+}
 int stmt_get_perform(mc_mdb_t* mdb, sqlite3_stmt** stmt, const char* table, const char* key) {
 
     int rc = 0;
@@ -177,16 +287,13 @@ int mdb_create_default_tables(mc_mdb_t* mdb) {
         "value  BLOB)",
         "CREATE TABLE project_conf("
         "key    TEXT    UNIQUE,"
-        "value  BLOB)",
-        "CREATE TABLE boop("
-        "key    TEXT    UNIQUE,"
         "value  BLOB)"
     };
 
     // TODO: make function that creates a key/value table (so we can make more
     //       easily for testing
 
-    for (int i = 0; i < 3; i++) {
+    for (int i = 0; i < 2; i++) {
 
         sqlite3_stmt* stmt;
         int rc = 0;
@@ -325,12 +432,56 @@ int mdb_load_project(mc_mdb_t* mdb, mc_ctx_t* ctx) {
 
 }
 
+int mdb_kv_get_value(mc_mdb_t* mdb, const char* table, const char* key, sqlite3_value** val) {
+
+    int rc = 0;
+    sqlite3_stmt* stmt;
+    sqlite3_value* tmp;
+
+    /* Perform query */
+    rc = stmt_get_perform(mdb, &stmt, table, key);
+    if (rc < 0) {
+        return -1;
+    }
+
+    /* Get desired SQL value and duplicate it for thread safety */
+    tmp = sqlite3_column_value(stmt, 0);
+    *val = sqlite3_value_dup(tmp);
+    if (*val == NULL) {
+        //TODO: print reason
+        return -1;
+    }
+
+    /* Clean up */
+    rc = stmt_cleanup(mdb, stmt);
+    if (rc < 0) {
+        return -1;
+    }
+
+    return 0;
+}
+
 int mdb_set_file_size(mc_mdb_t* mdb, int size) {
     return mdb_kv_put_int(mdb, MDB_TABLE_PROJECT_INFO, "file_size", size);
 }
 
 int mdb_get_file_size(mc_mdb_t* mdb, int* size) {
-    return mdb_kv_get_int(mdb, MDB_TABLE_PROJECT_INFO, "file_size", size);
+
+    int rc = 0;
+    sqlite3_value* val;
+
+    /* Perform query */
+    rc = mdb_kv_get_value(mdb, MDB_TABLE_PROJECT_INFO, "file_size", &val);
+    if (rc < 0) {
+        return -1;
+    }
+
+    /* Get value */
+    *size = sqlite3_value_int(val);
+
+    /* Clean up and return */
+    sqlite3_value_free(val);
+    return 0;
 }
 
 int mdb_set_file_name(mc_mdb_t* mdb, const char* name) {
@@ -338,7 +489,27 @@ int mdb_set_file_name(mc_mdb_t* mdb, const char* name) {
 }
 
 int mdb_get_file_name(mc_mdb_t* mdb, membuf_t* name) {
-    return mdb_kv_get_str(mdb, MDB_TABLE_PROJECT_INFO, "file_name", name);
+
+    int rc = 0;
+    sqlite3_value* val;
+
+    /* Perform query */
+    rc = mdb_kv_get_value(mdb, MDB_TABLE_PROJECT_INFO, "file_name", &val);
+    if (rc < 0) {
+        return -1;
+    }
+
+    /* Get value */
+    rc = membuf_copybytes(name,
+        sqlite3_value_text(val),
+        sqlite3_value_bytes(val) + 1);
+    if (rc < 0) {
+        return -1;
+    }
+
+    /* Clean up and return */
+    sqlite3_value_free(val);
+    return 0;
 }
 
 int mdb_set_file_path(mc_mdb_t* mdb, const char* path) {
@@ -346,7 +517,27 @@ int mdb_set_file_path(mc_mdb_t* mdb, const char* path) {
 }
 
 int mdb_get_file_path(mc_mdb_t* mdb, membuf_t* path) {
-    return mdb_kv_get_str(mdb, MDB_TABLE_PROJECT_INFO, "file_path", path);
+
+    int rc = 0;
+    sqlite3_value* val;
+
+    /* Perform query */
+    rc = mdb_kv_get_value(mdb, MDB_TABLE_PROJECT_INFO, "file_path", &val);
+    if (rc < 0) {
+        return -1;
+    }
+
+    /* Get value */
+    rc = membuf_copybytes(path,
+        sqlite3_value_text(val),
+        sqlite3_value_bytes(val) + 1);
+    if (rc < 0) {
+        return -1;
+    }
+
+    /* Clean up and return */
+    sqlite3_value_free(val);
+    return 0;
 }
 
 int mdb_set_file_hash(mc_mdb_t* mdb, mdb_hash_t* hash) {
@@ -356,229 +547,23 @@ int mdb_set_file_hash(mc_mdb_t* mdb, mdb_hash_t* hash) {
 int mdb_get_file_hash(mc_mdb_t* mdb, mdb_hash_t* hash) {
 
     int rc = 0;
-    sqlite3_stmt* stmt;
+    sqlite3_value* val;
 
     /* Perform query */
-    rc = stmt_get_perform(mdb, &stmt, MDB_TABLE_PROJECT_INFO, "file_hash");
+    rc = mdb_kv_get_value(mdb, MDB_TABLE_PROJECT_INFO, "file_hash", &val);
     if (rc < 0) {
         return -1;
     }
 
-    /* Copy column text to hash */
-    void* bytes = sqlite3_column_blob(stmt, 0);  // sqlite frees these bytes later, so we need to copy them
+    /* Get value */
+    void* bytes = sqlite3_value_blob(val);
     memcpy(hash->bytes, bytes, MDB_HASH_SIZE);
 
-    /* Clean up */
-    rc = stmt_cleanup(mdb, stmt);
-    if (rc < 0) {
-        return -1;
-    }
-
+    /* Clean up and return */
+    sqlite3_value_free(val);
     return 0;
 }
 
 int mdb_validate(mc_mdb_t* mdb) {
     return -1;  // TODO: implement
-}
-
-int mdb_kv_put_int(mc_mdb_t* mdb, const char* table, const char* key, int val) {
-
-    int rc = 0;
-    sqlite3_stmt* stmt;
-
-    /* Initialize the sql statement */
-    rc = stmt_put_init(mdb, &stmt, table);
-    if (rc < 0) {
-        return -1;
-    }
-
-    // TODO: refactor these functions to just take a sqlite_value or w/e.
-    //       then we can just pass that and make the rest of this generic.
-
-    /* Bind values to SQL statement */
-    if (sqlite3_bind_text(stmt, 1, key, -1, SQLITE_TRANSIENT) != SQLITE_OK ||
-        sqlite3_bind_int(stmt, 2, val) != SQLITE_OK) {
-
-        fprintf(stderr, "mdb_kv_put_int.sqlite3_bind_text: %s\n",
-            sqlite3_errmsg(mdb->db));
-
-        return -1;
-    }
-
-    /* Perform SQL operation */
-    rc = stmt_put_run(mdb, stmt);
-    if (rc < 0) {
-        return -1;
-    }
-
-    /* Clean up */
-    rc = stmt_cleanup(mdb, stmt);
-    if (rc < 0) {
-        return -1;
-    }
-
-    return 0;
-}
-
-int mdb_kv_put_str(mc_mdb_t* mdb, const char* table, const char* key, const char* val) {
-
-    int rc = 0;
-    sqlite3_stmt* stmt;
-
-    /* Initialize the sql statement */
-    rc = stmt_put_init(mdb, &stmt, table);
-    if (rc < 0) {
-        return -1;
-    }
-
-    /* Bind values to SQL statement */
-    if (sqlite3_bind_text(stmt, 1, key, -1, SQLITE_TRANSIENT) != SQLITE_OK ||
-        sqlite3_bind_text(stmt, 2, val, strlen(val), SQLITE_TRANSIENT) != SQLITE_OK) {
-
-        fprintf(stderr, "mdb_kv_put_str.sqlite3_bind_text: %s\n",
-            sqlite3_errmsg(mdb->db));
-
-        return -1;
-    }
-
-    /* Perform SQL operation */
-    rc = stmt_put_run(mdb, stmt);
-    if (rc < 0) {
-        return -1;
-    }
-
-    /* Clean up */
-    rc = stmt_cleanup(mdb, stmt);
-    if (rc < 0) {
-        return -1;
-    }
-
-    return 0;
-}
-
-int mdb_kv_put_raw(mc_mdb_t* mdb, const char* table, const char* key, void* val, int size) {
-
-    int rc = 0;
-    sqlite3_stmt* stmt;
-
-    /* Initialize the sql statement */
-    rc = stmt_put_init(mdb, &stmt, table);
-    if (rc < 0) {
-        return -1;
-    }
-
-    /* Bind values to SQL statement */
-    if (sqlite3_bind_text(stmt, 1, key, -1, SQLITE_TRANSIENT) != SQLITE_OK ||
-        sqlite3_bind_blob(stmt, 2, val, size, SQLITE_TRANSIENT) != SQLITE_OK) {
-
-        fprintf(stderr, "mdb_kv_put_raw.sqlite3_bind_text: %s\n",
-            sqlite3_errmsg(mdb->db));
-
-        return -1;
-    }
-
-    /* Perform SQL operation */
-    rc = stmt_put_run(mdb, stmt);
-    if (rc < 0) {
-        return -1;
-    }
-
-    /* Clean up */
-    rc = stmt_cleanup(mdb, stmt);
-    if (rc < 0) {
-        return -1;
-    }
-
-    return 0;
-}
-
-int mdb_kv_get_int(mc_mdb_t* mdb, const char* table, const char* key, int* val) {
-
-    int rc = 0;
-    sqlite3_stmt* stmt;
-
-    /* Perform query */
-    rc = stmt_get_perform(mdb, &stmt, table, key);
-    if (rc < 0) {
-        return -1;
-    }
-
-    /* Get desired SQL value */
-    *val = sqlite3_column_int(stmt, 0);
-
-    /* Clean up */
-    rc = stmt_cleanup(mdb, stmt);
-    if (rc < 0) {
-        return -1;
-    }
-
-    return 0;
-}
-
-int mdb_kv_get_str(mc_mdb_t* mdb, const char* table, const char* key, membuf_t* buf) {
-
-    int rc = 0;
-    sqlite3_stmt* stmt;
-
-    /* Perform query */
-    rc = stmt_get_perform(mdb, &stmt, table, key);
-    if (rc < 0) {
-        return -1;
-    }
-
-    /* Init membuf */
-    rc = membuf_init(buf, MEMBUF_HEAP);
-    if (rc < 0) {
-        return -1;
-    }
-
-    /* Copy column text to membuf */
-    rc = membuf_copybytes(buf,
-        sqlite3_column_text(stmt, 0),
-        sqlite3_column_bytes(stmt, 0) + 1);
-    if (rc < 0) {
-        return -1;
-    }
-
-    /* Clean up */
-    rc = stmt_cleanup(mdb, stmt);
-    if (rc < 0) {
-        return -1;
-    }
-
-    return 0;
-}
-
-int mdb_kv_get_raw(mc_mdb_t* mdb, const char* table, const char* key, membuf_t* buf) {
-
-    int rc = 0;
-    sqlite3_stmt* stmt;
-
-    /* Perform query */
-    rc = stmt_get_perform(mdb, &stmt, table, key);
-    if (rc < 0) {
-        return -1;
-    }
-
-    /* Init membuf */
-    rc = membuf_init(buf, MEMBUF_HEAP);
-    if (rc < 0) {
-        return -1;
-    }
-
-    /* Copy column text to membuf */
-    rc = membuf_copybytes(buf,
-        sqlite3_column_blob(stmt, 0),
-        sqlite3_column_bytes(stmt, 0));
-    if (rc < 0) {
-        return -1;
-    }
-
-    /* Clean up */
-    rc = stmt_cleanup(mdb, stmt);
-    if (rc < 0) {
-        return -1;
-    }
-
-    return 0;
 }

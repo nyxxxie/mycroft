@@ -48,15 +48,6 @@ int mdb_get_file_hash(mc_mdb_t* mdb, mdb_hash_t* hash);
 /* Util functions */
 int mdb_validate(mc_mdb_t* mdb);
 
-/* Raw query functions */
-int mdb_kv_put_int(mc_mdb_t* mdb, const char* table, const char* key, int val);
-int mdb_kv_put_str(mc_mdb_t* mdb, const char* table, const char* key, const char* val);
-int mdb_kv_put_raw(mc_mdb_t* mdb, const char* table, const char* key, void* val, int size);
-
-int mdb_kv_get_int(mc_mdb_t* mdb, const char* table, const char* key, int* val);
-int mdb_kv_get_str(mc_mdb_t* mdb, const char* table, const char* key, membuf_t* buf);
-int mdb_kv_get_raw(mc_mdb_t* mdb, const char* table, const char* key, membuf_t* buf);
-
 #ifdef __cplusplus
 }
 #endif
