@@ -6,7 +6,7 @@ set(MYCROFT_QT_MINOR_VERSION 1)
 
 # Project name
 set(PROJECT_NAME mycroft-qt)
-project(${PROJECT_NAME})
+project(${PROJECT_NAME} CXX)
 
 # Source files
 set(SRC
@@ -30,4 +30,9 @@ set(CMAKE_AUTOMOC ON)
 
 # Specify the exe to be built
 add_executable(${PROJECT_NAME} ${SRC} ${UI_HEADERS} ${QRCS})
-target_link_libraries(${PROJECT_NAME}  Qt5::Widgets)
+
+# Link libraries
+target_link_libraries(${PROJECT_NAME} Qt5::Widgets)
+
+# Enable some C++ features we need
+target_compile_features(${PROJECT_NAME} PRIVATE cxx_generalized_initializers)
