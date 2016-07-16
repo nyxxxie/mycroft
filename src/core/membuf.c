@@ -1,5 +1,5 @@
 #include <string.h>
-#include "membuf.h"
+#include <mycroft/membuf.h>
 
 int membuf_init(membuf_t* mb, membuf_type type) {
     mb->size = 0;

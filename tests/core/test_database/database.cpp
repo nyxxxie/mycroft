@@ -1,7 +1,7 @@
 #include "gtest/gtest.h"
+#include <mycroft/mdb.h>
 #include "database.h"
 #include "file.h"
-#include "membuf.h"
 
 TEST(db, init) {
     mc_mdb_t mdb;

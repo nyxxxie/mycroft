@@ -1,6 +1,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <mycroft/mdb.h>
+#include <mycroft/membuf.h>
 #include "database.h"
 #include "file.h"
 

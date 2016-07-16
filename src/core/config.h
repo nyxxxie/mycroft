@@ -1,5 +1,5 @@
-#ifndef MYCROFT_CONFIG_H
-#define MYCROFT_CONFIG_H
+#ifndef MYCROFT_INT_CONFIG_H
+#define MYCROFT_INT_CONFIG_H
 
 #ifdef __cplusplus
 extern "C" {
@@ -28,4 +28,4 @@ void cfg_load_file(mc_config_t* config, const char* custom_location);
 }
 #endif
 
-#endif // MYCROFT_CONFIG_H
+#endif // MYCROFT_INT_CONFIG_H

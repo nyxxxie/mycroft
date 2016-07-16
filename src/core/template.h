@@ -1,5 +1,5 @@
-#ifndef MYCROFT_TEMPLATE_H
-#define MYCROFT_TEMPLATE_H
+#ifndef MYCROFT_INT_TEMPLATE_H
+#define MYCROFT_INT_TEMPLATE_H
 
 #include <stdint.h>
 #include "core.h"
@@ -62,4 +62,4 @@ int  mycroft_template_parse_file(mc_template_t* t, mc_file_t* file);
 }
 #endif
 
-#endif // TEMPLATE_H
+#endif // MYCROFT_INT_TEMPLATE_H

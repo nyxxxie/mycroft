@@ -1,12 +1,12 @@
-#ifndef MYCROFT_CORE_H
-#define MYCROFT_CORE_H
+#ifndef MYCROFT_INT_CORE_H
+#define MYCROFT_INT_CORE_H
 
 #include <mycroft/mycroft.h>
+#include <mycroft/file.h>
+#include <mycroft/mdb.h>
 
 /* Forward declarations */
 typedef struct mc_config_t mc_config_t;
-typedef struct mc_mdb_t mc_mdb_t;
-typedef struct mc_file_t mc_file_t;
 
 /** Represents the state of a file opened in mycroft */
 struct mc_ctx_t {
@@ -15,4 +15,4 @@ struct mc_ctx_t {
     mc_file_t*   file;
 };
 
-#endif // MYCROFT_CORE_H
+#endif // MYCROFT_INT_CORE_H

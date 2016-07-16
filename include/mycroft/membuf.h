@@ -26,4 +26,4 @@ int membuf_close(membuf_t* mb);
 }
 #endif
 
-#endif // MEMBUF_H
+#endif // MEMBUF_INT_H
