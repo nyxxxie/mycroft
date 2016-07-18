@@ -38,7 +38,6 @@ class HexEditor : public QAbstractScrollArea {
 
     int font_cwidth;
     int font_cheight;
-    int font_pheight;
 
     int text_offset;
     int row_offset;
@@ -66,6 +65,7 @@ public:
     int getNumLines();
     void setCurLine(int pos);
     void setCursor(int pos);
+    int getCursor();
 
     void setCurrentFile(mc_file_t* file);
 

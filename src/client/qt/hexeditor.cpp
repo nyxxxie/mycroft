@@ -23,7 +23,7 @@ void HexEditor::init() {
     addrbar_num_max = 0;
     hexarea_offset = 0;
     hexarea_width = 0;
-    hexarea_text_gap = 3;
+    hexarea_text_gap = 7;
     asciiarea_offset = 0;
     asciiarea_width = 0;
     textarea_width = 0;
@@ -32,26 +32,30 @@ void HexEditor::init() {
     textarea_rows_visible = 0;
 
     setFont(QFont("Courier", 11));
+    verticalScrollBar()->setValue(getCursor()/QMC_HEXEDIT_BYTESPERROW);
 }
 
 void HexEditor::adjust() {
 
-    if (curfile != NULL) {
-        textarea_width = 2*element_gap + addrbar_width + hexarea_width + asciiarea_width;
-        addrbar_num_max = QString("%1").arg(QString::number(file_size(curfile), 16)).size();
-        addrbar_width = ((addrbar_num_max+1)*font_cwidth) + (2*text_offset);
-        textarea_rows = file_size(curfile) / QMC_HEXEDIT_BYTESPERROW;
-        asciiarea_width = (QMC_HEXEDIT_BYTESPERROW*font_cwidth) + (2*text_offset);
-        hexarea_width = QMC_HEXEDIT_BYTESPERROW * (2*font_cwidth)
-            + (QMC_HEXEDIT_BYTESPERROW-1) * hexarea_text_gap
-            + (2*text_offset);
-        textarea_rows_visible = ((viewport()->height() / (font_cheight+row_offset)) + 1);
-    }
+    if (curfile == NULL)
+        return;
+
+    textarea_width = 2*element_gap + addrbar_width + hexarea_width + asciiarea_width;
+    addrbar_num_max = QString("%1").arg(QString::number(file_size(curfile), 16)).size();
+    addrbar_width = ((addrbar_num_max+1)*font_cwidth) + (2*text_offset);
+    textarea_rows = file_size(curfile) / QMC_HEXEDIT_BYTESPERROW;
+    asciiarea_width = (QMC_HEXEDIT_BYTESPERROW*font_cwidth) + (2*text_offset);
+    hexarea_width = QMC_HEXEDIT_BYTESPERROW * (2*font_cwidth)
+        + (QMC_HEXEDIT_BYTESPERROW-1) * hexarea_text_gap
+        + (2*text_offset);
+    textarea_rows_visible = ((viewport()->height() / (font_cheight+row_offset)) + 1);
 
     horizontalScrollBar()->setRange(0, textarea_width - viewport()->width());
     horizontalScrollBar()->setPageStep(viewport()->width());
-    //verticalScrollBar()->setRange();
-    //verticalScrollBar()->setPageStep(viewport->());
+    verticalScrollBar()->setRange(0, textarea_rows);
+    verticalScrollBar()->setPageStep(textarea_rows_visible);
+
+    setCurLine(verticalScrollBar()->value());
 }
 
 int HexEditor::getNumLines() {
@@ -59,7 +63,6 @@ int HexEditor::getNumLines() {
 }
 
 void HexEditor::setCurLine(int pos) {
-    textarea_rows_visible = pos;
     file_set_cursor(curfile, pos*QMC_HEXEDIT_BYTESPERROW);
 }
 
@@ -67,6 +70,12 @@ void HexEditor::setCursor(int pos) {
     file_set_cursor(curfile, pos);
 }
 
+int HexEditor::getCursor() {
+    if (curfile == NULL)
+        return 0;
+
+    return file_get_cursor(curfile);
+}
 
 void HexEditor::setCurrentFile(mc_file_t* file) {
     curfile = file;
@@ -81,8 +90,7 @@ void HexEditor::setFont(const QFont& font) {
 
     QFontMetrics fm(font);
     font_cwidth = fm.width(' ');
-    font_pheight = fm.height();
-    font_cheight = font_pheight / 2;
+    font_cheight = fm.height() / 2;
 
     adjust();
     viewport()->update();
@@ -104,7 +112,10 @@ void HexEditor::drawAddressBar(QPainter& painter) {
         QColor(255, 0, 0));
 
     /* Draw address part */
-    for (int row=1, addr=0; row <= textarea_rows_visible; row++, addr += QMC_HEXEDIT_BYTESPERROW) {
+    for (int row=1, addr=getCursor();
+        row <= textarea_rows_visible && addr < file_size(curfile);
+        row++, addr += QMC_HEXEDIT_BYTESPERROW) {
+
         painter.drawText(element_offset+text_offset,
             row*(font_cheight+row_offset),
             QString("%1h").arg(addr, addrbar_num_max, 16, QChar('0')).toUpper());
@@ -112,6 +123,7 @@ void HexEditor::drawAddressBar(QPainter& painter) {
 
     element_offset += addrbar_width + element_gap;
 }
+
 void HexEditor::drawHexContent(QPainter& painter) {
 
     hexarea_offset = element_offset;
@@ -206,12 +218,20 @@ void HexEditor::paintEvent(QPaintEvent *event) {
         drawNoFile(painter);
     }
     else {
-        element_offset = 0; // reset element start
+        element_offset = -horizontalScrollBar()->value();
 
         /* Draw stuff */
         drawAddressBar(painter);
         drawHexContent(painter);
         drawAsciiContent(painter);
+
+        painter.drawText(element_offset, font_cheight+row_offset, "DEBUG file info:");
+        painter.drawText(element_offset, 2*(font_cheight+row_offset),
+            QString("  size:     %1").arg(file_size(curfile)));
+        painter.drawText(element_offset, 3*(font_cheight+row_offset),
+            QString("  rows:     %1").arg(textarea_rows));
+        painter.drawText(element_offset, 4*(font_cheight+row_offset),
+            QString("  all rows: %1").arg(textarea_rows_visible));
 
         /* Figure out how much area is taken up by the drawn area */
         textarea_width = element_offset;
