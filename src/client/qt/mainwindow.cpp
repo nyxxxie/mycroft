@@ -1,11 +1,13 @@
 #include <QSizePolicy>
 #include "mainwindow.h"
 
-MainWindow::MainWindow() : QMainWindow() {
+MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent) {
 
     resize(800,600);
 
-    editor = new MainEditor();
+    ctx = NULL;
+
+    this->editor = new MainEditor(this);
     setCentralWidget(editor);
 }
 
@@ -18,11 +20,16 @@ void MainWindow::on_actionExit_triggered() {
 }
 
 void MainWindow::InitFilebrowser() {
-    filebrowser = new QTextEdit();
-    filebrowser->setText("filebrowser");
+    this->filebrowser = new QTextEdit();
+    this->filebrowser->setText("filebrowser");
 }
 
 void MainWindow::InitTools() {
-    tools = new QTextEdit();
-    tools->setText("tools");
+    this->tools = new QTextEdit();
+    this->tools->setText("tools");
+}
+
+void MainWindow::setMycroftCtx(mc_ctx_t* ctx) {
+    this->ctx = ctx;
+    this->editor->setMycroftCtx(ctx);
 }

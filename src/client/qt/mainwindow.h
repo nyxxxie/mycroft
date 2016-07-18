@@ -7,13 +7,14 @@
 #include <QSplitter>
 #include <QVBoxLayout>
 #include <QWidget>
+#include <mycroft/mycroft.h>
 #include "maineditor.h"
-
-// TODO: edit this to just host tabs.  Maybe also modify it to be the initialwindow as well?  (start off small for dragging files and etc, then expand to the hex edit tab view)
 
 class MainWindow : public QMainWindow
 {
     Q_OBJECT
+
+    mc_ctx_t* ctx;
 
     QWidget* window;
     QVBoxLayout* main_layout;
@@ -29,8 +30,10 @@ class MainWindow : public QMainWindow
     void InitTools();
 
 public:
-    MainWindow();
+    MainWindow(QWidget* parent = NULL);
     ~MainWindow();
+
+    void setMycroftCtx(mc_ctx_t* ctx);
 
 private slots:
     void on_actionExit_triggered();

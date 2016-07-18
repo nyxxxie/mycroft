@@ -1,14 +1,20 @@
 #include "maineditor.h"
 
 void MainEditor::InitTemplateEditor() {
-    tedit = new TemplateEditor();
+    tedit = new TemplateEditor(this);
 }
 
 void MainEditor::InitHexEditor() {
-    hexedit = new HexEditor();
+    hexedit = new HexEditor(this);
 }
 
-MainEditor::MainEditor() : QWidget() {
+void MainEditor::setMycroftCtx(mc_ctx_t* ctx) {
+    this->ctx = ctx;
+    hexedit->setCurrentFile(mycroft_get_file(ctx));
+}
+
+MainEditor::MainEditor(QWidget* parent)
+    : QWidget(parent) {
 
     /* Create the two main elements of this widget */
     InitTemplateEditor();

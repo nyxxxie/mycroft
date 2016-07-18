@@ -20,6 +20,10 @@ int main(int argc, char *argv[]) {
     /* Process parser arguments */
     parser.process(a);
     const QStringList args = parser.positionalArguments();
+    if (args.size() < 0) {
+        printf("You didn't specify a file to open, please do that.\n");
+        return 1;
+    }
 
     QString filename = args.at(0);
 
@@ -32,9 +36,23 @@ int main(int argc, char *argv[]) {
     printf("File: %s\n", filename.toStdString().c_str());
 
     /* Create mycroft instance */
+    mc_ctx_t* ctx = mycroft_init();
+    if (ctx == NULL) {
+        printf("Failed to instantiate mycroft context.\n");
+        return 1;
+    }
+
+    int rc = mycroft_open_file(ctx, filename.toStdString().c_str());
+    if (rc < 0) {
+        printf("Failed to open file.\n");
+        return 1;
+    }
+
+    //TODO: free mycroft instance somewhere?
 
     /* Create main window */
     MainWindow w;
+    w.setMycroftCtx(ctx);
     w.show();
 
     return a.exec();
