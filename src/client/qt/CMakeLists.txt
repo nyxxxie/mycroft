@@ -32,7 +32,7 @@ set(CMAKE_AUTOMOC ON)
 add_executable(${PROJECT_NAME} ${SRC} ${UI_HEADERS} ${QRCS})
 
 # Link libraries
-target_link_libraries(${PROJECT_NAME} Qt5::Widgets)
+target_link_libraries(${PROJECT_NAME} Qt5::Widgets mcore)
 
 # Enable some C++ features we need
 target_compile_features(${PROJECT_NAME} PRIVATE cxx_generalized_initializers)
