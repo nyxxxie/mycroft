@@ -64,15 +64,67 @@ int mycroft_open_config(mc_ctx_t* ctx, const char* target_filename) {
 
 }
 
+int set_project(mc_mdb_t* mdb, mc_ctx_t* ctx) {
+
+    char* tmp = NULL;
+
+    /* Set the file's name and size in the db. */
+    if (mdb_set_file_name(mdb, file_name(ctx->file))) {
+        return -1;
+    }
+    if (mdb_set_file_path(mdb, file_path(ctx->file))) {
+        return -1;
+    }
+    if (mdb_set_file_size(mdb, file_size(ctx->file))) {
+        return -1;
+    }
+
+    /* Hash the file and set the property in the table */
+    SHA256_CTX shactx;
+    SHA256_Init(&shactx);
+
+    char readbuf[1024];
+    while (1) {
+        int amnt = file_read(ctx->file, sizeof(readbuf), readbuf);
+        if (amnt == 0) {
+            break;
+        }
+        else if (amnt < 0) {
+            return -1;
+        }
+
+        SHA256_Update(&shactx, readbuf, amnt);
+    }
+
+    mdb_hash_t hash;
+    SHA256_Final(hash.bytes, &shactx);
+
+    if (mdb_set_file_hash(mdb, &hash)) {
+        return -1;
+    }
+
+    file_set_cursor(ctx->file, 0);
+
+    return 0;
+}
+
+int load_project(mc_mdb_t* mdb, mc_ctx_t* ctx) {
+
+}
+
+
 int mycroft_open_file(mc_ctx_t* ctx, const char* target_filename) {
 
     int b = strlen(target_filename);
     char mdb_filename[b + 5];
 
     /* Open target file */
+    printf("Opening %s\n", target_filename);
     if (file_open(ctx->file, target_filename) < 0) {
+        printf("NOOOO\n");
         return -1;
     }
+    printf("YEEE\n");
 
     /* Generate the mdb filename from the target's filename */
     strcpy(mdb_filename, target_filename);
@@ -88,17 +140,25 @@ int mycroft_open_file(mc_ctx_t* ctx, const char* target_filename) {
         if (mdb_load_db(ctx->db, mdb_filename) < 0) {
             return -1;
         }
-        if (mdb_set_project(ctx->db, ctx) < 0) {
+        if (set_project(ctx->db, ctx) < 0) {
             return -1;
         }
     } else {
         if (mdb_create_db(ctx->db, mdb_filename) < 0) {
             return -1;
         }
-        if (mdb_load_project(ctx->db, ctx) < 0) {
+        if (load_project(ctx->db, ctx) < 0) {
             return -1;
         }
     }
 
     return 0;
+}
+
+mc_file_t* mycroft_get_file(mc_ctx_t* ctx) {
+    return ctx->file;
+}
+
+mc_mdb_t*  mycroft_get_mdb(mc_ctx_t* ctx) {
+    return ctx->db;
 }

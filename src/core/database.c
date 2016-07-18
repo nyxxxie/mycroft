@@ -388,52 +388,6 @@ int mdb_load_db(mc_mdb_t* mdb, const char* filename) {
     return 0;
 }
 
-int mdb_set_project(mc_mdb_t* mdb, mc_ctx_t* ctx) {
-
-    char* tmp = NULL;
-
-    /* Set the file's name and size in the db. */
-    if (mdb_set_file_name(mdb, file_name(ctx->file))) {
-        return -1;
-    }
-    if (mdb_set_file_path(mdb, file_path(ctx->file))) {
-        return -1;
-    }
-    if (mdb_set_file_size(mdb, file_size(ctx->file))) {
-        return -1;
-    }
-
-    /* Hash the file and set the property in the table */
-    SHA256_CTX shactx;
-    SHA256_Init(&shactx);
-
-    char readbuf[1024];
-    while (1) {
-        int amnt = file_read(ctx->file, sizeof(readbuf), readbuf);
-        if (amnt == 0) {
-            break;
-        }
-        else if (amnt < 0) {
-            return -1;
-        }
-
-        SHA256_Update(&shactx, readbuf, amnt);
-    }
-
-    mdb_hash_t hash;
-    SHA256_Final(hash.bytes, &shactx);
-
-    if (mdb_set_file_hash(mdb, &hash)) {
-        return -1;
-    }
-
-    return 0;
-}
-
-int mdb_load_project(mc_mdb_t* mdb, mc_ctx_t* ctx) {
-
-}
-
 int mdb_kv_get_value(mc_mdb_t* mdb, const char* table, const char* key, sqlite3_value** val) {
 
     int rc = 0;

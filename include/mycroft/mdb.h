@@ -22,10 +22,6 @@ int mdb_close(mc_mdb_t* mdb);
 int mdb_create_db(mc_mdb_t* mdb, const char* filename);
 int mdb_load_db(mc_mdb_t* mdb, const char* filename);
 
-//TODO: move these to core.  They don't really belong here.
-int mdb_set_project(mc_mdb_t* mdb, mc_ctx_t* ctx);
-int mdb_load_project(mc_mdb_t* mdb, mc_ctx_t* ctx);
-
 /* Field query */
 int mdb_set_file_size(mc_mdb_t* mdb, int size);
 int mdb_get_file_size(mc_mdb_t* mdb, int* size);
