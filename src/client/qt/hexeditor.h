@@ -34,7 +34,9 @@ class HexEditor : public QAbstractScrollArea {
     int element_offset;
     int element_gap;
 
+    int rows_total;
     int rows_shown;
+    int rows_top; // TODO: use this to track top row instead of calculating it with file and using that
 
     int font_cwidth;
     int font_cheight;
@@ -54,9 +56,6 @@ class HexEditor : public QAbstractScrollArea {
     int asciiarea_width;
 
     int textarea_width;
-    int textarea_rows;
-    int textarea_toprow;
-    int textarea_rows_visible;
 
 public:
 
