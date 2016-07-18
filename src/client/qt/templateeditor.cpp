@@ -17,8 +17,8 @@ void TemplateEditor::init() {
         resizeColumnToContents(column);
 }
 
-TemplateEditor::TemplateEditor()
-    : QTreeView() {
+TemplateEditor::TemplateEditor(QWidget* parent)
+    : QTreeView(parent) {
     init();
 }
 
