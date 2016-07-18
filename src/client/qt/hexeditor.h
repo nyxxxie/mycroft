@@ -38,6 +38,7 @@ class HexEditor : public QAbstractScrollArea {
 
     int font_cwidth;
     int font_cheight;
+    int font_pheight;
 
     int text_offset;
     int row_offset;
@@ -53,9 +54,10 @@ class HexEditor : public QAbstractScrollArea {
     int asciiarea_offset;
     int asciiarea_width;
 
-    int textarea_width = 0;
-    int textarea_rows = 0;
-    int textarea_rows_visible = 0;
+    int textarea_width;
+    int textarea_rows;
+    int textarea_toprow;
+    int textarea_rows_visible;
 
 public:
 

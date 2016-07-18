@@ -28,13 +28,25 @@ void HexEditor::init() {
     asciiarea_width = 0;
     textarea_width = 0;
     textarea_rows = 0;
+    textarea_toprow = 0;
+    textarea_rows_visible = 0;
 
     setFont(QFont("Courier", 11));
 }
 
 void HexEditor::adjust() {
 
-    textarea_width = 2*element_gap + addrbar_width + hexarea_width + asciiarea_width;
+    if (curfile != NULL) {
+        textarea_width = 2*element_gap + addrbar_width + hexarea_width + asciiarea_width;
+        addrbar_num_max = QString("%1").arg(QString::number(file_size(curfile), 16)).size();
+        addrbar_width = ((addrbar_num_max+1)*font_cwidth) + (2*text_offset);
+        textarea_rows = file_size(curfile) / QMC_HEXEDIT_BYTESPERROW;
+        asciiarea_width = (QMC_HEXEDIT_BYTESPERROW*font_cwidth) + (2*text_offset);
+        hexarea_width = QMC_HEXEDIT_BYTESPERROW * (2*font_cwidth)
+            + (QMC_HEXEDIT_BYTESPERROW-1) * hexarea_text_gap
+            + (2*text_offset);
+        textarea_rows_visible = ((viewport()->height() / (font_cheight+row_offset)) + 1);
+    }
 
     horizontalScrollBar()->setRange(0, textarea_width - viewport()->width());
     horizontalScrollBar()->setPageStep(viewport()->width());
@@ -42,13 +54,25 @@ void HexEditor::adjust() {
     //verticalScrollBar()->setPageStep(viewport->());
 }
 
+int HexEditor::getNumLines() {
+    return textarea_rows;
+}
+
+void HexEditor::setCurLine(int pos) {
+    textarea_rows_visible = pos;
+    file_set_cursor(curfile, pos*QMC_HEXEDIT_BYTESPERROW);
+}
+
+void HexEditor::setCursor(int pos) {
+    file_set_cursor(curfile, pos);
+}
+
+
 void HexEditor::setCurrentFile(mc_file_t* file) {
-
     curfile = file;
-
-    /* Calc addressbar width */
-    addrbar_num_max = QString("%1").arg(QString::number(file_size(curfile), 16)).size();
-    addrbar_width = ((addrbar_num_max+1)*font_cwidth) + (2*text_offset);
+    textarea_rows = file_size(file) / QMC_HEXEDIT_BYTESPERROW;
+    adjust();
+    viewport()->update();
 }
 
 void HexEditor::setFont(const QFont& font) {
@@ -57,16 +81,10 @@ void HexEditor::setFont(const QFont& font) {
 
     QFontMetrics fm(font);
     font_cwidth = fm.width(' ');
-    font_cheight = fm.height() / 2;
+    font_pheight = fm.height();
+    font_cheight = font_pheight / 2;
 
-    /* Calc hexarea width */
-    hexarea_width = QMC_HEXEDIT_BYTESPERROW * (2*font_cwidth)
-        + (QMC_HEXEDIT_BYTESPERROW-1) * hexarea_text_gap
-        + (2*text_offset);
-
-    /* Calc asciiarea width */
-    asciiarea_width = (QMC_HEXEDIT_BYTESPERROW*font_cwidth) + (2*text_offset);
-
+    adjust();
     viewport()->update();
 }
 
@@ -86,9 +104,9 @@ void HexEditor::drawAddressBar(QPainter& painter) {
         QColor(255, 0, 0));
 
     /* Draw address part */
-    for (int i=1, addr=0; addr <= file_size(curfile); i++, addr += QMC_HEXEDIT_BYTESPERROW) {
+    for (int row=1, addr=0; row <= textarea_rows_visible; row++, addr += QMC_HEXEDIT_BYTESPERROW) {
         painter.drawText(element_offset+text_offset,
-            i*(font_cheight+row_offset),
+            row*(font_cheight+row_offset),
             QString("%1h").arg(addr, addrbar_num_max, 16, QChar('0')).toUpper());
     }
 
@@ -105,7 +123,7 @@ void HexEditor::drawHexContent(QPainter& painter) {
 
     /* Draw bytes */
     int cursor_prev = file_get_cursor(curfile);
-    for (int row=1 ;; row++) {
+    for (int row=1; row <= textarea_rows_visible; row++) {
 
         /* Read file bytes */
         uint8_t bytes[QMC_HEXEDIT_BYTESPERROW];
@@ -142,7 +160,7 @@ void HexEditor::drawAsciiContent(QPainter& painter) {
 
     /* Draw bytes */
     int cursor_prev = file_get_cursor(curfile);
-    for (int row=1 ;; row++) {
+    for (int row=1; row <= textarea_rows_visible; row++) {
 
         /* Read file bytes */
         uint8_t bytes[QMC_HEXEDIT_BYTESPERROW];
