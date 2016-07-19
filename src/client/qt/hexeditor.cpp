@@ -210,11 +210,17 @@ void HexEditor::drawAsciiContent(QPainter& painter) {
 }
 
 void HexEditor::keyPressEvent(QKeyEvent* event) {
-    if (event->matches(QKeySequence::MoveToNextLine)) {
+
+    /* Move down one */
+    if (event->matches(QKeySequence::MoveToNextLine) ||
+        event->key() == Qt::Key_J) {
         verticalScrollBar()->setValue(getCurLine() + 1);
         viewport()->update();
     }
-    if (event->matches(QKeySequence::MoveToPreviousLine)) {
+
+    /* Move up one */
+    if (event->matches(QKeySequence::MoveToPreviousLine) ||
+        event->key() == Qt::Key_K) {
         verticalScrollBar()->setValue(getCurLine() - 1);
         viewport()->update();
     }
