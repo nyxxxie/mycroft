@@ -36,7 +36,7 @@ class HexEditor : public QAbstractScrollArea {
 
     int rows_total;
     int rows_shown;
-    int rows_top; // TODO: use this to track top row instead of calculating it with file and using that
+    int row_top; // TODO: use this to track top row instead of calculating it with file and using that
 
     int font_cwidth;
     int font_cheight;
@@ -62,9 +62,10 @@ public:
     HexEditor(QWidget* parent = NULL);
 
     int getNumLines();
-    void setCurLine(int pos);
-    void setCursor(int pos);
-    int getCursor();
+    void setCurLine(int line);
+    int getCurLine();
+    void setCursorPos(int line);
+    int getCursorPos();
 
     void setCurrentFile(mc_file_t* file);
 

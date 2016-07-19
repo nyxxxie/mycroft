@@ -2,6 +2,7 @@
 #include <QScrollBar>
 #include <QPainter>
 #include <QColor>
+#include <QKeyEvent>
 #include <mycroft/mdb.h>
 #include <mycroft/file.h>
 #include <stdio.h>
@@ -17,7 +18,7 @@ void HexEditor::init() {
 
     rows_total = 0;
     rows_shown = 0;
-    rows_top = 0;
+    row_top = 0;
 
     font_cwidth = 0;
     font_cheight = 0;
@@ -39,7 +40,7 @@ void HexEditor::init() {
     textarea_width = 0;
 
     setFont(QFont("Courier", 11));
-    verticalScrollBar()->setValue(getCursor()/QMC_HEXEDIT_BYTESPERROW);
+    verticalScrollBar()->setValue(getCursorPos()/QMC_HEXEDIT_BYTESPERROW);
 }
 
 void HexEditor::adjust() {
@@ -69,15 +70,20 @@ int HexEditor::getNumLines() {
     return rows_total;
 }
 
-void HexEditor::setCurLine(int pos) {
-    file_set_cursor(curfile, pos*QMC_HEXEDIT_BYTESPERROW);
+void HexEditor::setCurLine(int line) {
+    row_top = line;
+    file_set_cursor(curfile, line*16);
 }
 
-void HexEditor::setCursor(int pos) {
-    file_set_cursor(curfile, pos);
+int HexEditor::getCurLine() {
+    return row_top;
 }
 
-int HexEditor::getCursor() {
+void HexEditor::setCursorPos(int p) {
+    file_set_cursor(curfile, p*QMC_HEXEDIT_BYTESPERROW);
+}
+
+int HexEditor::getCursorPos() {
     if (curfile == NULL)
         return 0;
 
@@ -119,7 +125,7 @@ void HexEditor::drawAddressBar(QPainter& painter) {
         QColor(255, 0, 0));
 
     /* Draw address part */
-    for (int row=1, addr=getCursor();
+    for (int row=1, addr=getCursorPos();
         row <= rows_shown && addr < file_size(curfile);
         row++, addr += QMC_HEXEDIT_BYTESPERROW) {
 
@@ -203,20 +209,26 @@ void HexEditor::drawAsciiContent(QPainter& painter) {
     element_offset += asciiarea_width + element_gap;
 }
 
-void HexEditor::keyPressEvent(QKeyEvent *event) {
-    // TODO: for experimentation purposes, print these events in a qt status
-    //       bar (we need to add one anyways)
+void HexEditor::keyPressEvent(QKeyEvent* event) {
+    if (event->matches(QKeySequence::MoveToNextLine)) {
+        verticalScrollBar()->setValue(getCurLine() + 1);
+        viewport()->update();
+    }
+    if (event->matches(QKeySequence::MoveToPreviousLine)) {
+        verticalScrollBar()->setValue(getCurLine() - 1);
+        viewport()->update();
+    }
 }
 
-void HexEditor::mouseMoveEvent(QMouseEvent * event) {
+void HexEditor::mouseMoveEvent(QMouseEvent* event) {
 
 }
 
-void HexEditor::mousePressEvent(QMouseEvent * event) {
+void HexEditor::mousePressEvent(QMouseEvent* event) {
 
 }
 
-void HexEditor::paintEvent(QPaintEvent *event) {
+void HexEditor::paintEvent(QPaintEvent* event) {
 
     QPainter painter(viewport());
 
@@ -239,6 +251,8 @@ void HexEditor::paintEvent(QPaintEvent *event) {
             QString("  rows:     %1").arg(rows_shown));
         painter.drawText(element_offset, 4*(font_cheight+row_offset),
             QString("  all rows: %1").arg(rows_total));
+        painter.drawText(element_offset, 5*(font_cheight+row_offset),
+            QString("  top row:  %1").arg(row_top));
 
         /* Figure out how much area is taken up by the drawn area */
         textarea_width = element_offset;
