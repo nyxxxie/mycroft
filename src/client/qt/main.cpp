@@ -1,4 +1,6 @@
 #include <stdio.h>
+#include <time.h>
+#include <stdlib.h>
 #include <QApplication>
 #include <QCommandLineParser>
 #include <mycroft/mycroft.h>
@@ -7,6 +9,9 @@
 int main(int argc, char *argv[]) {
 
     QApplication a(argc, argv);
+
+    /* Seed RNG */
+    srand(time(NULL));
 
     /* Set up command line argument parser */
     QCommandLineParser parser;
