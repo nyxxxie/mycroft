@@ -32,7 +32,11 @@ clients.
 
 ## Bugs and tests
 If you come up with a fun way to be a dick to mycroft components (or want to),
-please 
+please feel free to submit tests and bugs.  A super powerful way to make sure
+your software works is to try as many ways as possible to break it, and tests
+will help us automate the process of checking it!  See the DEVELOPERS.md
+document for more information on writing tests.  If you just want to report a
+bug you found without a test, submit it as an issue.
 
 ## Corrections and optimizations
 Mycroft isn't perfect.  If you see any code you think is inefficient or could
