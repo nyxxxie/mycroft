@@ -19,6 +19,9 @@ add_subdirectory(third_party)
 # Add testing stuff
 add_subdirectory(tests)
 
+# Add documentation stuff
+add_subdirectory(doc)
+
 # Create target to build documentation
 #add_custom_target(doc)
 #add_subdirectory(doc)
