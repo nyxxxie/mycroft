@@ -5,21 +5,31 @@
 #include <string.h>
 #include <openssl/sha.h>
 
-//TODO: refactor file with no res variable and fix tests.
-
+/**
+ * Tests file_exist function on a existing file.
+ */
 TEST(file_basic, file_exists_valid) {
     ASSERT_EQ(file_exists("res/testfile1"), 0);
 }
 
+/**
+ * Tests file_exist function on a nonexistant file.
+ */
 TEST(file_basic, file_exists_invalid) {
     ASSERT_EQ(file_exists("thisfiledoesntexist"), -1);
 }
 
+/**
+ * Tests to see if the file_init function works
+ */
 TEST(file_basic, file_init) {
     mc_file_t m;
     ASSERT_EQ(file_init(&m), 0);
 }
 
+/**
+ * Open an existing file
+ */
 TEST(file_basic, file_open_valid) {
     mc_file_t m;
     ASSERT_EQ(file_init(&m), 0);
@@ -27,24 +37,36 @@ TEST(file_basic, file_open_valid) {
     ASSERT_EQ(file_close(&m), 0);
 }
 
+/**
+ * Open a nonexistant file
+ */
 TEST(file_basic, file_open_invalid) {
     mc_file_t m;
     ASSERT_EQ(file_init(&m), 0);
     ASSERT_LT(file_open(&m, "thisfiledoesntexist"), 0);
 }
 
+/**
+ * See how file_init handles an empty string as a file path
+ */
 TEST(file_basic, file_open_emptystr) {
     mc_file_t m;
     ASSERT_EQ(file_init(&m), 0);
     ASSERT_LT(file_open(&m, ""), 0);
 }
 
+/**
+ * See how file_init handles NULL as a file path
+ */
 TEST(file_basic, file_open_nullstr) {
     mc_file_t m;
     ASSERT_EQ(file_init(&m), 0);
     ASSERT_LT(file_open(&m, NULL), 0);
 }
 
+/**
+ * See if we can get the cursor position
+ */
 TEST(file_mgmt, file_get_cursor) {
 
     mc_file_t m;
@@ -56,6 +78,9 @@ TEST(file_mgmt, file_get_cursor) {
     ASSERT_EQ(file_close(&m), 0);
 }
 
+/**
+ * See if we can set the cursor position
+ */
 TEST(file_mgmt, file_set_cursor) {
 
     mc_file_t m;
@@ -69,6 +94,10 @@ TEST(file_mgmt, file_set_cursor) {
     ASSERT_EQ(file_close(&m), 0);
 }
 
+/**
+ * See what happens if we set the cursor to a position waaaay off the end of
+ * the file.
+ */
 TEST(file_mgmt, file_set_cursor_invalid_value) {
 
     mc_file_t m;
@@ -80,6 +109,9 @@ TEST(file_mgmt, file_set_cursor_invalid_value) {
     ASSERT_EQ(file_close(&m), 0);
 }
 
+/**
+ * Some more testing on file_set_cursor.
+ */
 TEST(file_mgmt, file_cursor_manip) {
 
     mc_file_t m;
@@ -91,6 +123,9 @@ TEST(file_mgmt, file_cursor_manip) {
     ASSERT_EQ(file_close(&m), 0);
 }
 
+/**
+ * See if the file_read_value reads properly.
+ */
 TEST(file_read, file_read_value) {
 
     mc_file_t m;
@@ -106,6 +141,9 @@ TEST(file_read, file_read_value) {
     ASSERT_EQ(file_close(&m), 0);
 }
 
+/**
+ * See if the file_read reads properly.
+ */
 TEST(file_read, file_read) {
 
     const unsigned char expected_hash[] = {
@@ -138,6 +176,9 @@ TEST(file_read, file_read) {
     ASSERT_EQ(file_close(&m), 0);
 }
 
+/**
+ * See if the file_read reads properly when we provide an offset.
+ */
 TEST(file_read, file_read_value_offset) {
 
     mc_file_t m;
@@ -153,6 +194,10 @@ TEST(file_read, file_read_value_offset) {
     ASSERT_EQ(file_close(&m), 0);
 }
 
+/**
+ * See if file_read_value withstands the punishment of multiple invocations
+ * on the same file.
+ */
 TEST(file_read, file_read_value_multi) {
 
     uint8_t expected[] = {0x61, 0x62, 0x63, 0x64};
@@ -164,18 +209,19 @@ TEST(file_read, file_read_value_multi) {
     /* Perform first read */
     uint8_t recieved[4];
     ASSERT_EQ(file_read_value(&m, 0, 4, recieved), 0);
-
     ASSERT_EQ(memcmp(expected, recieved, 4), 0);
 
     /* Perform second read */
     ASSERT_EQ(file_read_value(&m, 0, 4, recieved), 0);
-
     ASSERT_EQ(memcmp(expected, recieved, 4), 0);
 
     ASSERT_EQ(file_close(&m), 0);
 }
 
-
+/**
+ * See if file_read_value bursts into flames gracefully if we feed it a
+ * rediculous offset.
+ */
 TEST(file_read, file_read_value_bad_offset) {
 
     mc_file_t m;
@@ -188,6 +234,10 @@ TEST(file_read, file_read_value_bad_offset) {
     ASSERT_EQ(file_close(&m), 0);
 }
 
+/**
+ * Make sure that file_read_value won't attempt to read values past the file's
+ * end.
+ */
 TEST(file_read, file_read_value_off_end) {
 
     mc_file_t m;
@@ -200,6 +250,9 @@ TEST(file_read, file_read_value_off_end) {
     ASSERT_EQ(file_close(&m), 0);
 }
 
+/**
+ * Try and write a value
+ */
 TEST(file_read, file_write_value) {
 
     mc_file_t m;
@@ -217,6 +270,9 @@ TEST(file_read, file_write_value) {
     ASSERT_EQ(file_close(&m), 0);
 }
 
+/**
+ * Try and write a value at an offset
+ */
 TEST(file_read, file_write_value_offset) {
 
     mc_file_t m;
@@ -234,6 +290,10 @@ TEST(file_read, file_write_value_offset) {
     ASSERT_EQ(file_close(&m), 0);
 }
 
+/**
+ * Try and write a value at an offset that doesn't exist (spoiler alert: it
+ * should fail)
+ */
 TEST(file_read, file_write_value_bad_offset) {
 
     mc_file_t m;
@@ -245,3 +305,97 @@ TEST(file_read, file_write_value_bad_offset) {
 
     ASSERT_EQ(file_close(&m), 0);
 }
+
+/**
+ * Try to create the cache
+ */
+TEST(file_cache, file_cache_init) {
+    mc_file_t m;
+    ASSERT_EQ(file_init(&m), 0);
+    ASSERT_EQ(file_open(&m, "res/testfile1"), 0);
+    ASSERT_EQ(file_cache_init(&m, 32), 0);
+    ASSERT_EQ(file_close(&m), 0);
+}
+
+/**
+ * Try to create the cache (with a really big size)
+ */
+TEST(file_cache, file_cache_init_big) {
+    mc_file_t m;
+    ASSERT_EQ(file_init(&m), 0);
+    ASSERT_EQ(file_open(&m, "res/testfile1"), 0);
+    ASSERT_EQ(file_cache_init(&m, 1024), 0);
+    ASSERT_EQ(file_close(&m), 0);
+}
+
+/**
+ * Try to create the cache (with a really small size)
+ */
+TEST(file_cache, file_cache_init_tiny) {
+    mc_file_t m;
+    ASSERT_EQ(file_init(&m), 0);
+    ASSERT_EQ(file_open(&m, "res/testfile1"), 0);
+    ASSERT_EQ(file_cache_init(&m, 8), 0);
+    ASSERT_EQ(file_close(&m), 0);
+}
+
+///**
+// * Try loading bytes into the cache
+// */
+//TEST(file_cache, file_cache_loadzone) {
+//    mc_file_t m;
+//    ASSERT_EQ(file_init(&m), 0);
+//    ASSERT_EQ(file_open(&m, "res/testfile1"), 0);
+//    ASSERT_EQ(file_cache_init(&m, 8));
+//    ASSERT_EQ(file_free(&m), 0);
+//}
+//
+///**
+// * Try loading bytes into a really big cache
+// */
+//TEST(file_cache, file_cache_loadzone_big) {
+//
+//}
+//
+///**
+// * Try loading bytes such that we'll end up reading past the file
+// */
+//TEST(file_cache, file_cache_loadzone_outofbounds) {
+//
+//}
+//
+///**
+// * Try reloading bytes into cache
+// */
+//TEST(file_cache, file_cache_reload) {
+//
+//}
+//
+///**
+// * Read bytes from cache.
+// */
+//TEST(file_cache, file_cache_read_full) {
+//
+//}
+//
+///**
+// * Read bytes such that we read from both the cache and the file itself.
+// */
+//TEST(file_cache, file_cache_read_partial) {
+//
+//}
+//
+///**
+// * Write bytes into cache.
+// */
+//TEST(file_cache, file_cache_write_full) {
+//
+//}
+//
+///**
+// * Write bytes into cache such that they end up in both cached and uncached
+// * areas.
+// */
+//TEST(file_cache, file_cache_write_partial) {
+//
+//}

@@ -1,3 +1,13 @@
+/**
+ * @file
+ * @brief Provides an interface to file IO for mycroft.
+ *
+ * This abstraction is necessary so that we can perform operations on big files
+ * across systems.  It also allows us to make file operations more neat and
+ * modular.  For example, a client can edit multiple files by simply
+ * initializing and opening files on two mc_file_t structs and then simply
+ * switching which pointer it uses.
+ */
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -42,6 +52,7 @@ int file_init(mc_file_t* file) {
     file->cursor = 0;
     file->name = NULL;
     file->path = NULL;
+    file->cache = NULL;
     return 0;
 }
 
@@ -127,6 +138,7 @@ int file_get_cursor(mc_file_t* file) {
  * reading/writing from.
  *
  * @param file mc_file_t struct to operate on.
+ * @param cursor Value to set cursor to.
  *
  * @return Returns 0 on success, negative value on error.
  */
@@ -182,6 +194,83 @@ char* file_path(mc_file_t* file) {
 }
 
 /**
+ * This function must be called for the cache to be used.  This will allocate a
+ * cache space of size <size> and preload the first <size> bytes of the file
+ * into it.  Cache is useful to reduce disk IO and speed up file operations.
+ * Please note that cache does not currently provide any real performance
+ * benifit to write operations.
+ *
+ * @param file mc_file_t struct to operate on.
+ * @param size Size of the cache to allocate.
+ *
+ * @return Returns 0 on success, negative value on error.
+ */
+int file_cache_init(mc_file_t* file, int size) {
+
+    /* Create cache struct */
+    file->cache = (file_cache_t*)malloc(sizeof(file_cache_t));
+    if (file->cache == NULL) {
+        fprintf(stderr, "Failed to allocate space for cache struct.");
+        return -1;
+    }
+
+    /* Determine if the cache is larger than the file, and resize it accordingly */
+    //if (size > file_size(file))
+    //    size = file_size(file); // TODO: make this a setting?
+
+    file->cache->size = size;
+    file->cache->base = 0;
+
+    /* Create the cache buffer */
+    file->cache->buf = (uint8_t*)malloc(file->cache->size);
+    if (file->cache->buf == NULL) {
+        fprintf(stderr, "Failed to allocate space for cache buffer.");
+        return -1;
+    }
+
+    return 0;
+}
+
+/**
+ * Loads the bytes starting at <cursor> into the cache.
+ *
+ * @param file mc_file_t struct to operate on.
+ * @param cursor Position to start at.
+ *
+ * @return Returns 0 on success, negative value on error.
+ */
+int file_cache_loadzone(mc_file_t* file, int cursor) {
+    file->cache->base = cursor;
+    return file_cache_reload(file); // Why duplicate efforts?
+}
+
+/**
+ * Re-reads the current cache contents from the file.
+ *
+ * @param file mc_file_t struct to operate on.
+ *
+ * @return Returns 0 on success, negative value on error.
+ */
+int file_cache_reload(mc_file_t* file) {
+
+    int diff = 0;
+    int rc = 0;
+
+    /* If our cache extends off the end of the current file, relocate it */
+    diff = (file->cache->base+file->cache->size) - file_size(file);
+    if (diff > 0)
+        file->cache->base -= diff;
+
+    /* Read bytes from file into cache */
+    rc = file_read_raw(file, file->cache->size, file->cache->buf);
+    if (rc < 0) {
+        return rc;
+    }
+
+    return 0;
+}
+
+/**
  * Reads bytes from a file.  Will move the cursor to the end of the file.
  * This function is suitable for reading large amount of bytes.
  *
@@ -197,7 +286,31 @@ int file_read(mc_file_t* file, fsize_t amount, uint8_t* outbuf) {
     long int res = fread(outbuf, 1, amount, file->fp);
     if (res != amount) {
         if (ferror(file->fp)) {
-            perror("DEBUG: Error in file_write_pos");
+            perror("DEBUG: Error in file_read");
+            return -1;
+        }
+    }
+
+    return res;
+}
+
+/**
+ * Reads bytes from a file.  Will move the cursor to the end of the file.
+ * This function is suitable for reading large amount of bytes.
+ *
+ * @param file mc_file_t struct to operate on.
+ * @param amount Amount of bytes to read.
+ * @param outbuf Buffer to place bytes in.
+ *
+ * @return Returns 0 on success, negative value on error.
+ */
+int file_read_raw(mc_file_t* file, fsize_t amount, uint8_t* outbuf) {
+
+    /* Read desired content */
+    long int res = fread(outbuf, 1, amount, file->fp);
+    if (res != amount) {
+        if (ferror(file->fp)) {
+            perror("DEBUG: Error in file_read_raw");
             return -1;
         }
     }
@@ -273,6 +386,16 @@ int file_read_value(mc_file_t* file, fsize_t offset, fsize_t amount, uint8_t* ou
  */
 int file_write(mc_file_t* file, fsize_t amount, uint8_t* outbuf) {
 
+    /* Read desired content */
+    long int res = fwrite(outbuf, 1, amount, file->fp);
+    if (res != amount) {
+        if (ferror(file->fp)) {
+            perror("DEBUG: Error in file_write");
+            return -1;
+        }
+    }
+
+    return res;
 }
 
 /**
@@ -333,4 +456,32 @@ int file_write_value(mc_file_t* file, fsize_t offset, fsize_t amount, uint8_t* o
     return 0;
 }
 
-//TODO: implement the rest of these functions
+/**
+ * Reads bytes from the file into the cache.  This function should be used with
+ * caution, as it influences the position of the cache and could result in a
+ * LOT of disk usage if not used properly.  For instance, if your cache size is
+ * huge and you use this function to read a value at the end of the current
+ * cache location, you'll cause to cache to move and thus reload all of that
+ * space.
+ *
+ * @param file mc_file_t struct to operate on.
+ * @param offset Offset into the file to start reading at.
+ * @param amount Amount of bytes to read.
+ * @param outbuf Buffer to place bytes in.
+ *
+ * @return Returns 0 on success, negative value on error.
+ */
+int file_read_cache(mc_file_t* file, fsize_t offset, fsize_t amount, uint8_t* outbuf) {
+
+    int rc = file_cache_loadzone(file, offset);
+    if (rc < 0) {
+        return rc;
+    }
+
+    rc = file_set_cursor(file, offset);
+    if (rc < 0) {
+        return rc;
+    }
+
+    return file_read(file, amount, outbuf);
+}

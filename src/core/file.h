@@ -14,21 +14,23 @@ extern "C" {
  * little extra of the file in order to try and minimise disk access.
  */
 typedef struct {
-    uint8_t* buf;
-    fsize_t  size;
-    fsize_t  base;
-    fsize_t  cursor; //TODO: change this as needed to work with the read/write editor area functions
-} editor_buffer_t;
+    uint8_t* buf;   /**< @internal */
+    fsize_t  size;  /**< @internal */
+    fsize_t  base;  /**< @internal */
+} file_cache_t;
 
-/** Contains info for an open file */
+/**
+ * Contains state information for an open file.  Don't try to use any of these
+ * fields, they may change in the future.
+ */
 struct mc_file_t {
-    char*   name;
-    char*   path;
-    FILE*   fp;
-    fsize_t size;
-    fsize_t cursor;
+    char*   name;   /**< @internal */
+    char*   path;   /**< @internal */
+    FILE*   fp;     /**< @internal */
+    fsize_t size;   /**< @internal */
+    fsize_t cursor; /**< @internal */
 
-    editor_buffer_t buf;
+    file_cache_t* cache; /**< @internal */
 };
 
 #ifdef __cplusplus
