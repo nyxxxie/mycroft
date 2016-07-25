@@ -1,3 +1,30 @@
+/*****************************************************************************\
+Mycroft - A hex editor and file format reverse engineering tool.
+Copyright (C) 2016 Nyxxie <github.com/nyxxxie>
+
+This program is free software; you can redistribute it and/or modify it under
+the terms of the GNU General Public License as published by the Free Software
+Foundation; either version 2 of the License, or (at your option) any later
+version.
+This program is distributed in the hope that it will be useful, but WITHOUT
+ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
+You should have received a copy of the GNU General Public License along with
+this program; if not, write to the Free Software Foundation, Inc., 51 Franklin
+Street, Fifth Floor, Boston, MA  02110-1301, USA.
+
+******************************************************************************
+
+FILE TODO:
+    * Some general refactoring would be nice; this file is a mess...
+    * Create a modular row display system, so plugins and etc can dynamically
+      add new row displays.
+    * Create a cursor variable that represents the line cursor position.
+        * Move this cusor up and down when the file is scrolled (?)
+    * Move all file_* operations to areas where bytes are read and written.
+        * Rogue set and get custor operations are all over, remove them.
+\*****************************************************************************/
+
 #include <QAbstractScrollArea>
 #include <QScrollBar>
 #include <QPainter>
@@ -9,16 +36,23 @@
 #include "mainwindow.h"
 #include "hexeditor.h"
 
+/**
+ * Initializes all variables to their default values.
+ */
 void HexEditor::init() {
 
     curfile = NULL;
 
-    element_offset = 0;
-    element_gap = QMC_HEXEDIT_ELEMENT_GAP;
-
     rows_total = 0;
     rows_shown = 0;
     row_top = 0;
+
+    cursor = 0;
+    selection_start = 0;
+    selection_direction = 0;
+
+    element_offset = 0;
+    element_gap = QMC_HEXEDIT_ELEMENT_GAP;
 
     font_cwidth = 0;
     font_cheight = 0;
@@ -38,25 +72,27 @@ void HexEditor::init() {
     asciiarea_width = 0;
 
     textarea_width = 0;
-
-    setFont(QFont("Courier", 11));
-    verticalScrollBar()->setValue(getCursorPos()/QMC_HEXEDIT_BYTESPERROW);
 }
 
+/**
+ * Recalculates spacing variables when something is changed.
+ */
 void HexEditor::adjust() {
 
     if (curfile == NULL)
         return;
 
-    textarea_width = 2*element_gap + addrbar_width + hexarea_width + asciiarea_width;
-    addrbar_num_max = QString("%1").arg(QString::number(file_size(curfile), 16)).size();
-    addrbar_width = ((addrbar_num_max+1)*font_cwidth) + (2*text_offset);
+    rows_shown = ((viewport()->height() / (font_cheight+row_offset)) + 1);
     rows_total = file_size(curfile) / QMC_HEXEDIT_BYTESPERROW;
+
+    addrbar_num_max = QString("%1").arg(QString::number(file_size(curfile), 16)).size();
+
+    addrbar_width = ((addrbar_num_max+1)*font_cwidth) + (2*text_offset);
     asciiarea_width = (QMC_HEXEDIT_BYTESPERROW*font_cwidth) + (2*text_offset);
     hexarea_width = QMC_HEXEDIT_BYTESPERROW * (2*font_cwidth)
         + (QMC_HEXEDIT_BYTESPERROW-1) * hexarea_text_gap
         + (2*text_offset);
-    rows_shown = ((viewport()->height() / (font_cheight+row_offset)) + 1);
+    textarea_width = 2*element_gap + addrbar_width + hexarea_width + asciiarea_width;
 
     horizontalScrollBar()->setRange(0, textarea_width - viewport()->width());
     horizontalScrollBar()->setPageStep(viewport()->width());
@@ -66,21 +102,36 @@ void HexEditor::adjust() {
     setCurLine(verticalScrollBar()->value());
 }
 
+/**
+ * Gets the total number of lines in the current file.
+ *
+ * @return Total number of lines in the current file.
+ */
 int HexEditor::getNumLines() {
     return rows_total;
 }
 
+/**
+ * Sets the top line in the editor.
+ *
+ * @param line Line to focus on.
+ */
 void HexEditor::setCurLine(int line) {
     row_top = line;
-    file_set_cursor(curfile, line*16);
+    file_set_cursor(curfile, line*QMC_HEXEDIT_BYTESPERROW);
 }
 
+/**
+ * Gets the line number at the top of the editor.
+ *
+ * @return Line number of the top line in the editor.
+ */
 int HexEditor::getCurLine() {
     return row_top;
 }
 
-void HexEditor::setCursorPos(int p) {
-    file_set_cursor(curfile, p*QMC_HEXEDIT_BYTESPERROW);
+void HexEditor::setCursorPos(int pos) {
+    file_set_cursor(curfile, pos*QMC_HEXEDIT_BYTESPERROW);
 }
 
 int HexEditor::getCursorPos() {
@@ -92,7 +143,6 @@ int HexEditor::getCursorPos() {
 
 void HexEditor::setCurrentFile(mc_file_t* file) {
     curfile = file;
-    rows_total = file_size(file) / QMC_HEXEDIT_BYTESPERROW;
     adjust();
     viewport()->update();
 }
@@ -109,12 +159,18 @@ void HexEditor::setFont(const QFont& font) {
     viewport()->update();
 }
 
+/**
+ * Called internally to display when there is no file loaded.
+ */
 void HexEditor::drawNoFile(QPainter& painter) {
     painter.drawText(geometry(),
         Qt::AlignHCenter|Qt::AlignVCenter,
         "No file loaded.");
 }
 
+/**
+ * Called internally to draw the hex editor address bar.
+ */
 void HexEditor::drawAddressBar(QPainter& painter) {
 
     addrbar_offset = element_offset;
@@ -137,6 +193,9 @@ void HexEditor::drawAddressBar(QPainter& painter) {
     element_offset += addrbar_width + element_gap;
 }
 
+/**
+ * Called internally to draw the hex editor's current file's bytes.
+ */
 void HexEditor::drawHexContent(QPainter& painter) {
 
     hexarea_offset = element_offset;
@@ -174,6 +233,9 @@ void HexEditor::drawHexContent(QPainter& painter) {
     element_offset += hexarea_width + element_gap;
 }
 
+/**
+ * Draws the ascii representation of the current set of file bytes.
+ */
 void HexEditor::drawAsciiContent(QPainter& painter) {
 
     asciiarea_offset = element_offset;
@@ -201,7 +263,7 @@ void HexEditor::drawAsciiContent(QPainter& painter) {
         for (int j=0; j < amnt; j++) {
             painter.drawText(text_offset+element_offset+(j*font_cwidth),
                 row*(font_cheight+row_offset),
-                QString("%1").arg(QChar(bytes[j])));
+                QString("%1").arg(QChar(bytes[j]))); //TODO: check if displayable
         }
     }
     file_set_cursor(curfile, cursor_prev);
@@ -209,6 +271,9 @@ void HexEditor::drawAsciiContent(QPainter& painter) {
     element_offset += asciiarea_width + element_gap;
 }
 
+/**
+ * Handles a key press event.
+ */
 void HexEditor::keyPressEvent(QKeyEvent* event) {
 
     /* Move down one */
@@ -226,18 +291,26 @@ void HexEditor::keyPressEvent(QKeyEvent* event) {
     }
 }
 
+/**
+ * Handles a move movement event.
+ */
 void HexEditor::mouseMoveEvent(QMouseEvent* event) {
 
 }
 
+/**
+ * Handles a mouse press event.
+ */
 void HexEditor::mousePressEvent(QMouseEvent* event) {
 
 }
 
+/**
+ * Handles a paint event.
+ */
 void HexEditor::paintEvent(QPaintEvent* event) {
 
     QPainter painter(viewport());
-
 
     if (curfile == NULL) {
         drawNoFile(painter);
@@ -265,7 +338,10 @@ void HexEditor::paintEvent(QPaintEvent* event) {
     }
 }
 
-void HexEditor::resizeEvent(QResizeEvent *) {
+/**
+ * Handles a resize event.
+ */
+void HexEditor::resizeEvent(QResizeEvent*) {
     adjust();
 }
 
@@ -277,4 +353,8 @@ HexEditor::HexEditor(QWidget* parent) : QAbstractScrollArea(parent) {
 
     /* Initialize variables */
     init();
+
+    /* Initialize other element stuff */
+    setFont(QFont("Courier", 11));
+    verticalScrollBar()->setValue(getCursorPos()/QMC_HEXEDIT_BYTESPERROW);
 }

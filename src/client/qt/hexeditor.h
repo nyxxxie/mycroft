@@ -30,19 +30,25 @@ class HexEditor : public QAbstractScrollArea {
     void drawHexContent(QPainter& painter);
     void drawAsciiContent(QPainter& painter);
 
-    /* Spacing-related */
-    int element_offset;
-    int element_gap;
-
+    /* Row stuff */
     int rows_total;
     int rows_shown;
-    int row_top; // TODO: use this to track top row instead of calculating it with file and using that
+    int row_top;
+
+    /* Cursor stuff */
+    int cursor;
+    int selection_start;
+    int selection_direction; // cursor should be the end, this handles the situation where we make a reverse direction.  This should be 1 for forward, -1 for backward, and 0 for no selection.
+
+    /* Spacing stuff */
+    int element_offset;
+    int element_gap;
 
     int font_cwidth;
     int font_cheight;
 
-    int text_offset;
-    int row_offset;
+    int text_offset; /** Offset between background start/end and text start/end. */
+    int row_offset;  /** Offset beween rows. */
 
     int addrbar_offset;
     int addrbar_width;
@@ -64,7 +70,7 @@ public:
     int getNumLines();
     void setCurLine(int line);
     int getCurLine();
-    void setCursorPos(int line);
+    void setCursorPos(int pos);
     int getCursorPos();
 
     void setCurrentFile(mc_file_t* file);

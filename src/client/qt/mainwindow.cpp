@@ -72,6 +72,8 @@ void MainWindow::CreateStatusBar() {
 }
 
 void MainWindow::CreateActions() {
+
+    //TODO: add these to the menubar
     act_file_new = new QAction("New", this);
 
     act_file_open = new QAction("Open", this);
