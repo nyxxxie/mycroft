@@ -4,7 +4,7 @@
 #include <libgen.h>
 #include <unistd.h>
 #include "core.h"
-#include "config.h"
+#include "cfg.h"
 #include "database.h"
 #include "file.h"
 #include "plugin.h"

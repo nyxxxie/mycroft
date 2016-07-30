@@ -2,7 +2,7 @@
 #define MYCROFT_INT_CONFIG_PARSE_H
 
 #include <stdio.h>
-#include "config.h"
+#include "cfg.h"
 
 int config_parse(FILE* fp, mc_config_t* config);
 

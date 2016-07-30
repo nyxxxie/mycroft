@@ -8,6 +8,21 @@ extern "C" {
 #include "core.h"
 
 #define CMAKE_INSTALL_PREFIX ""
+#define MYCROFT_LOCAL_CONFIG ""
+#define MYCROFT_LOCAL_PLUGIN ""
+#define MYCROFT_LOCAL_SCRIPT ""
+#define MYCROFT_LOCAL_MODULES ""
+#define MYCROFT_LOCAL_TEMPLATE ""
+#define MYCROFT_LOCAL_TYPES ""
+#define MYCROFT_CONFIG ""
+#define MYCROFT_PLUGIN ""
+#define MYCROFT_SCRIPT ""
+#define MYCROFT_MODULES ""
+#define MYCROFT_TEMPLATE ""
+#define MYCROFT_TYPES ""
+#define MYCROFT_CORE_DIR ""
+#define MYCROFT_CLIENT_DIR ""
+#define MYCROFT_TEST_DIR ""
 
 struct mc_config_t {
     int db_save_local;

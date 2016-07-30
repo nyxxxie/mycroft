@@ -28,10 +28,10 @@ include_directories(
 # Source files
 set(SRC
     core.c
+    cfg.c
     file.c
     hook.c
     plugin.c
-    config.c
     config_parse.c
     database.c
     membuf.c
