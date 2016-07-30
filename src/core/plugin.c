@@ -214,8 +214,6 @@ int mc_plugin_addpath(const char* path) {
 
     PyObject *pypath=NULL, *localname=NULL;
 
-    printf("%s\n", path);
-
     pypath = PySys_GetObject("path");
     localname = PyUnicode_FromString(path);
 
