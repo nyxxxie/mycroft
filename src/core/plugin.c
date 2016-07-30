@@ -1,6 +1,7 @@
 #include <Python.h>
 #include <mycroft/plugin.h>
 #include "plugin.h"
+#include "config.h"
 
 /**
  * @brief Initialize an mc_plugin_entry_t
@@ -84,6 +85,33 @@ int init_bindings() {
 }
 
 /**
+ * @brief Adds various locations to the python path for plugin purposes.
+ * @return Returns 0 on success, negative value on error.
+ * @internal
+ */
+int init_path() {
+
+    int rc = 0;
+    int i = 0;
+
+    const char* default_path[] = {
+        MYCROFT_LOCAL_PLUGINS,
+        MYCROFT_LOCAL_MODULES,
+        MYCROFT_PLUGINS,
+        MYCROFT_MODULES
+    };
+
+    for (i=0; i < 4; i++) {
+        rc = mc_plugin_addpath(default_path[i]);
+        if (rc < 0) {
+            return rc;
+        }
+    }
+
+    return 0;
+}
+
+/**
  * Loads all plugins from the plugin directory(s).  Tries to account for
  * dependencies.
  *
@@ -139,6 +167,12 @@ int mc_plugin_init() {
     Py_Initialize();
 
     /* */
+    rc = init_path();
+    if (rc < 0) {
+        return rc;
+    }
+
+    /* */
     plugin_first = NULL;
     plugin_last  = NULL;
 
@@ -180,9 +214,12 @@ int mc_plugin_addpath(const char* path) {
 
     PyObject *pypath=NULL, *localname=NULL;
 
+    printf("%s\n", path);
+
     pypath = PySys_GetObject("path");
     localname = PyUnicode_FromString(path);
-    PyList_Append(path, localname);
+
+    PyList_Append(pypath, localname);
 
     Py_DECREF(localname);
 
