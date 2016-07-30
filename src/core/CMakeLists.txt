@@ -4,11 +4,6 @@ cmake_minimum_required(VERSION 2.8.11)
 set(MYCROFT_CORE_MAJOR_VERSION 0)
 set(MYCROFT_CORE_MINOR_VERSION 1)
 
-# Find requried libs
-find_package(OpenSSL REQUIRED)
-find_package(Capstone REQUIRED)
-find_package(SQLite3 REQUIRED)
-
 # Use C99 standard
 if (CMAKE_VERSION VERSION_LESS "3.1")
     if (CMAKE_C_COMPILER_ID STREQUAL "GNU")
@@ -27,12 +22,15 @@ include_directories(
     ${SQLITE3_INCLUDE_DIRS}
     ${OPENSSL_INCLUDE_DIRS}
     ${CAPSTONE_INCLUDE_DIRS}
+    ${PYTHON_INCLUDE_DIRS}
 )
 
 # Source files
 set(SRC
     core.c
     file.c
+    hook.c
+    plugin.c
     config.c
     config_parse.c
     database.c
@@ -57,4 +55,5 @@ target_link_libraries(${PROJECT_NAME}
     ${SQLITE3_LIBRARIES}
     ${OPENSSL_LIBRARIES}
     ${CAPSTONE_LIBRARIES}
+    ${PYTHON_LIBRARIES}
 )

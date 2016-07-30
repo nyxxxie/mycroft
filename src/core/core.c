@@ -7,8 +7,11 @@
 #include "config.h"
 #include "database.h"
 #include "file.h"
+#include "plugin.h"
 
 mc_ctx_t* mycroft_init() {
+
+    int rc = 0;
 
     /* Create the context */
     mc_ctx_t* ctx = (mc_ctx_t*)malloc(sizeof(mc_ctx_t));
@@ -38,10 +41,25 @@ mc_ctx_t* mycroft_init() {
     }
     file_init(ctx->file);
 
+    rc = mc_plugin_init();
+    if (rc < 0) {
+        fprintf(stderr, "Failed to initialize plugin system.");
+        return NULL;
+    }
+
     return ctx;
 }
 
 void mycroft_free(mc_ctx_t* ctx) {
+
+    int rc = 0;
+
+    rc = mc_plugin_close();
+    if (rc < 0) {
+        fprintf(stderr, "Failed to close the plugin system.");
+        return NULL;
+    }
+
     if (ctx != NULL) {
         if (ctx->config != NULL) {
             cfg_close(ctx->config);
