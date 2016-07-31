@@ -457,7 +457,7 @@ int mdb_get_file_name(mc_mdb_t* mdb, membuf_t* name) {
 
     /* Get value */
     rc = membuf_copybytes(name,
-        sqlite3_value_text(val),
+        (void*)sqlite3_value_text(val),
         sqlite3_value_bytes(val) + 1);
     if (rc < 0) {
         return -1;
@@ -485,7 +485,7 @@ int mdb_get_file_path(mc_mdb_t* mdb, membuf_t* path) {
 
     /* Get value */
     rc = membuf_copybytes(path,
-        sqlite3_value_text(val),
+        (void*)sqlite3_value_text(val),
         sqlite3_value_bytes(val) + 1);
     if (rc < 0) {
         return -1;
