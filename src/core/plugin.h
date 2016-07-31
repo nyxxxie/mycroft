@@ -31,6 +31,8 @@ int mc_plugin_entry_free(mc_plugin_entry_t* entry);
 #define PLUGIN_VER_FUNC   "version"
 #define PLUGIN_DEPS_FUNC  "depends"
 
+#define PLUGIN_INIT_FILE  "__init__.py"
+
 #ifdef __cplusplus
 }
 #endif
