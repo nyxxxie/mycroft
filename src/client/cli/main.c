@@ -6,6 +6,7 @@
 
 #include <stdio.h>
 #include <stdint.h>
+#include <inttypes.h>
 #include <stdlib.h>
 #include <string.h>
 #include <argp.h>
@@ -149,7 +150,7 @@ int process_command_args(char* argv[], int argc) {
 }
 
 /** Command processer */
-int process_command(char* command, int bytes) {
+int process_command(char* command, size_t bytes) {
 
     char* token = NULL;
     char** argv = NULL;
@@ -217,11 +218,11 @@ int main(int argc, char *argv[]) {
     while (1) {
 
         int rc = 0;
-        int bytes = 100;
+        size_t bytes = 100;
         char* input = NULL;
 
         /* Print input prompt */
-        printf("[0x%08x] :: ", curaddr);
+        printf("[0x%08" PRIx64 "] :: ", curaddr);
 
         /* Take input */
         input = (char*)malloc(bytes + 1);
