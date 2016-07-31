@@ -57,7 +57,6 @@ void mycroft_free(mc_ctx_t* ctx) {
     rc = mc_plugin_close();
     if (rc < 0) {
         fprintf(stderr, "Failed to close the plugin system.");
-        return NULL;
     }
 
     if (ctx != NULL) {
