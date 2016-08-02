@@ -52,9 +52,25 @@ void HighlightArea::init(int start, int end) {
 }
 
 void HighlightArea::init(int start, int end, const QColor& color) {
+
+    /* Swap if end and start are different for some reason */
+    if (start > end) {
+        int tmp = start;
+        start = end;
+        end = tmp;
+    }
+
     setStart(start);
     setEnd(end);
     setColor(color);
+}
+
+void HighlightArea::update(int start, int end) {
+    init(start, end);
+}
+
+void HighlightArea::update(int start, int end, const QColor& color) {
+    init(start, end, color);
 }
 
 void HighlightArea::setStart(int start) {
@@ -81,6 +97,52 @@ QColor HighlightArea::getColor() {
     return this->color;
 }
 
+void HighlightArea::render(HexEditor* editor, QPainter& painter) {
+
+    /* Figure out the bytes and rows the selection will be on */
+    const int selection_start = getStart();
+    const int selection_end = getEnd();
+    const int startpos = selection_start % QMC_HEXEDIT_BYTESPERROW;
+    const int startline = selection_start / QMC_HEXEDIT_BYTESPERROW;
+    const int endpos = selection_end % QMC_HEXEDIT_BYTESPERROW;
+    const int endline = selection_end / QMC_HEXEDIT_BYTESPERROW;
+
+
+    /* If the endline is past the bounds of the bottom screen, trim it */
+    //if (endline > rows_shown) {
+    //    endline = startline + rows_shown;
+    //}
+
+    for (int curline = startline; curline <= endline; curline++) {
+        int rel_line = curline - editor->row_top;
+
+        /* Figure out where to start and end the selection line */
+        int start = 0;
+        int end = QMC_HEXEDIT_BYTESPERROW;
+        if (curline == startline) {
+            start = startpos;
+        }
+        if (curline == endline) {
+            end = endpos;
+        }
+
+        //TODO: refactor
+
+        /* Turn the byte position into a px position */
+        int hexarea_sel_extra = 1;
+        int vert_space = editor->row_offset / 2;
+        start = start * ((editor->font_cwidth*2)+editor->hexarea_text_gap) - hexarea_sel_extra;
+        end = (end * ((editor->font_cwidth*2)+editor->hexarea_text_gap)) - start - editor->hexarea_text_gap + (hexarea_sel_extra*2) - 1;
+        start += editor->element_offset + editor->text_offset;
+        int vstart = (editor->row_offset*(rel_line+1)) + (editor->font_cheight*rel_line) - vert_space;
+
+        /* Draw the selection line */
+        painter.fillRect(
+            QRect(start, vstart, end, editor->font_cheight + (vert_space*2)),
+            getColor());
+    }
+}
+
 /**
  * Initializes all variables to their default values.
  */
@@ -93,7 +155,6 @@ void HexEditor::init() {
     row_top = 0;
 
     cursor = 0;
-    selection_start = 0;
 
     element_offset = 0;
     element_gap = QMC_HEXEDIT_ELEMENT_GAP;
@@ -117,10 +178,10 @@ void HexEditor::init() {
 
     textarea_width = 0;
 
-    highlights.append(new HighlightArea(50, 30, QColor(255, 0, 0)));
-    highlights.append(new HighlightArea(53, 51, QColor(255, 0, 255)));
-    highlights.append(new HighlightArea(70, 60, QColor(0, 255, 0)));
-    highlights.append(new HighlightArea(200, 100, QColor(0, 0, 255)));
+    highlights.append(new HighlightArea(30, 50, QColor(255, 0, 0)));
+    highlights.append(new HighlightArea(51, 53, QColor(255, 0, 255)));
+    highlights.append(new HighlightArea(60, 70, QColor(0, 255, 0)));
+    highlights.append(new HighlightArea(100, 200, QColor(0, 0, 255)));
 }
 
 /**
@@ -260,43 +321,7 @@ void HexEditor::drawHexContent(QPainter& painter) {
 
     /* Draw selection (if there is one) */
     for (HighlightArea* area : highlights) {
-        cursor = area->getStart();
-        selection_start = area->getEnd();
-        if (cursor >= selection_start) {
-            const int startpos = selection_start % QMC_HEXEDIT_BYTESPERROW;
-            const int startline = selection_start / QMC_HEXEDIT_BYTESPERROW;
-            const int endpos = cursor % QMC_HEXEDIT_BYTESPERROW;
-            const int endline = cursor / QMC_HEXEDIT_BYTESPERROW;
-
-            for (int curline = startline; curline <= endline; curline++) {
-
-                /* Figure out where to start and end the selection line */
-                int start = 0;
-                int end = QMC_HEXEDIT_BYTESPERROW;
-                if (curline == startline) {
-                    start = startpos;
-                }
-                if (curline == endline) {
-                    end = endpos;
-                }
-
-                /* Turn the byte position into a px position */
-                //start = 20;
-                //end = 40;
-                int hexarea_sel_extra = 1;
-                int vert_space = row_offset / 2;
-                start = start * ((font_cwidth*2)+hexarea_text_gap) - hexarea_sel_extra;
-                end = (end * ((font_cwidth*2)+hexarea_text_gap)) - start - hexarea_text_gap + (hexarea_sel_extra*2) - 1;
-                start += element_offset + text_offset;
-                int tmp = curline - row_top;
-                int vstart = (row_offset*(tmp+1)) + (font_cheight*tmp) - vert_space;
-
-                /* Draw the selection line */
-                painter.fillRect(
-                    QRect(start, vstart, end, font_cheight + (vert_space*2)),
-                    area->getColor());
-            }
-        }
+        area->render(this, painter);
     }
 
     /* Draw bytes */

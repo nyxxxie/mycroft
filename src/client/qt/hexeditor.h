@@ -12,37 +12,12 @@
 #define QMC_HEXEDIT_BYTE_GAP 8
 #define QMC_HEXEDIT_BYTESPERROW 16
 
-class HighlightArea {
-
-    int start;
-    int end;
-    QColor color;
-
-public:
-
-    HighlightArea();
-    HighlightArea(int start, int end);
-    HighlightArea(int start, int end, const QColor& color);
-
-    void init(int start, int end);
-    void init(int start, int end, const QColor& color);
-
-    void setStart(int start);
-    void setEnd(int end);
-    void setColor(const QColor& color);
-    int getStart();
-    int getEnd();
-    QColor getColor();
-};
+class HighlightArea; // forward decl
 
 class HexEditor : public QAbstractScrollArea {
+    friend class HighlightArea; // needed so render func can access privates
 
     Q_OBJECT
-
-    QList<HighlightArea*> highlights; // TODO: replace with template rendering, leave this for testing
-    QList<HighlightArea*> search_results;
-
-    HighlightArea* selector;
 
     /* Main internal funcs */
     void init();
@@ -59,6 +34,11 @@ class HexEditor : public QAbstractScrollArea {
     void drawHexContent(QPainter& painter);
     void drawAsciiContent(QPainter& painter);
 
+    /* Highlights */
+    QList<HighlightArea*> highlights; // TODO: replace with template rendering, leave this for testing
+    QList<HighlightArea*> search_results;
+    HighlightArea* selector;
+
     /* Row stuff */
     int rows_total;
     int rows_shown;
@@ -66,7 +46,6 @@ class HexEditor : public QAbstractScrollArea {
 
     /* Cursor stuff */
     int cursor;
-    int selection_start;
 
     /* Spacing stuff */
     int element_offset;
@@ -114,6 +93,33 @@ protected:
 private slots:
 
     void adjust();
+};
+
+class HighlightArea {
+
+    int start;
+    int end;
+    QColor color;
+
+public:
+
+    HighlightArea();
+    HighlightArea(int start, int end);
+    HighlightArea(int start, int end, const QColor& color);
+
+    void init(int start, int end);
+    void init(int start, int end, const QColor& color);
+    void update(int start, int end);
+    void update(int start, int end, const QColor& color);
+
+    void setStart(int start);
+    void setEnd(int end);
+    void setColor(const QColor& color);
+    int getStart();
+    int getEnd();
+    QColor getColor();
+
+    void render(HexEditor* editor, QPainter& painter);
 };
 
 #endif // HEXEDITOR_H
