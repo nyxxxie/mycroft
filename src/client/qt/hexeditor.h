@@ -2,6 +2,7 @@
 #define HEXEDITOR_H
 
 #include <QAbstractScrollArea>
+#include <QColor>
 #include <mycroft/mdb.h>
 #include <mycroft/file.h>
 #include "hexeditor.h"
@@ -11,9 +12,37 @@
 #define QMC_HEXEDIT_BYTE_GAP 8
 #define QMC_HEXEDIT_BYTESPERROW 16
 
+class HighlightArea {
+
+    int start;
+    int end;
+    QColor color;
+
+public:
+
+    HighlightArea();
+    HighlightArea(int start, int end);
+    HighlightArea(int start, int end, const QColor& color);
+
+    void init(int start, int end);
+    void init(int start, int end, const QColor& color);
+
+    void setStart(int start);
+    void setEnd(int end);
+    void setColor(const QColor& color);
+    int getStart();
+    int getEnd();
+    QColor getColor();
+};
+
 class HexEditor : public QAbstractScrollArea {
 
     Q_OBJECT
+
+    QList<HighlightArea*> highlights; // TODO: replace with template rendering, leave this for testing
+    QList<HighlightArea*> search_results;
+
+    HighlightArea* selector;
 
     /* Main internal funcs */
     void init();
@@ -38,7 +67,6 @@ class HexEditor : public QAbstractScrollArea {
     /* Cursor stuff */
     int cursor;
     int selection_start;
-    int selection_direction; // cursor should be the end, this handles the situation where we make a reverse direction.  This should be 1 for forward, -1 for backward, and 0 for no selection.
 
     /* Spacing stuff */
     int element_offset;

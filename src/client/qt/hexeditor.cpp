@@ -28,13 +28,58 @@ FILE TODO:
 #include <QAbstractScrollArea>
 #include <QScrollBar>
 #include <QPainter>
-#include <QColor>
 #include <QKeyEvent>
 #include <mycroft/mdb.h>
 #include <mycroft/file.h>
 #include <stdio.h>
 #include "mainwindow.h"
 #include "hexeditor.h"
+
+HighlightArea::HighlightArea() {
+    init(0, 0);
+}
+
+HighlightArea::HighlightArea(int start, int end) {
+    init(start, end);
+}
+
+HighlightArea::HighlightArea(int start, int end, const QColor& color) {
+    init(start, end, color);
+}
+
+void HighlightArea::init(int start, int end) {
+    init(start, end, QColor(255, 255, 255));
+}
+
+void HighlightArea::init(int start, int end, const QColor& color) {
+    setStart(start);
+    setEnd(end);
+    setColor(color);
+}
+
+void HighlightArea::setStart(int start) {
+    this->start = start;
+}
+
+void HighlightArea::setEnd(int end) {
+    this->end = end;
+}
+
+void HighlightArea::setColor(const QColor& color) {
+    this->color = color;
+}
+
+int HighlightArea::getStart() {
+    return this->start;
+}
+
+int HighlightArea::getEnd() {
+    return this->end;
+}
+
+QColor HighlightArea::getColor() {
+    return this->color;
+}
 
 /**
  * Initializes all variables to their default values.
@@ -49,7 +94,6 @@ void HexEditor::init() {
 
     cursor = 0;
     selection_start = 0;
-    selection_direction = 0;
 
     element_offset = 0;
     element_gap = QMC_HEXEDIT_ELEMENT_GAP;
@@ -72,6 +116,11 @@ void HexEditor::init() {
     asciiarea_width = 0;
 
     textarea_width = 0;
+
+    highlights.append(new HighlightArea(50, 30, QColor(255, 0, 0)));
+    highlights.append(new HighlightArea(53, 51, QColor(255, 0, 255)));
+    highlights.append(new HighlightArea(70, 60, QColor(0, 255, 0)));
+    highlights.append(new HighlightArea(200, 100, QColor(0, 0, 255)));
 }
 
 /**
@@ -193,6 +242,10 @@ void HexEditor::drawAddressBar(QPainter& painter) {
     element_offset += addrbar_width + element_gap;
 }
 
+int byteToScreenX(int byte_number) {
+
+}
+
 /**
  * Called internally to draw the hex editor's current file's bytes.
  */
@@ -200,10 +253,51 @@ void HexEditor::drawHexContent(QPainter& painter) {
 
     hexarea_offset = element_offset;
 
-    /* Draw bar part */
+    /* Draw background part */
     painter.fillRect(
         QRect(element_offset, 0, hexarea_width, viewport()->height()),
-        QColor(0, 255, 0));
+        QColor(240, 240, 240));
+
+    /* Draw selection (if there is one) */
+    for (HighlightArea* area : highlights) {
+        cursor = area->getStart();
+        selection_start = area->getEnd();
+        if (cursor >= selection_start) {
+            const int startpos = selection_start % QMC_HEXEDIT_BYTESPERROW;
+            const int startline = selection_start / QMC_HEXEDIT_BYTESPERROW;
+            const int endpos = cursor % QMC_HEXEDIT_BYTESPERROW;
+            const int endline = cursor / QMC_HEXEDIT_BYTESPERROW;
+
+            for (int curline = startline; curline <= endline; curline++) {
+
+                /* Figure out where to start and end the selection line */
+                int start = 0;
+                int end = QMC_HEXEDIT_BYTESPERROW;
+                if (curline == startline) {
+                    start = startpos;
+                }
+                if (curline == endline) {
+                    end = endpos;
+                }
+
+                /* Turn the byte position into a px position */
+                //start = 20;
+                //end = 40;
+                int hexarea_sel_extra = 1;
+                int vert_space = row_offset / 2;
+                start = start * ((font_cwidth*2)+hexarea_text_gap) - hexarea_sel_extra;
+                end = (end * ((font_cwidth*2)+hexarea_text_gap)) - start - hexarea_text_gap + (hexarea_sel_extra*2) - 1;
+                start += element_offset + text_offset;
+                int tmp = curline - row_top;
+                int vstart = (row_offset*(tmp+1)) + (font_cheight*tmp) - vert_space;
+
+                /* Draw the selection line */
+                painter.fillRect(
+                    QRect(start, vstart, end, font_cheight + (vert_space*2)),
+                    area->getColor());
+            }
+        }
+    }
 
     /* Draw bytes */
     int cursor_prev = file_get_cursor(curfile);
