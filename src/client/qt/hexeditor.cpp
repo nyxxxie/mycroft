@@ -547,7 +547,7 @@ void AsciiView::render(QPainter& painter) {
             /* Print char */
             painter.drawText(editor->widget_text_offset+start+(j*editor->font_cwidth),
                 row*(editor->font_cheight+editor->row_offset),
-                QString("%1").arg(c)); //TODO: check if displayable
+                QString("%1").arg(c));
         }
     }
     file_set_cursor(editor->curfile, cursor_prev);
