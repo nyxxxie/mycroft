@@ -98,49 +98,6 @@ QColor HighlightArea::getColor() {
 }
 
 void HighlightArea::render(HexEditor* editor, QPainter& painter) {
-
-    /* Figure out the bytes and rows the selection will be on */
-    const int selection_start = getStart();
-    const int selection_end = getEnd();
-    const int startpos = selection_start % QMC_HEXEDIT_BYTESPERROW;
-    const int startline = selection_start / QMC_HEXEDIT_BYTESPERROW;
-    const int endpos = selection_end % QMC_HEXEDIT_BYTESPERROW;
-    const int endline = selection_end / QMC_HEXEDIT_BYTESPERROW;
-
-
-    /* If the endline is past the bounds of the bottom screen, trim it */
-    //if (endline > rows_shown) {
-    //    endline = startline + rows_shown;
-    //}
-
-    for (int curline = startline; curline <= endline; curline++) {
-        int rel_line = curline - editor->row_top;
-
-        /* Figure out where to start and end the selection line */
-        int start = 0;
-        int end = QMC_HEXEDIT_BYTESPERROW;
-        if (curline == startline) {
-            start = startpos;
-        }
-        if (curline == endline) {
-            end = endpos;
-        }
-
-        //TODO: refactor
-
-        /* Turn the byte position into a px position */
-        int hexarea_sel_extra = 1;
-        int vert_space = editor->row_offset / 2;
-        start = start * ((editor->font_cwidth*2)+editor->hexarea_text_gap) - hexarea_sel_extra;
-        end = (end * ((editor->font_cwidth*2)+editor->hexarea_text_gap)) - start - editor->hexarea_text_gap + (hexarea_sel_extra*2) - 1;
-        start += editor->element_offset + editor->text_offset;
-        int vstart = (editor->row_offset*(rel_line+1)) + (editor->font_cheight*rel_line) - vert_space;
-
-        /* Draw the selection line */
-        painter.fillRect(
-            QRect(start, vstart, end, editor->font_cheight + (vert_space*2)),
-            getColor());
-    }
 }
 
 /**
@@ -153,35 +110,29 @@ void HexEditor::init() {
     rows_total = 0;
     rows_shown = 0;
     row_top = 0;
-
-    cursor = 0;
-
-    element_offset = 0;
-    element_gap = QMC_HEXEDIT_ELEMENT_GAP;
-
-    font_cwidth = 0;
-    font_cheight = 0;
-
-    text_offset = 3;
     row_offset = 4;
 
-    addrbar_offset = 0;
-    addrbar_width = 0;
-    addrbar_num_max = 0;
+    cursor = 0;
+    verticalScrollBar()->setValue(getCursorPos()/QMC_HEXEDIT_BYTESPERROW);
 
-    hexarea_offset = 0;
-    hexarea_width = 0;
-    hexarea_text_gap = 7;
+    setFont(QFont("Courier", 11));
 
-    asciiarea_offset = 0;
-    asciiarea_width = 0;
-
-    textarea_width = 0;
-
+    highlights.append(new HighlightArea(0, 0, QColor(255, 0, 255)));
+    highlights.append(new HighlightArea(1, 1, QColor(255, 255, 0)));
+    highlights.append(new HighlightArea(2, 2, QColor(0, 255, 0)));
+    highlights.append(new HighlightArea(3, 3, QColor(0, 255, 255)));
+    highlights.append(new HighlightArea(5, 7, QColor(0, 255, 255)));
     highlights.append(new HighlightArea(30, 50, QColor(255, 0, 0)));
     highlights.append(new HighlightArea(51, 53, QColor(255, 0, 255)));
     highlights.append(new HighlightArea(60, 70, QColor(0, 255, 0)));
     highlights.append(new HighlightArea(100, 200, QColor(0, 0, 255)));
+
+    widget_start = 0;
+    widget_gap = QMC_HEXEDIT_ELEMENT_GAP;
+    widget_text_offset = 3;
+    widgets.append(new AddressView(this));
+    widgets.append(new HexView(this));
+    widgets.append(new AsciiView(this));
 }
 
 /**
@@ -195,16 +146,7 @@ void HexEditor::adjust() {
     rows_shown = ((viewport()->height() / (font_cheight+row_offset)) + 1);
     rows_total = file_size(curfile) / QMC_HEXEDIT_BYTESPERROW;
 
-    addrbar_num_max = QString("%1").arg(QString::number(file_size(curfile), 16)).size();
-
-    addrbar_width = ((addrbar_num_max+1)*font_cwidth) + (2*text_offset);
-    asciiarea_width = (QMC_HEXEDIT_BYTESPERROW*font_cwidth) + (2*text_offset);
-    hexarea_width = QMC_HEXEDIT_BYTESPERROW * (2*font_cwidth)
-        + (QMC_HEXEDIT_BYTESPERROW-1) * hexarea_text_gap
-        + (2*text_offset);
-    textarea_width = 2*element_gap + addrbar_width + hexarea_width + asciiarea_width;
-
-    horizontalScrollBar()->setRange(0, textarea_width - viewport()->width());
+    horizontalScrollBar()->setRange(0, widget_start - viewport()->width());
     horizontalScrollBar()->setPageStep(viewport()->width());
     verticalScrollBar()->setRange(0, rows_total);
     verticalScrollBar()->setPageStep(rows_shown);
@@ -282,112 +224,18 @@ void HexEditor::drawNoFile(QPainter& painter) {
  * Called internally to draw the hex editor address bar.
  */
 void HexEditor::drawAddressBar(QPainter& painter) {
-
-    addrbar_offset = element_offset;
-
-    /* Draw bar part */
-    painter.fillRect(
-        QRect(element_offset, 0, addrbar_width, viewport()->height()),
-        QColor(255, 0, 0));
-
-    /* Draw address part */
-    for (int row=1, addr=getCursorPos();
-        row <= rows_shown && addr < file_size(curfile);
-        row++, addr += QMC_HEXEDIT_BYTESPERROW) {
-
-        painter.drawText(element_offset+text_offset,
-            row*(font_cheight+row_offset),
-            QString("%1h").arg(addr, addrbar_num_max, 16, QChar('0')).toUpper());
-    }
-
-    element_offset += addrbar_width + element_gap;
-}
-
-int byteToScreenX(int byte_number) {
-
 }
 
 /**
  * Called internally to draw the hex editor's current file's bytes.
  */
 void HexEditor::drawHexContent(QPainter& painter) {
-
-    hexarea_offset = element_offset;
-
-    /* Draw background part */
-    painter.fillRect(
-        QRect(element_offset, 0, hexarea_width, viewport()->height()),
-        QColor(240, 240, 240));
-
-    /* Draw selection (if there is one) */
-    for (HighlightArea* area : highlights) {
-        area->render(this, painter);
-    }
-
-    /* Draw bytes */
-    int cursor_prev = file_get_cursor(curfile);
-    for (int row=1; row <= rows_shown; row++) {
-
-        /* Read file bytes */
-        uint8_t bytes[QMC_HEXEDIT_BYTESPERROW];
-        int amnt = file_read(curfile, QMC_HEXEDIT_BYTESPERROW, bytes);
-        if (amnt == 0) {
-            break;
-        }
-        else if (amnt < 0) {
-            return;
-        }
-
-        /* Display bytes */
-        int offset = text_offset;
-        for (int j=0; j < amnt; j++) {
-            painter.drawText(offset+element_offset+(j*font_cwidth*2),
-                row*(font_cheight+row_offset),
-                QString("%1").arg(bytes[j], 2, 16, QChar('0')).toUpper());
-            offset += hexarea_text_gap;
-        }
-    }
-    file_set_cursor(curfile, cursor_prev);
-
-    element_offset += hexarea_width + element_gap;
 }
 
 /**
  * Draws the ascii representation of the current set of file bytes.
  */
 void HexEditor::drawAsciiContent(QPainter& painter) {
-
-    asciiarea_offset = element_offset;
-
-    /* Draw bar part */
-    painter.fillRect(
-        QRect(element_offset, 0, asciiarea_width, viewport()->height()),
-        QColor(0, 0, 255));
-
-    /* Draw bytes */
-    int cursor_prev = file_get_cursor(curfile);
-    for (int row=1; row <= rows_shown; row++) {
-
-        /* Read file bytes */
-        uint8_t bytes[QMC_HEXEDIT_BYTESPERROW];
-        int amnt = file_read(curfile, QMC_HEXEDIT_BYTESPERROW, bytes);
-        if (amnt == 0) {
-            break;
-        }
-        else if (amnt < 0) {
-            return;
-        }
-
-        /* Display bytes */
-        for (int j=0; j < amnt; j++) {
-            painter.drawText(text_offset+element_offset+(j*font_cwidth),
-                row*(font_cheight+row_offset),
-                QString("%1").arg(QChar(bytes[j]))); //TODO: check if displayable
-        }
-    }
-    file_set_cursor(curfile, cursor_prev);
-
-    element_offset += asciiarea_width + element_gap;
 }
 
 /**
@@ -435,25 +283,22 @@ void HexEditor::paintEvent(QPaintEvent* event) {
         drawNoFile(painter);
     }
     else {
-        element_offset = -horizontalScrollBar()->value();
+        widget_start = -horizontalScrollBar()->value();
 
         /* Draw stuff */
-        drawAddressBar(painter);
-        drawHexContent(painter);
-        drawAsciiContent(painter);
+        for (HexEditorWidget* w : widgets) {
+            w->render(painter);
+        }
 
-        painter.drawText(element_offset, font_cheight+row_offset, "DEBUG file info:");
-        painter.drawText(element_offset, 2*(font_cheight+row_offset),
-            QString("  size:     %1").arg(file_size(curfile)));
-        painter.drawText(element_offset, 3*(font_cheight+row_offset),
-            QString("  rows:     %1").arg(rows_shown));
-        painter.drawText(element_offset, 4*(font_cheight+row_offset),
-            QString("  all rows: %1").arg(rows_total));
-        painter.drawText(element_offset, 5*(font_cheight+row_offset),
-            QString("  top row:  %1").arg(row_top));
-
-        /* Figure out how much area is taken up by the drawn area */
-        textarea_width = element_offset;
+        //painter.drawText(widget_start, font_cheight+row_offset, "DEBUG file info:");
+        //painter.drawText(widget_start, 2*(font_cheight+row_offset),
+        //    QString("  size:     %1").arg(file_size(curfile)));
+        //painter.drawText(widget_start, 3*(font_cheight+row_offset),
+        //    QString("  rows:     %1").arg(rows_shown));
+        //painter.drawText(widget_start, 4*(font_cheight+row_offset),
+        //    QString("  all rows: %1").arg(rows_total));
+        //painter.drawText(widget_start, 5*(font_cheight+row_offset),
+        //    QString("  top row:  %1").arg(row_top));
     }
 }
 
@@ -464,6 +309,9 @@ void HexEditor::resizeEvent(QResizeEvent*) {
     adjust();
 }
 
+/**
+ *
+ */
 HexEditor::HexEditor(QWidget* parent) : QAbstractScrollArea(parent) {
 
     /* Connect signals to slots */
@@ -472,8 +320,237 @@ HexEditor::HexEditor(QWidget* parent) : QAbstractScrollArea(parent) {
 
     /* Initialize variables */
     init();
+}
 
-    /* Initialize other element stuff */
-    setFont(QFont("Courier", 11));
-    verticalScrollBar()->setValue(getCursorPos()/QMC_HEXEDIT_BYTESPERROW);
+/**
+ *
+ */
+AddressView::AddressView(HexEditor* editor) {
+    this->editor = editor;
+    this->num_max = QString("deadbeef").size();
+    this->width = ((num_max+1)*editor->font_cwidth) + (2*editor->widget_text_offset);
+}
+
+/**
+ *
+ */
+void AddressView::render(QPainter& painter) {
+
+    start = editor->widget_start;
+
+    /* Draw bar part */
+    painter.fillRect(
+        QRect(start, 0, width, editor->viewport()->height()),
+        QColor(200, 200, 200));
+
+    /* Draw address part */
+    for (int row=1, addr=editor->getCursorPos();
+        row <= editor->rows_shown && addr < file_size(editor->curfile);
+        row++, addr += QMC_HEXEDIT_BYTESPERROW) {
+
+        painter.drawText(start+editor->widget_text_offset,
+            row*(editor->font_cheight+editor->row_offset),
+            QString("%1h").arg(addr, num_max, 16, QChar('0')).toUpper());
+    }
+
+    editor->widget_start += width + editor->widget_gap;
+}
+
+/**
+ *
+ */
+HexView::HexView(HexEditor* editor) {
+    this->editor = editor;
+    this->byte_gap = 7;
+    this->width = QMC_HEXEDIT_BYTESPERROW * (2*editor->font_cwidth)
+        + (QMC_HEXEDIT_BYTESPERROW-1) * byte_gap
+        + (2*editor->widget_text_offset);
+}
+
+int HexView::byteToPxStart(int byte) {
+    int ret = start + editor->widget_text_offset;
+    ret += byte * (editor->font_cwidth*2);
+    ret += byte * byte_gap;
+    return ret;
+}
+
+int HexView::byteToPxEnd(int byte) {
+    int ret = byteToPxStart(byte);
+    ret += editor->font_cwidth*2;
+    ret += 1;
+    return ret;
+}
+
+/**
+ *
+ */
+void HexView::renderHighlight(HighlightArea* area, QPainter& painter) {
+
+    /* Does the selection start in range of the file? */
+    int selection_start = area->getStart();
+    if (selection_start > file_size(editor->curfile)) {
+        return;
+    }
+
+    /* If the selection extends past the end of the file, trim it */
+    int selection_end = area->getEnd();
+    if (selection_end > file_size(editor->curfile)) {
+        selection_end = file_size(editor->curfile);
+    }
+
+    /* Figure out the bytes and rows the selection will be on */
+    const int startpos = selection_start % QMC_HEXEDIT_BYTESPERROW;
+    const int startline = selection_start / QMC_HEXEDIT_BYTESPERROW;
+    const int endpos = selection_end % QMC_HEXEDIT_BYTESPERROW;
+    const int endline = selection_end / QMC_HEXEDIT_BYTESPERROW;
+
+
+
+    /* If the endline is past the bounds of the bottom screen, trim it */
+    //if (endline > rows_shown) {
+    //    endline = startline + rows_shown;
+    //}
+
+    for (int curline = startline; curline <= endline; curline++) {
+        int rel_line = curline - editor->row_top;
+
+        /* Figure out where to start and end the selection line */
+        int text_start = 0;
+        int text_end = QMC_HEXEDIT_BYTESPERROW-1;
+        if (curline == startline) {
+            text_start = startpos;
+        }
+        if (curline == endline) {
+            text_end = endpos;
+        }
+
+        /* Turn the byte positions into px positions */
+        int px_text_start = byteToPxStart(text_start);
+        int px_text_end = byteToPxEnd(text_end);
+        px_text_end -= px_text_start;
+
+        /* Offset the start and end by a fixed val for visual whimsey! */
+        const int highlight_trail = 1;
+        px_text_start -= highlight_trail;
+        px_text_end += highlight_trail * 2;
+
+        /* Determine where to place the highlight vertically */
+        const int vert_space = editor->row_offset / 2;
+        const int px_vstart = (editor->row_offset*(rel_line+1)) + (editor->font_cheight*rel_line) - (editor->row_offset/2);
+        const int px_vend = editor->font_cheight + editor->row_offset;
+
+        /* Draw the selection line */
+        painter.fillRect(
+            QRect(px_text_start, px_vstart, px_text_end, px_vend),
+            area->getColor());
+    }
+}
+
+/**
+ *
+ */
+void HexView::render(QPainter& painter) {
+
+    start = editor->widget_start;
+
+    /* Draw background part */
+    painter.fillRect(
+        QRect(start, 0, width, editor->viewport()->height()),
+        QColor(240, 240, 240));
+
+    /* Draw selection (if there is one) */
+    for (HighlightArea* area : editor->highlights) {
+        renderHighlight(area, painter);
+    }
+
+    /* Draw bytes */
+    int cursor_prev = file_get_cursor(editor->curfile);
+    for (int row=1; row <= editor->rows_shown; row++) {
+
+        /* Read file bytes */
+        uint8_t bytes[QMC_HEXEDIT_BYTESPERROW];
+
+        //TODO: maintain a single cache/file buffer?
+        int amnt = file_read(editor->curfile, QMC_HEXEDIT_BYTESPERROW, bytes);
+        if (amnt == 0) {
+            break;
+        }
+        else if (amnt < 0) {
+            return;
+        }
+
+        /* Display bytes */
+        int offset = editor->widget_text_offset;
+        for (int j=0; j < amnt; j++) {
+            painter.drawText(start+offset+(j*editor->font_cwidth*2),
+                row*(editor->font_cheight+editor->row_offset),
+                QString("%1").arg(bytes[j], 2, 16, QChar('0')).toUpper());
+            offset += byte_gap;
+        }
+    }
+    file_set_cursor(editor->curfile, cursor_prev);
+
+    editor->widget_start += width + editor->widget_gap;
+}
+
+/**
+ * 
+ */
+AsciiView::AsciiView(HexEditor* editor) {
+    this->editor = editor;
+    this->width = (QMC_HEXEDIT_BYTESPERROW*editor->font_cwidth)
+        + (2*editor->widget_text_offset);
+}
+
+/**
+ * 
+ */
+void AsciiView::renderHighlight(HighlightArea* area, QPainter& painter) {
+
+}
+
+/**
+ * 
+ */
+void AsciiView::render(QPainter& painter) {
+
+    start = editor->widget_start;
+
+    /* Draw bar part */
+    painter.fillRect(
+        QRect(start, 0, width, editor->viewport()->height()),
+        QColor(0, 0, 255));
+
+    /* Draw bytes */
+    int cursor_prev = file_get_cursor(editor->curfile);
+    for (int row=1; row <= editor->rows_shown; row++) {
+
+        /* Read file bytes */
+        uint8_t bytes[QMC_HEXEDIT_BYTESPERROW];
+        int amnt = file_read(editor->curfile, QMC_HEXEDIT_BYTESPERROW, bytes);
+        if (amnt == 0) {
+            break;
+        }
+        else if (amnt < 0) {
+            return;
+        }
+
+        /* Display bytes */
+        for (int j=0; j < amnt; j++) {
+
+            /* Figure out if byte isn't printable */
+            QChar c = QChar(bytes[j]);
+            if (!c.isPrint()) {
+                c = QChar('.');
+            }
+
+            /* Print char */
+            painter.drawText(editor->widget_text_offset+start+(j*editor->font_cwidth),
+                row*(editor->font_cheight+editor->row_offset),
+                QString("%1").arg(c)); //TODO: check if displayable
+        }
+    }
+    file_set_cursor(editor->curfile, cursor_prev);
+
+    editor->widget_start += width + editor->widget_gap;
 }

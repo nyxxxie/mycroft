@@ -13,9 +13,17 @@
 #define QMC_HEXEDIT_BYTESPERROW 16
 
 class HighlightArea; // forward decl
+class HexEditorWidget;
+class AddressView;
+class HexView;
+class AsciiView;
 
 class HexEditor : public QAbstractScrollArea {
-    friend class HighlightArea; // needed so render func can access privates
+    friend class HighlightArea;
+    friend class HexEditorWidget;
+    friend class AddressView;
+    friend class HexView;
+    friend class AsciiView;
 
     Q_OBJECT
 
@@ -34,41 +42,32 @@ class HexEditor : public QAbstractScrollArea {
     void drawHexContent(QPainter& painter);
     void drawAsciiContent(QPainter& painter);
 
+protected:
+
     /* Highlights */
     QList<HighlightArea*> highlights; // TODO: replace with template rendering, leave this for testing
     QList<HighlightArea*> search_results;
     HighlightArea* selector;
 
+    /* Widgets */
+    QList<HexEditorWidget*> widgets;
+    int widget_start;       /** Variable that should be used to determine start of current widget. */
+    int widget_gap;         /** Gap between widgets */
+    int widget_text_offset; /** Offset between widget start/end and text */
+
     /* Row stuff */
     int rows_total;
     int rows_shown;
     int row_top;
+    int row_offset;  /** Offset beween rows. */
 
     /* Cursor stuff */
     int cursor;
 
-    /* Spacing stuff */
-    int element_offset;
-    int element_gap;
-
+    /* Font spacing info */
     int font_cwidth;
     int font_cheight;
 
-    int text_offset; /** Offset between background start/end and text start/end. */
-    int row_offset;  /** Offset beween rows. */
-
-    int addrbar_offset;
-    int addrbar_width;
-    int addrbar_num_max;
-
-    int hexarea_offset;
-    int hexarea_width;
-    int hexarea_text_gap;
-
-    int asciiarea_offset;
-    int asciiarea_width;
-
-    int textarea_width;
 
 public:
 
@@ -120,6 +119,73 @@ public:
     QColor getColor();
 
     void render(HexEditor* editor, QPainter& painter);
+};
+
+
+// TODO: implement these
+
+/**
+ * 
+ */
+class HexEditorWidget {
+    friend class HexEditor;
+
+protected:
+
+    HexEditor* editor;
+    int start;
+    int width;
+
+public:
+
+    virtual void render(QPainter& painter) = 0;
+};
+
+/**
+ * 
+ */
+class AddressView : public HexEditorWidget {
+
+    int num_max;
+
+public:
+
+    AddressView(HexEditor* editor);
+
+    void render(QPainter& painter);
+};
+
+/**
+ * 
+ */
+class HexView : public HexEditorWidget {
+
+    int byte_gap;
+
+    void renderHighlight(HighlightArea* area, QPainter& painter);
+
+public:
+
+    HexView(HexEditor* editor);
+
+    int byteToPxStart(int byte);
+    int byteToPxEnd(int byte);
+
+    void render(QPainter& painter);
+};
+
+/**
+ * 
+ */
+class AsciiView : public HexEditorWidget {
+
+    void renderHighlight(HighlightArea* area, QPainter& painter);
+
+public:
+
+    AsciiView(HexEditor* editor);
+
+    void render(QPainter& painter);
 };
 
 #endif // HEXEDITOR_H
