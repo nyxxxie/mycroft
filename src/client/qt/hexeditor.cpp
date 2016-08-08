@@ -55,14 +55,15 @@ void HighlightArea::init(int start, int end, const QColor& color) {
 
     /* Swap if end and start are different for some reason */
     if (start > end) {
-        int tmp = start;
-        start = end;
-        end = tmp;
+        this->start = end;
+        this->end = start;
+    }
+    else {
+        this->start = start;
+        this->end = end;
     }
 
-    setStart(start);
-    setEnd(end);
-    setColor(color);
+    this->color = color;
 }
 
 void HighlightArea::update(int start, int end) {
@@ -74,15 +75,15 @@ void HighlightArea::update(int start, int end, const QColor& color) {
 }
 
 void HighlightArea::setStart(int start) {
-    this->start = start;
+    update(start, this->end, this->color);
 }
 
 void HighlightArea::setEnd(int end) {
-    this->end = end;
+    update(this->start, end, this->color);
 }
 
 void HighlightArea::setColor(const QColor& color) {
-    this->color = color;
+    update(this->start, this->end, color);
 }
 
 int HighlightArea::getStart() {
@@ -113,9 +114,12 @@ void HexEditor::init() {
     row_offset = 4;
 
     cursor = 0;
-    verticalScrollBar()->setValue(getCursorPos()/QMC_HEXEDIT_BYTESPERROW);
+    verticalScrollBar()->setValue(0);
 
     setFont(QFont("Courier", 11));
+
+    selector = new HighlightArea(0, 0, palette().highlight().color());
+    selector_shouldrender = false;
 
     highlights.append(new HighlightArea(0, 0, QColor(255, 0, 255)));
     highlights.append(new HighlightArea(1, 1, QColor(255, 255, 0)));
@@ -125,7 +129,6 @@ void HexEditor::init() {
     highlights.append(new HighlightArea(30, 50, QColor(255, 0, 0)));
     highlights.append(new HighlightArea(51, 53, QColor(255, 0, 255)));
     highlights.append(new HighlightArea(60, 70, QColor(0, 255, 0)));
-    highlights.append(new HighlightArea(100, 200, QColor(0, 0, 255)));
 
     widget_start = 0;
     widget_gap = QMC_HEXEDIT_ELEMENT_GAP;
@@ -140,14 +143,20 @@ void HexEditor::init() {
  */
 void HexEditor::adjust() {
 
+    widgets_width = (widgets.size() > 0) ? (widgets.size()-1) * widget_gap : 0;
+    for (HexEditorWidget* w : widgets) {
+        widgets_width += w->getWidth();
+    }
+
+    horizontalScrollBar()->setRange(0, widgets_width - viewport()->width());
+    horizontalScrollBar()->setPageStep(viewport()->width());
+
     if (curfile == NULL)
         return;
 
     rows_shown = ((viewport()->height() / (font_cheight+row_offset)) + 1);
     rows_total = file_size(curfile) / QMC_HEXEDIT_BYTESPERROW;
 
-    horizontalScrollBar()->setRange(0, widget_start - viewport()->width());
-    horizontalScrollBar()->setPageStep(viewport()->width());
     verticalScrollBar()->setRange(0, rows_total);
     verticalScrollBar()->setPageStep(rows_shown);
 
@@ -221,24 +230,6 @@ void HexEditor::drawNoFile(QPainter& painter) {
 }
 
 /**
- * Called internally to draw the hex editor address bar.
- */
-void HexEditor::drawAddressBar(QPainter& painter) {
-}
-
-/**
- * Called internally to draw the hex editor's current file's bytes.
- */
-void HexEditor::drawHexContent(QPainter& painter) {
-}
-
-/**
- * Draws the ascii representation of the current set of file bytes.
- */
-void HexEditor::drawAsciiContent(QPainter& painter) {
-}
-
-/**
  * Handles a key press event.
  */
 void HexEditor::keyPressEvent(QKeyEvent* event) {
@@ -262,14 +253,18 @@ void HexEditor::keyPressEvent(QKeyEvent* event) {
  * Handles a move movement event.
  */
 void HexEditor::mouseMoveEvent(QMouseEvent* event) {
-
+    for (HexEditorWidget* w : widgets) {
+        w->mouseMoveEvent(event);
+    }
 }
 
 /**
  * Handles a mouse press event.
  */
 void HexEditor::mousePressEvent(QMouseEvent* event) {
-
+    for (HexEditorWidget* w : widgets) {
+        w->mousePressEvent(event);
+    }
 }
 
 /**
@@ -323,6 +318,13 @@ HexEditor::HexEditor(QWidget* parent) : QAbstractScrollArea(parent) {
 }
 
 /**
+ * Determines if point is inside widget.
+ */
+bool HexEditorWidget::isMouseInside(const QPoint& point) {
+    return (point.x() >= start && point.y() <= start+width);
+}
+
+/**
  *
  */
 AddressView::AddressView(HexEditor* editor) {
@@ -341,7 +343,7 @@ void AddressView::render(QPainter& painter) {
     /* Draw bar part */
     painter.fillRect(
         QRect(start, 0, width, editor->viewport()->height()),
-        QColor(200, 200, 200));
+        editor->palette().alternateBase().color());
 
     /* Draw address part */
     for (int row=1, addr=editor->getCursorPos();
@@ -354,6 +356,14 @@ void AddressView::render(QPainter& painter) {
     }
 
     editor->widget_start += width + editor->widget_gap;
+}
+
+void AddressView::mouseMoveEvent(QMouseEvent* event) {
+
+}
+
+void AddressView::mousePressEvent(QMouseEvent* event) {
+
 }
 
 /**
@@ -381,6 +391,38 @@ int HexView::byteToPxEnd(int byte) {
     return ret;
 }
 
+bool HexView::getPos(const QPoint& point, int* byte, int* nybble) {
+
+    int s = start + editor->widget_text_offset;
+    int e = (start+width) - (editor->widget_text_offset*2);
+    int x = point.x();
+    int y = point.x();
+
+    if (x >= s && x <= e) {
+        int sep = (editor->font_cwidth*2) + byte_gap;
+        if (byte != NULL) {
+            *byte = ((x-s) / sep);
+        }
+
+        if (nybble != NULL) {
+            int space = (x-s) % sep;
+            if (space <= editor->font_cwidth) {
+                *nybble = 0;
+            }
+            else if (space > editor->font_cwidth && space <= editor->font_cwidth*2) {
+                *nybble = 1;
+            }
+            else {
+                *nybble = 2;
+            }
+        }
+
+        return true;
+    }
+
+    return false;
+}
+
 /**
  *
  */
@@ -403,8 +445,6 @@ void HexView::renderHighlight(HighlightArea* area, QPainter& painter) {
     const int startline = selection_start / QMC_HEXEDIT_BYTESPERROW;
     const int endpos = selection_end % QMC_HEXEDIT_BYTESPERROW;
     const int endline = selection_end / QMC_HEXEDIT_BYTESPERROW;
-
-
 
     /* If the endline is past the bounds of the bottom screen, trim it */
     //if (endline > rows_shown) {
@@ -456,11 +496,17 @@ void HexView::render(QPainter& painter) {
     /* Draw background part */
     painter.fillRect(
         QRect(start, 0, width, editor->viewport()->height()),
-        QColor(240, 240, 240));
+        //editor->palette().color(QPalette::Base));
+        editor->palette().alternateBase().color());
 
     /* Draw selection (if there is one) */
     for (HighlightArea* area : editor->highlights) {
         renderHighlight(area, painter);
+    }
+
+    /* Draw selector */
+    if (editor->selector_shouldrender) {
+        renderHighlight(editor->selector, painter);
     }
 
     /* Draw bytes */
@@ -493,6 +539,52 @@ void HexView::render(QPainter& painter) {
     editor->widget_start += width + editor->widget_gap;
 }
 
+void HexView::mouseMoveEvent(QMouseEvent* event) {
+
+    /* Determine if mouse is inside widget */
+    int byte, nybble;
+    if (getPos(event->pos(), &byte, &nybble)) {
+
+        if (!editor->selector_shouldrender) {
+            editor->selector->setStart(byte);
+            editor->selector->setEnd(byte);
+        }
+
+        printf("byte:%i st:%i n:%i, sr:%i\n", byte, editor->selector->getStart(), nybble, editor->selector_shouldrender);
+
+        editor->selector->setEnd(byte);
+        if (byte == editor->selector->getStart()) {
+            if (nybble >= 1) {
+                editor->selector_shouldrender = true;
+            }
+            else {
+                editor->selector_shouldrender = false;
+            }
+        }
+        else {
+            editor->selector_shouldrender = true;
+        }
+
+        editor->adjust();
+        editor->viewport()->update();
+    }
+}
+
+void HexView::mousePressEvent(QMouseEvent* event) {
+
+    editor->selector_shouldrender = false;
+
+    int byte, nybble;
+    if (getPos(event->pos(), &byte, &nybble)) {
+        printf("reset: %i\n", byte);
+        editor->selector->setStart(byte);
+        editor->selector->setEnd(byte);
+    }
+
+    editor->adjust();
+    editor->viewport()->update();
+}
+
 /**
  * 
  */
@@ -519,7 +611,7 @@ void AsciiView::render(QPainter& painter) {
     /* Draw bar part */
     painter.fillRect(
         QRect(start, 0, width, editor->viewport()->height()),
-        QColor(0, 0, 255));
+        editor->palette().alternateBase().color());
 
     /* Draw bytes */
     int cursor_prev = file_get_cursor(editor->curfile);
@@ -554,3 +646,12 @@ void AsciiView::render(QPainter& painter) {
 
     editor->widget_start += width + editor->widget_gap;
 }
+
+void AsciiView::mouseMoveEvent(QMouseEvent* event) {
+
+}
+
+void AsciiView::mousePressEvent(QMouseEvent* event) {
+
+}
+

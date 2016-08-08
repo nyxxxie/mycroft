@@ -38,9 +38,6 @@ class HexEditor : public QAbstractScrollArea {
 
     /* Section drawing */
     void drawNoFile(QPainter& painter);
-    void drawAddressBar(QPainter& painter);
-    void drawHexContent(QPainter& painter);
-    void drawAsciiContent(QPainter& painter);
 
 protected:
 
@@ -48,9 +45,11 @@ protected:
     QList<HighlightArea*> highlights; // TODO: replace with template rendering, leave this for testing
     QList<HighlightArea*> search_results;
     HighlightArea* selector;
+    bool selector_shouldrender;
 
     /* Widgets */
     QList<HexEditorWidget*> widgets;
+    int widgets_width;      /** Total width of all widgets */
     int widget_start;       /** Variable that should be used to determine start of current widget. */
     int widget_gap;         /** Gap between widgets */
     int widget_text_offset; /** Offset between widget start/end and text */
@@ -138,7 +137,12 @@ protected:
 
 public:
 
+    int getWidth() { return width; }
+    bool isMouseInside(const QPoint& point);
+
     virtual void render(QPainter& painter) = 0;
+    virtual void mouseMoveEvent(QMouseEvent* event) = 0;
+    virtual void mousePressEvent(QMouseEvent* event) = 0;
 };
 
 /**
@@ -153,6 +157,8 @@ public:
     AddressView(HexEditor* editor);
 
     void render(QPainter& painter);
+    void mouseMoveEvent(QMouseEvent* event);
+    void mousePressEvent(QMouseEvent* event);
 };
 
 /**
@@ -170,8 +176,11 @@ public:
 
     int byteToPxStart(int byte);
     int byteToPxEnd(int byte);
+    bool getPos(const QPoint& point, int* byte=NULL, int* nybble=NULL);
 
     void render(QPainter& painter);
+    void mouseMoveEvent(QMouseEvent* event);
+    void mousePressEvent(QMouseEvent* event);
 };
 
 /**
@@ -186,6 +195,8 @@ public:
     AsciiView(HexEditor* editor);
 
     void render(QPainter& painter);
+    void mouseMoveEvent(QMouseEvent* event);
+    void mousePressEvent(QMouseEvent* event);
 };
 
 #endif // HEXEDITOR_H
