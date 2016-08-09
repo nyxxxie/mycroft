@@ -95,8 +95,8 @@ private slots:
 
 class HighlightArea {
 
-    int start;
-    int end;
+    int a;
+    int b;
     QColor color;
 
 public:
@@ -110,11 +110,11 @@ public:
     void update(int start, int end);
     void update(int start, int end, const QColor& color);
 
-    void setStart(int start);
-    void setEnd(int end);
+    void setA(int start);
+    void setB(int end);
     void setColor(const QColor& color);
-    int getStart();
-    int getEnd();
+    int getA();
+    int getB();
     QColor getColor();
 
     void render(HexEditor* editor, QPainter& painter);

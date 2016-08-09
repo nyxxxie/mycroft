@@ -39,59 +39,51 @@ HighlightArea::HighlightArea() {
     init(0, 0);
 }
 
-HighlightArea::HighlightArea(int start, int end) {
-    init(start, end);
+HighlightArea::HighlightArea(int a, int b) {
+    init(a, b);
 }
 
-HighlightArea::HighlightArea(int start, int end, const QColor& color) {
-    init(start, end, color);
+HighlightArea::HighlightArea(int a, int b, const QColor& color) {
+    init(a, b, color);
 }
 
-void HighlightArea::init(int start, int end) {
-    init(start, end, QColor(255, 255, 255));
+void HighlightArea::init(int a, int b) {
+    init(a, b, QColor(255, 255, 255));
 }
 
-void HighlightArea::init(int start, int end, const QColor& color) {
+void HighlightArea::init(int a, int b, const QColor& color) {
 
-    /* Swap if end and start are different for some reason */
-    if (start > end) {
-        this->start = end;
-        this->end = start;
-    }
-    else {
-        this->start = start;
-        this->end = end;
-    }
-
+    this->a = a;
+    this->b = b;
     this->color = color;
 }
 
-void HighlightArea::update(int start, int end) {
-    init(start, end);
+void HighlightArea::update(int a, int b) {
+    init(a, b);
 }
 
-void HighlightArea::update(int start, int end, const QColor& color) {
-    init(start, end, color);
+void HighlightArea::update(int a, int b, const QColor& color) {
+    init(a, b, color);
 }
 
-void HighlightArea::setStart(int start) {
-    update(start, this->end, this->color);
+void HighlightArea::setA(int a) {
+    this->a = a;
 }
 
-void HighlightArea::setEnd(int end) {
-    update(this->start, end, this->color);
+void HighlightArea::setB(int b) {
+    this->b = b;
 }
 
 void HighlightArea::setColor(const QColor& color) {
-    update(this->start, this->end, color);
+    this->color = color;
 }
 
-int HighlightArea::getStart() {
-    return this->start;
+int HighlightArea::getA() {
+    return this->a;
 }
 
-int HighlightArea::getEnd() {
-    return this->end;
+int HighlightArea::getB() {
+    return this->b;
 }
 
 QColor HighlightArea::getColor() {
@@ -396,12 +388,18 @@ bool HexView::getPos(const QPoint& point, int* byte, int* nybble) {
     int s = start + editor->widget_text_offset;
     int e = (start+width) - (editor->widget_text_offset*2);
     int x = point.x();
-    int y = point.x();
+    int y = point.y();
 
     if (x >= s && x <= e) {
         int sep = (editor->font_cwidth*2) + byte_gap;
         if (byte != NULL) {
-            *byte = ((x-s) / sep);
+            printf("ass: %i\n", y / (editor->font_cheight+editor->row_offset));
+            int vert_mul = 0;
+            if (y >= 0) {
+                vert_mul = QMC_HEXEDIT_BYTESPERROW*(y/(editor->font_cheight+editor->row_offset));
+            }
+
+            *byte = vert_mul + ((x-s) / sep);
         }
 
         if (nybble != NULL) {
@@ -428,23 +426,30 @@ bool HexView::getPos(const QPoint& point, int* byte, int* nybble) {
  */
 void HexView::renderHighlight(HighlightArea* area, QPainter& painter) {
 
+    int selection_a = area->getA();
+    int selection_b = area->getB();
+
+    /* Swap the two points if the "front" one is bigger than the "rear" */
+    if (selection_a > selection_b) {
+        selection_b = area->getA();
+        selection_a = area->getB();
+    }
+
     /* Does the selection start in range of the file? */
-    int selection_start = area->getStart();
-    if (selection_start > file_size(editor->curfile)) {
+    if (selection_a > file_size(editor->curfile)) {
         return;
     }
 
     /* If the selection extends past the end of the file, trim it */
-    int selection_end = area->getEnd();
-    if (selection_end > file_size(editor->curfile)) {
-        selection_end = file_size(editor->curfile);
+    if (selection_b > file_size(editor->curfile)) {
+        selection_b = file_size(editor->curfile);
     }
 
     /* Figure out the bytes and rows the selection will be on */
-    const int startpos = selection_start % QMC_HEXEDIT_BYTESPERROW;
-    const int startline = selection_start / QMC_HEXEDIT_BYTESPERROW;
-    const int endpos = selection_end % QMC_HEXEDIT_BYTESPERROW;
-    const int endline = selection_end / QMC_HEXEDIT_BYTESPERROW;
+    const int startpos = selection_a % QMC_HEXEDIT_BYTESPERROW;
+    const int startline = selection_a / QMC_HEXEDIT_BYTESPERROW;
+    const int endpos = selection_b % QMC_HEXEDIT_BYTESPERROW;
+    const int endline = selection_b / QMC_HEXEDIT_BYTESPERROW;
 
     /* If the endline is past the bounds of the bottom screen, trim it */
     //if (endline > rows_shown) {
@@ -541,23 +546,23 @@ void HexView::render(QPainter& painter) {
 
 void HexView::mouseMoveEvent(QMouseEvent* event) {
 
-    /* Determine if mouse is inside widget */
+    /* Some constants to shorten code */
+    HighlightArea* s = editor->selector;
+    const int a = s->getA();
+    const int b = s->getB();
+    const bool sr = editor->selector_shouldrender;
+
     int byte, nybble;
     if (getPos(event->pos(), &byte, &nybble)) {
 
-        if (!editor->selector_shouldrender) {
-            editor->selector->setStart(byte);
-            editor->selector->setEnd(byte);
-        }
-
-        printf("byte:%i st:%i n:%i, sr:%i\n", byte, editor->selector->getStart(), nybble, editor->selector_shouldrender);
-
-        editor->selector->setEnd(byte);
-        if (byte == editor->selector->getStart()) {
-            if (nybble >= 1) {
+        /* If this is the first movement after a mouse press, reset selection */
+        editor->selector->setB(byte);
+        //printf("byte:%i  a:%i  b:%i\n", byte, a, b);
+        if (byte == a) {
+            if (nybble >= 2) {
                 editor->selector_shouldrender = true;
             }
-            else {
+            else if (nybble == 0 && editor->selector_shouldrender){
                 editor->selector_shouldrender = false;
             }
         }
@@ -571,16 +576,12 @@ void HexView::mouseMoveEvent(QMouseEvent* event) {
 }
 
 void HexView::mousePressEvent(QMouseEvent* event) {
-
-    editor->selector_shouldrender = false;
-
     int byte, nybble;
     if (getPos(event->pos(), &byte, &nybble)) {
-        printf("reset: %i\n", byte);
-        editor->selector->setStart(byte);
-        editor->selector->setEnd(byte);
+        editor->selector->setA(byte);
+        editor->selector->setB(byte);
     }
-
+    editor->selector_shouldrender = false;
     editor->adjust();
     editor->viewport()->update();
 }
