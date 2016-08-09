@@ -632,14 +632,21 @@ void AsciiView::render(QPainter& painter) {
 
             /* Figure out if byte isn't printable */
             QChar c = QChar(bytes[j]);
-            if (!c.isPrint()) {
-                c = QChar('.');
+            if (c.isPrint()) {
+                painter.drawText(editor->widget_text_offset+start+(j*editor->font_cwidth),
+                    row*(editor->font_cheight+editor->row_offset),
+                    QString("%1").arg(c));
+            }
+            else {
+                QPen old = painter.pen();
+                painter.setPen(QPen(QColor(190, 0, 190)));
+                painter.drawText(editor->widget_text_offset+start+(j*editor->font_cwidth),
+                    row*(editor->font_cheight+editor->row_offset),
+                    QString("."));
+                painter.setPen(old);
             }
 
             /* Print char */
-            painter.drawText(editor->widget_text_offset+start+(j*editor->font_cwidth),
-                row*(editor->font_cheight+editor->row_offset),
-                QString("%1").arg(c));
         }
     }
     file_set_cursor(editor->curfile, cursor_prev);
