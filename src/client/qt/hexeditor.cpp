@@ -393,7 +393,6 @@ bool HexView::getPos(const QPoint& point, int* byte, int* nybble) {
     if (x >= s && x <= e) {
         int sep = (editor->font_cwidth*2) + byte_gap;
         if (byte != NULL) {
-            printf("ass: %i\n", y / (editor->font_cheight+editor->row_offset));
             int vert_mul = 0;
             if (y >= 0) {
                 vert_mul = QMC_HEXEDIT_BYTESPERROW*(y/(editor->font_cheight+editor->row_offset));
