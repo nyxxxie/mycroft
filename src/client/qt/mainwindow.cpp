@@ -1,3 +1,4 @@
+#include <QFileDialog>
 #include <QSizePolicy>
 #include <QContextMenuEvent>
 #include "mainwindow.h"
@@ -26,8 +27,6 @@ MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent) {
     CreateEditor();
     CreateStatusBar();
 
-
-
     /* Add the elements to a layout and set it */
     QVBoxLayout* layout = new QVBoxLayout();
     layout->setMargin(0);
@@ -50,10 +49,6 @@ void MainWindow::contextMenuEvent(QContextMenuEvent *event) {
 
 MainWindow::~MainWindow() {
     //TODO: cleanup
-}
-
-void MainWindow::on_actionExit_triggered() {
-    this->close();
 }
 
 void MainWindow::CreateMenuBar() {
@@ -97,36 +92,119 @@ void MainWindow::CreateStatusBar() {
 
 void MainWindow::CreateActions() {
 
-    //TODO: add these to the menubar
     act_file_new = new QAction("New", this);
+    connect(act_file_new, &QAction::triggered,
+            this, &MainWindow::on_act_file_new_triggered);
 
     act_file_open = new QAction("Open", this);
+    connect(act_file_open, &QAction::triggered,
+            this, &MainWindow::on_act_file_open_triggered);
 
     act_file_save = new QAction("Save", this);
+    connect(act_file_save, &QAction::triggered,
+            this, &MainWindow::on_act_file_save_triggered);
 
     act_file_saveas = new QAction("Save As", this);
+    connect(act_file_saveas, &QAction::triggered,
+            this, &MainWindow::on_act_file_saveas_triggered);
 
     act_file_exit = new QAction("Exit", this);
     act_file_exit->setShortcuts(QKeySequence::Quit);
     act_file_exit->setStatusTip("Exit Mycroft");
-    connect(act_file_exit, &QAction::triggered, this, &QWidget::close);
+    connect(act_file_exit, &QAction::triggered,
+            this, &MainWindow::on_act_file_exit_triggered);
 
     act_edit_undo = new QAction("Undo", this);
+    connect(act_edit_undo, &QAction::triggered,
+            this, &MainWindow::on_act_edit_undo_triggered);
 
     act_edit_redo = new QAction("Redo", this);
+    connect(act_edit_redo, &QAction::triggered,
+            this, &MainWindow::on_act_edit_redo_triggered);
 
     act_edit_cut = new QAction("Cut", this);
+    connect(act_edit_cut, &QAction::triggered,
+            this, &MainWindow::on_act_edit_cut_triggered);
 
     act_edit_copy = new QAction("Copy", this);
+    connect(act_edit_copy, &QAction::triggered,
+            this, &MainWindow::on_act_edit_copy_triggered);
 
     act_edit_paste = new QAction("Paste", this);
+    connect(act_edit_paste, &QAction::triggered,
+            this, &MainWindow::on_act_edit_paste_triggered);
 
     act_script_runfile = new QAction("Run File", this);
+    connect(act_script_runfile, &QAction::triggered,
+            this, &MainWindow::on_act_script_runfile_triggered);
 
     act_help_about = new QAction("About", this);
+    connect(act_help_about, &QAction::triggered,
+            this, &MainWindow::on_act_help_about_triggered);
 }
 
 void MainWindow::setMycroftCtx(mc_ctx_t* ctx) {
     this->ctx = ctx;
     this->editor->setMycroftCtx(ctx);
+}
+
+void MainWindow::on_act_file_new_triggered() {
+    printf("on_act_file_new_triggered\n");
+}
+
+void MainWindow::on_act_file_open_triggered() {
+    printf("on_act_file_open_triggered\n");
+}
+
+void MainWindow::on_act_file_save_triggered() {
+    printf("on_act_file_save_triggered\n");
+}
+
+void MainWindow::on_act_file_saveas_triggered() {
+    printf("on_act_file_saveas_triggered\n");
+}
+
+void MainWindow::on_act_file_exit_triggered() {
+    printf("on_act_file_exit_triggered\n");
+    this->close();
+}
+
+void MainWindow::on_act_edit_undo_triggered() {
+    printf("on_act_edit_undo_triggered\n");
+}
+
+void MainWindow::on_act_edit_redo_triggered() {
+    printf("on_act_edit_redo_triggered\n");
+}
+
+void MainWindow::on_act_edit_cut_triggered() {
+    printf("on_act_edit_cut_triggered\n");
+}
+
+void MainWindow::on_act_edit_copy_triggered() {
+    printf("on_act_edit_copy_triggered\n");
+}
+
+void MainWindow::on_act_edit_paste_triggered() {
+    printf("on_act_edit_paste_triggered\n");
+}
+
+void MainWindow::on_act_script_runfile_triggered() {
+
+    QString filters("Python Scripts (*.py);;All files (*.*)");
+    QString defaultFilter("Python Scripts (*.py)");
+
+    /* Static method approach */
+    QString file = QFileDialog::getOpenFileName(
+        NULL,
+        "Open Script File",
+        QDir::currentPath(),
+        filters,
+        &defaultFilter);
+
+    printf("Running script: \"%s\"\n", file.toStdString().c_str());
+}
+
+void MainWindow::on_act_help_about_triggered() {
+    printf("on_act_help_about_triggered\n");
 }

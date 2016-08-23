@@ -55,8 +55,18 @@ protected:
     void contextMenuEvent(QContextMenuEvent* event) Q_DECL_OVERRIDE;
 
 private slots:
-    void on_actionExit_triggered();
-
+    void on_act_file_new_triggered();
+    void on_act_file_open_triggered();
+    void on_act_file_save_triggered();
+    void on_act_file_saveas_triggered();
+    void on_act_file_exit_triggered();
+    void on_act_edit_undo_triggered();
+    void on_act_edit_redo_triggered();
+    void on_act_edit_cut_triggered();
+    void on_act_edit_copy_triggered();
+    void on_act_edit_paste_triggered();
+    void on_act_script_runfile_triggered();
+    void on_act_help_about_triggered();
 };
 
 #endif // MAINWINDOW_H
