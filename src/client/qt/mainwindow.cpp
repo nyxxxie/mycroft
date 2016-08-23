@@ -21,10 +21,10 @@ MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent) {
     setCentralWidget(window);
 
     /* Create the main elements */
+    CreateActions();
     CreateMenuBar();
     CreateEditor();
     CreateStatusBar();
-    CreateActions();
 
 
 
@@ -57,10 +57,34 @@ void MainWindow::on_actionExit_triggered() {
 }
 
 void MainWindow::CreateMenuBar() {
+
+    /* Create menu bar object */
     menu_bar = new QMenuBar();
+
+    /* File menu */
     QMenu* menu1 = menu_bar->addMenu("File");
+    menu1->addAction(act_file_new);
+    menu1->addAction(act_file_open);
+    menu1->addAction(act_file_save);
+    menu1->addAction(act_file_saveas);
+    menu1->addSeparator();
+    menu1->addAction(act_file_exit);
+
+    /* Edit menu */
     QMenu* menu2 = menu_bar->addMenu("Edit");
-    QMenu* menu3 = menu_bar->addMenu("Help");
+    menu2->addAction(act_edit_undo);
+    menu2->addAction(act_edit_redo);
+    menu2->addAction(act_edit_cut);
+    menu2->addAction(act_edit_copy);
+    menu2->addAction(act_edit_paste);
+
+    /* Script menu */
+    QMenu* menu3 = menu_bar->addMenu("Script");
+    menu3->addAction(act_script_runfile);
+
+    /* Help menu */
+    QMenu* menu4 = menu_bar->addMenu("Help");
+    menu4->addAction(act_help_about);
 }
 
 void MainWindow::CreateEditor() {
@@ -96,6 +120,8 @@ void MainWindow::CreateActions() {
     act_edit_copy = new QAction("Copy", this);
 
     act_edit_paste = new QAction("Paste", this);
+
+    act_script_runfile = new QAction("Run File", this);
 
     act_help_about = new QAction("About", this);
 }

@@ -37,6 +37,7 @@ class MainWindow : public QMainWindow {
     QAction* act_edit_cut;
     QAction* act_edit_copy;
     QAction* act_edit_paste;
+    QAction* act_script_runfile;
     QAction* act_help_about;
 
     void CreateMenuBar();
