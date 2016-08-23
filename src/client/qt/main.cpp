@@ -25,7 +25,7 @@ int main(int argc, char *argv[]) {
     /* Process parser arguments */
     parser.process(a);
     const QStringList args = parser.positionalArguments();
-    if (args.size() < 0) {
+    if (args.size() <= 0) {
         printf("You didn't specify a file to open, please do that.\n");
         return 1;
     }
