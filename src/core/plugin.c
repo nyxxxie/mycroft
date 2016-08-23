@@ -2,6 +2,7 @@
 #include <dirent.h>
 #include <Python.h>
 #include <mycroft/plugin.h>
+#include "binds/binds_file.h"
 #include "file.h"
 #include "plugin.h"
 #include "config.h"
@@ -84,7 +85,15 @@ int mc_plugin_entry_free(mc_plugin_entry_t* entry) {
  * @internal
  */
 int init_bindings() {
-    //TODO: implement as we add bindings
+
+    int rc = 0;
+
+    rc = init_binds_file();
+    if (rc < 0) {
+        return rc;
+    }
+
+    return rc;
 }
 
 /**
@@ -153,7 +162,7 @@ int load_plugin(const char* plugins_dir, const char* plugin_dir) {
     char* initfile = NULL;
 
     /* Alloc space for plugin_dir path with PLUGIN_INIT_FILE appended to it */
-    initfile = (char*)calloc(1, strlen(plugins_dir)
+    initfile = (char*)alloca(strlen(plugins_dir)
         + strlen(plugin_dir)
         + strlen(PLUGIN_INIT_FILE)
         + 2);
