@@ -129,7 +129,6 @@ int load_project(mc_mdb_t* mdb, mc_ctx_t* ctx) {
 
 }
 
-
 int mycroft_open_file(mc_ctx_t* ctx, const char* target_filename) {
 
     int b = strlen(target_filename);
