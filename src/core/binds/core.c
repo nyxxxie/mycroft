@@ -1,0 +1,184 @@
+#include "binds/core.h"
+#include "binds/file.h"
+
+static mfile_data_t* mcore_get_file(mcore_ctx_t* self, PyObject* dontuse) {
+
+    PyObject* ret = NULL;
+    mc_file_t* file = NULL;
+
+    file = mycroft_get_file(self->ctx);
+    if (file == NULL) {
+        Py_INCREF(Py_None);
+        return Py_None;
+    }
+
+    ret = create_mfile(file);
+    if (ret == NULL) {
+        PyErr_SetString(PyExc_RuntimeError, "failed to create mfile object");
+        return NULL;
+    }
+
+    return ret;
+}
+
+static PyMethodDef mcore_ctx_methods[] = {
+    {"get_file", mcore_get_file, METH_NOARGS, ""},
+    {NULL, NULL, 0, NULL}
+};
+
+static mcore_ctx_t* mcore_ctx_new(PyTypeObject* type, PyObject* args, PyObject* kwds) {
+
+    mcore_ctx_t* self = NULL;
+
+    /* Allocate space for the data struct */
+    self = (mcore_ctx_t*)type->tp_alloc(type, 0);
+    if (self == NULL) {
+        return NULL;
+    }
+
+    /* Set defaults */
+    printf("mcore_ctx_new NOT IMPLEMENTED OH GOD\n");
+    self->ctx = NULL;
+
+    return self;
+}
+
+static PyObject* mcore_ctx_dealloc(mfile_data_t* self) {
+
+}
+
+static int mcore_ctx_init(mfile_data_t* self, PyObject* args, PyObject* kwds) {
+    return 0;
+}
+
+#define MCORE_CTX_DOC \
+    "Represents an opened instance of mycroft."
+
+static PyTypeObject mcore_ctx_type = {
+    PyVarObject_HEAD_INIT(NULL, 0)
+    "mcore.ctx",               /* tp_name */
+    sizeof(mcore_ctx_t),       /* tp_basicsize */
+    0,                         /* tp_itemsize */
+    0,                         /* tp_dealloc */
+    0,                         /* tp_print */
+    0,                         /* tp_getattr */
+    0,                         /* tp_setattr */
+    0,                         /* tp_reserved */
+    0,                         /* tp_repr */
+    0,                         /* tp_as_number */
+    0,                         /* tp_as_sequence */
+    0,                         /* tp_as_mapping */
+    0,                         /* tp_hash  */
+    0,                         /* tp_call */
+    0,                         /* tp_str */
+    0,                         /* tp_getattro */
+    0,                         /* tp_setattro */
+    0,                         /* tp_as_buffer */
+    Py_TPFLAGS_DEFAULT |
+        Py_TPFLAGS_BASETYPE,   /* tp_flags */
+    MCORE_CTX_DOC,             /* tp_doc */
+    0,                         /* tp_traverse */
+    0,                         /* tp_clear */
+    0,                         /* tp_richcompare */
+    0,                         /* tp_weaklistoffset */
+    0,                         /* tp_iter */
+    0,                         /* tp_iternext */
+    mcore_ctx_methods,         /* tp_methods */
+    0,                         /* tp_members */
+    0,                         /* tp_getset */
+    0,                         /* tp_base */
+    0,                         /* tp_dict */
+    0,                         /* tp_descr_get */
+    0,                         /* tp_descr_set */
+    0,                         /* tp_dictoffset */
+    0,                         /* tp_init */
+    0,                         /* tp_alloc */
+    mcore_ctx_new,             /* tp_new */
+};
+
+static mcore_ctx_t* mcore_get_ctx(mcore_ctx_t* self, PyObject* dontuse) {
+
+    mcore_ctx_t* ctx = NULL;
+
+    /* Create ctx */
+    ctx = create_mcore_ctx(mycroft_get_ctx());
+    if (ctx == NULL) {
+        PyErr_SetString(PyExc_RuntimeError, "failed to create mctx object");
+        return NULL;
+    }
+ 
+    return ctx;
+}
+
+static PyMethodDef mcore_methods[] = {
+    {"get_ctx", mcore_get_ctx, METH_NOARGS, "Checks if a file exists."},
+    {NULL, NULL, 0, NULL}
+};
+
+PyObject* create_mcore_ctx(mc_ctx_t* c) {
+
+    mcore_ctx_t* ret = NULL;
+
+    /* Create object */
+    ret = PyObject_New(mcore_ctx_t, &mcore_ctx_type);
+    if (ret == NULL) {
+        return NULL;
+    }
+
+    /* Initialize object */
+    ret = PyObject_Init(ret, &mcore_ctx_type);
+    if (ret == NULL) {
+        return NULL;
+    }
+
+    /* Set ctx */
+    ret->ctx = mycroft_get_ctx();
+
+    return (PyObject*)ret;
+}
+
+static PyModuleDef mcore_module = {
+    PyModuleDef_HEAD_INIT,
+    "mcore",
+    "Bindings for mcore's file api.",
+    -1,
+    mcore_methods,
+    NULL, NULL, NULL, NULL
+};
+
+static PyMODINIT_FUNC PyInit_mcore() {
+
+    PyObject* m = NULL;
+
+    /* Assign new function */
+    mcore_ctx_type.tp_new = PyType_GenericNew;
+
+    /* Make sure the type is ready to go */
+    if (PyType_Ready(&mcore_ctx_type) < 0) {
+        return NULL;
+    }
+
+    /* Create module */
+    m = PyModule_Create(&mcore_module);
+    if (m == NULL) {
+        return NULL;
+    }
+
+    Py_INCREF(&mcore_ctx_type);
+    PyModule_AddObject(m, "mfile", (PyObject*)&mcore_ctx_type);
+
+    return m;
+}
+
+
+int init_binds_core() {
+
+    int rc = 0;
+
+    rc = PyImport_AppendInittab("mcore", PyInit_mcore);
+    if (rc < 0) {
+        return -1;
+    }
+
+    return 0;
+}

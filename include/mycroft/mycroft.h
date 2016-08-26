@@ -11,6 +11,8 @@ extern "C" {
 typedef struct mc_ctx_t mc_ctx_t;
 typedef struct mc_mdb_t mc_mdb_t;
 
+mc_ctx_t* mycroft_get_ctx();
+
 /* Init/free */
 mc_ctx_t* mycroft_init();
 void mycroft_free(mc_ctx_t* ctx);

@@ -35,7 +35,8 @@ set(SRC
     config_parse.c
     database.c
     membuf.c
-    binds/binds_file.c
+    binds/file.c
+    binds/core.c
 )
 
 # Save me from manually including the files ;)

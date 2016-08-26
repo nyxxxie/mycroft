@@ -9,6 +9,10 @@
 #include "file.h"
 #include "plugin.h"
 
+mc_ctx_t* mycroft_get_ctx() {
+    return mc_active_ctx;
+}
+
 mc_ctx_t* mycroft_init() {
 
     int rc = 0;
@@ -19,6 +23,7 @@ mc_ctx_t* mycroft_init() {
         perror("Failed to allocate space for mc_ctx_t");
         return NULL;
     }
+    mc_active_ctx = ctx;
 
     ctx->config = (mc_config_t*)malloc(sizeof(mc_config_t));
     if (ctx->config == NULL) {

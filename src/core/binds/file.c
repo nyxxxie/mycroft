@@ -1,23 +1,40 @@
-#include <Python.h>
 #include <mycroft/file.h>
-#include "binds/binds_file.h"
+#include "binds/file.h"
 
-typedef struct {
-    PyObject_HEAD
-    mc_file_t* file;
-} mfile_data_t;
+static PyObject* mfile_name(mfile_data_t* self, PyObject* dontuse) {
+    
+    if (self->file == NULL) {
+        PyErr_SetString(PyExc_RuntimeError, "object has no file");
+        return NULL;
+    }
 
-static PyObject* mfile_name(mfile_data_t* self) {
-    return NULL;
+    return PyUnicode_FromString(file_name(self->file));
 }
 
-static PyObject* mfile_path(mfile_data_t* self) {
-    return NULL;
+static PyObject* mfile_path(mfile_data_t* self, PyObject* dontuse) {
+ 
+    if (self->file == NULL) {
+        PyErr_SetString(PyExc_RuntimeError, "object has no file");
+        return NULL;
+    }
+
+    return PyUnicode_FromString(file_path(self->file));
+}
+
+static PyObject* mfile_size(mfile_data_t* self, PyObject* dontuse) {
+ 
+    if (self->file == NULL) {
+        PyErr_SetString(PyExc_RuntimeError, "object has no file");
+        return NULL;
+    }
+
+    return PyLong_FromLongLong(file_size(self->file));
 }
 
 static PyMethodDef mfile_methods[] = {
-    {"name", mfile_name, METH_VARARGS, ""},
-    {"path", mfile_path, METH_VARARGS, ""},
+    {"name", mfile_name, METH_NOARGS, ""},
+    {"path", mfile_path, METH_NOARGS, ""},
+    {"size", mfile_size, METH_NOARGS, ""},
     {NULL, NULL, 0, NULL}
 };
 
@@ -53,7 +70,7 @@ static int mfile_init(mfile_data_t* self, PyObject* args, PyObject* kwds) {
 
 static PyTypeObject mcore_file_mfile_type = {
     PyVarObject_HEAD_INIT(NULL, 0)
-    "mcore_file.mfile",        /* tp_name */
+    "mfile",                   /* tp_name */
     sizeof(mfile_data_t),      /* tp_basicsize */
     0,                         /* tp_itemsize */
     0,                         /* tp_dealloc */
@@ -88,7 +105,7 @@ static PyTypeObject mcore_file_mfile_type = {
     0,                         /* tp_descr_get */
     0,                         /* tp_descr_set */
     0,                         /* tp_dictoffset */
-    (initproc)mfile_init,      /* tp_init */
+    0,                         /* tp_init */
     0,                         /* tp_alloc */
     mfile_new,                 /* tp_new */
 };
@@ -114,17 +131,47 @@ static PyObject* mfile_exists(PyObject* self, PyObject* args) {
 }
 
 static PyObject* mfile_open(PyObject* self, PyObject* args) {
+
+    printf("RAN A THING OHHMMEEEHGGEEEEEE");
+
+    Py_RETURN_TRUE;
 }
 
 static PyObject* mfile_close(PyObject* self, PyObject* args) {
+
+    printf("RAN A THING OHHMMEEEHGGEEEEEE");
+
+    Py_RETURN_TRUE;
 }
 
 static PyMethodDef mcore_file_methods[] = {
-    {"exists", mfile_exists, METH_VARARGS, ""},
-    {"open", mfile_open, METH_VARARGS, ""},
-    {"close", mfile_close, METH_VARARGS, ""},
+    {"exists",    mfile_exists, METH_VARARGS, "Checks if a file exists."},
+    {"open",      mfile_open,   METH_VARARGS, "Opens a file."},
+    {"close",     mfile_close,  METH_VARARGS, "Closes a file."},
     {NULL, NULL, 0, NULL}
 };
+
+PyObject* create_mfile(mc_file_t* f) {
+
+    mfile_data_t* ret = NULL;
+
+    /* Create object */
+    ret = PyObject_New(mfile_data_t, &mcore_file_mfile_type);
+    if (ret == NULL) {
+        return NULL;
+    }
+
+    /* Initialize object */
+    ret = PyObject_Init(ret, &mcore_file_mfile_type);
+    if (ret == NULL) {
+        return NULL;
+    }
+
+    /* Set file */
+    ret->file = f;
+
+    return (PyObject*)ret;  
+}
 
 static PyModuleDef mcore_file_module = {
     PyModuleDef_HEAD_INIT,
@@ -135,12 +182,12 @@ static PyModuleDef mcore_file_module = {
     NULL, NULL, NULL, NULL
 };
 
-PyMODINIT_FUNC PyInit_mcore_file() {
+static PyMODINIT_FUNC PyInit_mcore_file() {
 
     PyObject* m = NULL;
 
     /* Assign new function */
-    mcore_file_mfile_type.tp_new = PyType_GenericNew;
+    //mcore_file_mfile_type.tp_new = PyType_GenericNew;
 
     /* Make sure the type is ready to go */
     if (PyType_Ready(&mcore_file_mfile_type) < 0) {

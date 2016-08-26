@@ -2,7 +2,8 @@
 #include <dirent.h>
 #include <Python.h>
 #include <mycroft/plugin.h>
-#include "binds/binds_file.h"
+#include "binds/file.h"
+#include "binds/core.h"
 #include "file.h"
 #include "plugin.h"
 #include "config.h"
@@ -89,6 +90,11 @@ int init_bindings() {
     int rc = 0;
 
     rc = init_binds_file();
+    if (rc < 0) {
+        return rc;
+    }
+
+    rc = init_binds_core();
     if (rc < 0) {
         return rc;
     }

@@ -15,4 +15,6 @@ struct mc_ctx_t {
     mc_file_t*   file;
 };
 
+static mc_ctx_t* mc_active_ctx = NULL;
+
 #endif // MYCROFT_INT_CORE_H
