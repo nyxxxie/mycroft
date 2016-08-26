@@ -1,6 +1,7 @@
 #include <QFileDialog>
 #include <QSizePolicy>
 #include <QContextMenuEvent>
+#include <mycroft/plugin.h>
 #include "mainwindow.h"
 
 //TODO: move this to a file
@@ -203,6 +204,10 @@ void MainWindow::on_act_script_runfile_triggered() {
         &defaultFilter);
 
     printf("Running script: \"%s\"\n", file.toStdString().c_str());
+    int rc = mc_plugin_runfile(file.toStdString().c_str());
+    if (rc < 0) {
+        printf("Failed to run script!\n");
+    }
 }
 
 void MainWindow::on_act_help_about_triggered() {
