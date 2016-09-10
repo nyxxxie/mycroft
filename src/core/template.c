@@ -217,9 +217,9 @@ struct_def_t* template_find_struct_def(template_t* t, char* name) {
     return NULL;
 }
 
-ast_node_t* create_ast_node(template_t* t, member_t* member);
+ast_node_t* create_ast_node(template_t* t, ast_node_t* parent, member_t* member);
 
-ast_struct_t* create_ast_struct(template_t* t, const char* name, struct_def_t* def) {
+ast_struct_t* create_ast_struct(template_t* t, ast_node_t* parent, const char* name, struct_def_t* def) {
 
     int i = 0;
     ast_struct_t* ret = NULL;
@@ -229,6 +229,7 @@ ast_struct_t* create_ast_struct(template_t* t, const char* name, struct_def_t* d
     if (ret == NULL) {
         return NULL;
     }
+    ret->parent = parent;
 
     /* */
     ret->name = (char*)malloc(strlen(name)+1);
@@ -244,7 +245,7 @@ ast_struct_t* create_ast_struct(template_t* t, const char* name, struct_def_t* d
         ast_node_t* node = NULL;
 
         /* */
-        node = create_ast_node(t, def->members[i]);
+        node = create_ast_node(t, ret, def->members[i]);
         if (node == NULL) {
             return NULL;
         }
@@ -259,7 +260,7 @@ ast_struct_t* create_ast_struct(template_t* t, const char* name, struct_def_t* d
     return ret;
 }
 
-ast_var_t* create_ast_var(member_t* member) {
+ast_var_t* create_ast_var(template_t* t, ast_node_t* parent, const char* name, const char* type) {
 
     ast_var_t* ret = NULL;
 
@@ -268,17 +269,18 @@ ast_var_t* create_ast_var(member_t* member) {
     if (ret == NULL) {
         return NULL;
     }
+    ret->parent = parent;
 
     /* */
-    ret->name = (char*)malloc(strlen(member->name)+1);
+    ret->name = (char*)malloc(strlen(name)+1);
     if (ret->name == NULL) {
         printf("Failed to allocate space for ret->name\n");
         return NULL;
     }
-    strcpy(ret->name, member->name);
+    strcpy(ret->name, name);
 
     /* */
-    ret->datatype = datatype_create(member->type);
+    ret->datatype = datatype_create(type);
     if (ret->datatype == NULL) {
         printf("Failed to create datatype.\n");
         return NULL;
@@ -287,17 +289,17 @@ ast_var_t* create_ast_var(member_t* member) {
     return ret;
 }
 
-ast_node_t* create_ast_node(template_t* t, member_t* member) {
+ast_node_t* create_ast_node(template_t* t, ast_node_t* parent, member_t* member) {
 
     ast_node_t* ret = NULL;
     struct_def_t* def = NULL;
 
     def = template_find_struct_def(t, member->type);
     if (def != NULL) {
-        ret = (ast_node_t*)create_ast_struct(t, member->name, def);
+        ret = (ast_node_t*)create_ast_struct(t, parent, member->name, def);
     }
     else {
-        ret = (ast_node_t*)create_ast_var(member);
+        ret = (ast_node_t*)create_ast_var(t, parent, member->name, member->type);
     }
 
     return ret;
@@ -313,11 +315,12 @@ int construct_ast(template_t* t) {
         return -1;
     }
 
-    t->entry = create_ast_struct(t, TPARSER_ENTRY, entry);
+    t->entry = create_ast_struct(t, NULL, TPARSER_ENTRY, entry);
     if (t->entry == NULL) {
         fprintf(stderr, "Failed to create entry struct.");
         return -1;
     }
+    t->entry->parent = NULL;
 
     return 0;
 }

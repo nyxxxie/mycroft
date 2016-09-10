@@ -40,6 +40,7 @@ typedef struct {
 typedef struct {
     ast_type_t  type;
     char*       name;
+    ast_node_t* parent;
     datatype_t* datatype;
 } ast_var_t;
 
@@ -52,6 +53,7 @@ void ast_var_free(ast_var_t* ast);
 typedef struct {
     ast_type_t   type;
     char*        name;
+    ast_node_t*  parent;
     ast_node_t** nodes;
     unsigned int node_amt;
 } ast_struct_t;
