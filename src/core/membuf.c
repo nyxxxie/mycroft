@@ -6,6 +6,7 @@ int membuf_init(membuf_t* mb, membuf_type type) {
     mb->size = 0;
     mb->data = NULL;
     mb->type = type;
+    return 0;
 }
 
 int membuf_copybytes(membuf_t* mb, void* data, int size) {
