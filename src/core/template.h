@@ -1,65 +1,107 @@
-#ifndef MYCROFT_INT_TEMPLATE_H
-#define MYCROFT_INT_TEMPLATE_H
-
-#include <stdint.h>
-#include "core.h"
-
-#define MC_TEMPLATE_ENTRY  0
-#define MC_TEMPLATE_STRUCT 1
-
-#define MC_TEMPLATE_ENAME_MAX_SIZE 255
-#define MC_TEMPLATE_SNAME_MAX_SIZE 255
-#define MC_TEMPLATE_TNAME_MAX_SIZE 64
-#define MC_TEMPLATE_COMMENT_MAX_SIZE 255
+#ifndef TEMPLATE_H
+#define TEMPLATE_H
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-/** Generic entry.  Only really useful for accessing the type specifier. */
+/**
+ * Placeholder until type system gets completed.
+ */
 typedef struct {
-    uint8_t  type;
-} mc_template_entry_t;
+    char* name;
+} datatype_t;
 
-/** Represents a variable declaration in a struct */
+datatype_t* datatype_create(char* name);
+void datatype_free(datatype_t* type);
+
+///////////////////////////////////////////////////////////////////////////////
+
+/**
+ * AST node types.
+ */
+typedef enum {
+    AST_TYPE_VAR = 0, /** Variable node. */
+    AST_TYPE_STRUCT   /** Struct node. */
+} ast_type_t;
+
+/**
+ * Generic node in the abstract syntax tree.  The ast is meant to be used
+ * directly to parse a file
+ */
 typedef struct {
-    uint8_t  type;
-    char     name[MC_TEMPLATE_ENAME_MAX_SIZE];
-    uint32_t start_offset;
-    char     type_name[MC_TEMPLATE_TNAME_MAX_SIZE];
-    uint32_t type_size;;
-    char     color_fg[4];
-    char     color_bg[4];
-    char     comment[MC_TEMPLATE_COMMENT_MAX_SIZE];
-} mc_template_var_t;
+    ast_type_t type;
+    char*      name;
+} ast_node_t;
 
-/** Represents a struct declaration */
+/**
+ * Struct in the ast.
+ */
 typedef struct {
-    uint8_t           type;
-    char              name[MC_TEMPLATE_SNAME_MAX_SIZE];
-    int               entry_amount;
-    mc_template_var_t* entries;
-    char              color_fg[4];
-    char              color_bg[4];
-    char              comment[MC_TEMPLATE_COMMENT_MAX_SIZE];
-} mc_template_struct_t;
+    ast_type_t  type;
+    char*       name;
+    datatype_t* datatype;
+} ast_var_t;
 
-/** Root node in a template tree */
+ast_var_t* ast_var_create();
+void ast_var_free(ast_var_t* ast);
+
+/**
+ * Struct in the ast.
+ */
 typedef struct {
-    template_entry_t* root;
-} mc_template_t;
+    ast_type_t   type;
+    char*        name;
+    ast_node_t** nodes;
+    unsigned int node_amt;
+} ast_struct_t;
 
-/* Init/Exit */
-mc_template_t* mycroft_template_init();
-void mycroft_template_free(mc_template_t* t);
+ast_struct_t* ast_struct_create();
+void ast_struct_free(ast_struct_t* ast);
+int ast_struct_add_node(ast_struct_t* strct, ast_node_t* node);
 
-/* Template loading/creation */
-void mycroft_template_create(mc_template_t* t);
-int  mycroft_template_parse_str(mc_template_t* t, char* template_str);
-int  mycroft_template_parse_file(mc_template_t* t, mc_file_t* file);
+///////////////////////////////////////////////////////////////////////////////
+
+typedef struct {
+    char* name;
+    char* type;
+} member_t;
+
+member_t* member_create();
+void member_free(member_t* var);
+
+/**
+ * Represents a structure defined by the template file.  Used to create ast
+ * struct nodes.
+ */
+typedef struct {
+    char*         name;
+    member_t**    members;
+    unsigned int  member_amt;
+} struct_def_t;
+
+struct_def_t* struct_def_create();
+void struct_def_free(struct_def_t* sdef);
+int struct_def_add_member(struct_def_t* def, member_t* member);
+
+///////////////////////////////////////////////////////////////////////////////
+
+/**
+ * Contains information on a template.
+ */
+typedef struct {
+    struct_def_t** struct_defs;
+    unsigned int   struct_def_amt;
+    ast_struct_t*  entry;
+} template_t;
+
+template_t* template_create();
+template_t* template_create_from_file(const char* file);
+void template_free(template_t* t);
+int template_add_struct_def(template_t* t, struct_def_t* def);
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif // MYCROFT_INT_TEMPLATE_H
+#endif // TEMPLATE_H

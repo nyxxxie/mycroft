@@ -1,0 +1,20 @@
+/*
+This template contains some basic structs as well as an entry point.
+*/
+
+struct struct1 {
+    int attribute1;
+    int attribute2;
+};
+
+struct struct2 {
+    int attribute1;
+    int attribute2;
+};
+
+/* Entry point */
+struct FILE {
+    int blah;
+    struct1 s1;
+    struct2 s2;
+};

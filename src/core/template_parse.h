@@ -1,6 +1,0 @@
-#ifndef MYCROFT_INT_TEMPLATE_PARSE_H
-#define MYCROFT_INT_TEMPLATE_PARSE_H
-
-#include "template.h"
-
-#endif // MYCROFT_INT_TEMPLATE_PARSE_H

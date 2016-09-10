@@ -35,6 +35,8 @@ set(SRC
     config_parse.c
     database.c
     membuf.c
+    template.c
+    template_parser.c
     binds/file.c
     binds/core.c
 )
