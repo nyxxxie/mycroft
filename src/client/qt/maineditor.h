@@ -26,6 +26,7 @@ class MainEditor : public QWidget {
 public:
 
     void setMycroftCtx(mc_ctx_t* ctx);
+    mc_ctx_t* getMycroftCtx();
 
     MainEditor(QWidget* parent);
     ~MainEditor();

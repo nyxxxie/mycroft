@@ -22,26 +22,6 @@ TemplateEditor::TemplateEditor(QWidget* parent)
     init();
 }
 
-/**
- * Forms a treemodel from a template.
- *
- * @param template_text Text of the template we want to pase.
- * @return Returns true on success, false otherwise.
- */
-bool TemplateEditor::parseTemplate(TemplateModel* model, QString template_text) {
-    //model->initFromTemplate(template_text);
-}
-
-/**
- * Forms a treemodel from a template file.
- *
- * @param template_text Text of the template we want to pase.
- * @return Returns true on success, false otherwise.
- */
-
-bool TemplateEditor::parseTemplateFile(TemplateModel* model, QString file) {
-
-    //TODO: Read template from file
-
-    parseTemplate(model, "");
-}
+//ast_struct_t* getAstEntry() {
+//    return ((MainEditor*)parent())->getMycroftCtx()->templ->entry;
+//}

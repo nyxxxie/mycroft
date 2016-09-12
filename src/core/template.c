@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "template.h"
+#include <mycroft/template.h>
 #include "template_parser.h"
 
 datatype_t* datatype_create(char* name) {
@@ -217,9 +217,9 @@ struct_def_t* template_find_struct_def(template_t* t, char* name) {
     return NULL;
 }
 
-ast_node_t* create_ast_node(template_t* t, ast_node_t* parent, member_t* member);
+ast_node_t* create_ast_node(template_t* t, ast_node_t* parent, int index, member_t* member);
 
-ast_struct_t* create_ast_struct(template_t* t, ast_node_t* parent, const char* name, struct_def_t* def) {
+ast_struct_t* create_ast_struct(template_t* t, ast_node_t* parent, int index, const char* name, struct_def_t* def) {
 
     int i = 0;
     ast_struct_t* ret = NULL;
@@ -230,6 +230,8 @@ ast_struct_t* create_ast_struct(template_t* t, ast_node_t* parent, const char* n
         return NULL;
     }
     ret->parent = parent;
+    ret->index = ++index;
+    t->totalnodes++;
 
     /* */
     ret->name = (char*)malloc(strlen(name)+1);
@@ -245,7 +247,7 @@ ast_struct_t* create_ast_struct(template_t* t, ast_node_t* parent, const char* n
         ast_node_t* node = NULL;
 
         /* */
-        node = create_ast_node(t, ret, def->members[i]);
+        node = create_ast_node(t, ret, index, def->members[i]);
         if (node == NULL) {
             return NULL;
         }
@@ -260,7 +262,7 @@ ast_struct_t* create_ast_struct(template_t* t, ast_node_t* parent, const char* n
     return ret;
 }
 
-ast_var_t* create_ast_var(template_t* t, ast_node_t* parent, const char* name, const char* type) {
+ast_var_t* create_ast_var(template_t* t, ast_node_t* parent, int index, const char* name, const char* type) {
 
     ast_var_t* ret = NULL;
 
@@ -270,6 +272,8 @@ ast_var_t* create_ast_var(template_t* t, ast_node_t* parent, const char* name, c
         return NULL;
     }
     ret->parent = parent;
+    ret->index = ++index;
+    t->totalnodes++;
 
     /* */
     ret->name = (char*)malloc(strlen(name)+1);
@@ -289,17 +293,17 @@ ast_var_t* create_ast_var(template_t* t, ast_node_t* parent, const char* name, c
     return ret;
 }
 
-ast_node_t* create_ast_node(template_t* t, ast_node_t* parent, member_t* member) {
+ast_node_t* create_ast_node(template_t* t, ast_node_t* parent, int index, member_t* member) {
 
     ast_node_t* ret = NULL;
     struct_def_t* def = NULL;
 
     def = template_find_struct_def(t, member->type);
     if (def != NULL) {
-        ret = (ast_node_t*)create_ast_struct(t, parent, member->name, def);
+        ret = (ast_node_t*)create_ast_struct(t, parent, index, member->name, def);
     }
     else {
-        ret = (ast_node_t*)create_ast_var(t, parent, member->name, member->type);
+        ret = (ast_node_t*)create_ast_var(t, parent, index, member->name, member->type);
     }
 
     return ret;
@@ -315,12 +319,13 @@ int construct_ast(template_t* t) {
         return -1;
     }
 
-    t->entry = create_ast_struct(t, NULL, TPARSER_ENTRY, entry);
+    t->entry = create_ast_struct(t, NULL, 0, TPARSER_ENTRY, entry);
     if (t->entry == NULL) {
         fprintf(stderr, "Failed to create entry struct.");
         return -1;
     }
     t->entry->parent = NULL;
+    t->entry->index = 0;
 
     return 0;
 }
@@ -339,6 +344,7 @@ template_t* template_create() {
     template->struct_defs    = NULL;
     template->struct_def_amt = 0;
     template->entry          = NULL;
+    template->totalnodes     = 0;
 
     return template;
 }

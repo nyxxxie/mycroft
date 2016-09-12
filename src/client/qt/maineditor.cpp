@@ -13,6 +13,10 @@ void MainEditor::setMycroftCtx(mc_ctx_t* ctx) {
     hexedit->setCurrentFile(mycroft_get_file(ctx));
 }
 
+mc_ctx_t* MainEditor::getMycroftCtx() {
+    return this->ctx;
+}
+
 MainEditor::MainEditor(QWidget* parent)
     : QWidget(parent) {
 

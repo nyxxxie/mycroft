@@ -14,11 +14,8 @@ class TemplateEditor : public QTreeView {
 
 public:
 
-    TemplateEditor(QWidget* parent = NULL);
-
-    bool parseTemplate(TemplateModel* model, QString template_text);
-    bool parseTemplateFile(TemplateModel* model, QString file);
-
+    TemplateEditor(QWidget* parent);
+    ast_struct_t* getAstEntry();
 };
 
 #endif // TEMPLATEEDITOR_H

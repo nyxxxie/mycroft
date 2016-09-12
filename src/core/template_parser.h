@@ -6,7 +6,7 @@ extern "C" {
 #endif
 
 #include <stdio.h>
-#include "template.h"
+#include <mycroft/template.h>
 
 /**
  * This struct starts at the top of the templated file.
