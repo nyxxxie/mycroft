@@ -639,7 +639,7 @@ void AsciiView::render(QPainter& painter) {
             }
             else {
                 QPen old = painter.pen();
-                painter.setPen(QPen(QColor(190, 0, 190)));
+                painter.setPen(QPen(QColor(255, 0, 0)));
                 painter.drawText(editor->widget_text_offset+start+(j*editor->font_cwidth),
                     row*(editor->font_cheight+editor->row_offset),
                     QString("."));
