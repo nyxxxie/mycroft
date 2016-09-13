@@ -1,7 +1,5 @@
+#include <mycroft/template.h>
 #include "gtest/gtest.h"
-#include "template.h"
-#include "template_parser.h"
-
 #include <stdio.h>
 #include <string.h>
 

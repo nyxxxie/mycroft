@@ -14,6 +14,8 @@ class TemplateModel : public QAbstractItemModel {
 
     template_t* templ;
 
+    ast_node_t* getItem(const QModelIndex& index) const;
+
 public:
 
     explicit TemplateModel(QObject* parent = 0);

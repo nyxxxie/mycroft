@@ -97,7 +97,6 @@ int struct_def_add_member(struct_def_t* def, member_t* member);
 typedef struct {
     struct_def_t** struct_defs;
     unsigned int   struct_def_amt;
-    int            totalnodes;
     ast_struct_t*  entry;
 } template_t;
 

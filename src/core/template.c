@@ -217,9 +217,9 @@ struct_def_t* template_find_struct_def(template_t* t, char* name) {
     return NULL;
 }
 
-ast_node_t* create_ast_node(template_t* t, ast_node_t* parent, int index, member_t* member);
+ast_node_t* create_ast_node(template_t* t, ast_struct_t* parent, int index, member_t* member);
 
-ast_struct_t* create_ast_struct(template_t* t, ast_node_t* parent, int index, const char* name, struct_def_t* def) {
+ast_struct_t* create_ast_struct(template_t* t, ast_struct_t* parent, int index, const char* name, struct_def_t* def) {
 
     int i = 0;
     ast_struct_t* ret = NULL;
@@ -230,8 +230,7 @@ ast_struct_t* create_ast_struct(template_t* t, ast_node_t* parent, int index, co
         return NULL;
     }
     ret->parent = parent;
-    ret->index = ++index;
-    t->totalnodes++;
+    ret->index = index++;
 
     /* */
     ret->name = (char*)malloc(strlen(name)+1);
@@ -247,7 +246,7 @@ ast_struct_t* create_ast_struct(template_t* t, ast_node_t* parent, int index, co
         ast_node_t* node = NULL;
 
         /* */
-        node = create_ast_node(t, ret, index, def->members[i]);
+        node = create_ast_node(t, ret, 0, def->members[i]);
         if (node == NULL) {
             return NULL;
         }
@@ -262,7 +261,7 @@ ast_struct_t* create_ast_struct(template_t* t, ast_node_t* parent, int index, co
     return ret;
 }
 
-ast_var_t* create_ast_var(template_t* t, ast_node_t* parent, int index, const char* name, const char* type) {
+ast_var_t* create_ast_var(template_t* t, ast_struct_t* parent, int index, const char* name, const char* type) {
 
     ast_var_t* ret = NULL;
 
@@ -272,8 +271,7 @@ ast_var_t* create_ast_var(template_t* t, ast_node_t* parent, int index, const ch
         return NULL;
     }
     ret->parent = parent;
-    ret->index = ++index;
-    t->totalnodes++;
+    ret->index = index++;
 
     /* */
     ret->name = (char*)malloc(strlen(name)+1);
@@ -293,7 +291,7 @@ ast_var_t* create_ast_var(template_t* t, ast_node_t* parent, int index, const ch
     return ret;
 }
 
-ast_node_t* create_ast_node(template_t* t, ast_node_t* parent, int index, member_t* member) {
+ast_node_t* create_ast_node(template_t* t, ast_struct_t* parent, int index, member_t* member) {
 
     ast_node_t* ret = NULL;
     struct_def_t* def = NULL;
@@ -344,7 +342,6 @@ template_t* template_create() {
     template->struct_defs    = NULL;
     template->struct_def_amt = 0;
     template->entry          = NULL;
-    template->totalnodes     = 0;
 
     return template;
 }
