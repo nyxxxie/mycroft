@@ -1,146 +1,160 @@
+#include <QColor>
 #include "templatemodel.h"
 
-TemplateModel::TemplateModel(QObject* parent)
-    : QAbstractItemModel(parent) {
-    templ = template_create_from_file("testtemplate.mtf");
+TemplateModel::TemplateModel(const QString &data, QObject *parent)
+    : QAbstractItemModel(parent)
+{
+    QList<QVariant> rootData;
+    rootData << "Title" << "Summary";
+    rootItem = new TemplateNode(rootData);
+    setupModelData(data.split(QString("\n")), rootItem);
 }
 
-TemplateModel::~TemplateModel() {
-
+TemplateModel::~TemplateModel()
+{
+    delete rootItem;
 }
 
-ast_node_t* TemplateModel::getItem(const QModelIndex& index) const {
-    if (index.isValid()) {
-        ast_node_t* node = (ast_node_t*)index.internalPointer();
-        if (node != NULL) {
-            return node;
-        }
-    }
-
-    return (ast_node_t*)templ->entry;
+int TemplateModel::columnCount(const QModelIndex &parent) const
+{
+    if (parent.isValid())
+        return static_cast<TemplateNode*>(parent.internalPointer())->columnCount();
+    else
+        return rootItem->columnCount();
 }
 
-QVariant TemplateModel::data(const QModelIndex& index, int role) const {
-    printf("Call on meeeeee.\n");
+QVariant TemplateModel::data(const QModelIndex &index, int role) const
+{
     if (!index.isValid())
         return QVariant();
 
-    if (role != Qt::DisplayRole)
-        return QVariant();
-
-    ast_node_t* node = (ast_node_t*)index.internalPointer();
-    if (node == NULL) {
-        printf("data was null!?!?!?!\n");
-        return QVariant();
+    if (role == Qt::DisplayRole) {
+        TemplateNode *item = static_cast<TemplateNode*>(index.internalPointer());
+        return item->data(index.column());
     }
-
-    if (node->type == AST_TYPE_STRUCT) {
-        ast_struct_t* strct = (ast_struct_t*)node;
-        switch (index.column()) {
-        case 0:
-            return strct->name;
-        case 1:
-            return "";
-        case 2:
-            return "";
-        case 3:
-            return "";
-        default:
-            return QVariant();
+    else if (role == Qt::BackgroundRole) {
+        if (index.row() % 2 == 0) {
+            return QVariant(QColor(226, 237, 253));
+        }
+        else {
+            return QVariant(QColor(Qt::white));
         }
     }
-    else if (node->type == AST_TYPE_VAR) {
-        ast_var_t* var = (ast_var_t*)node;
-        switch (index.column()) {
-        case 0:
-            return var->name;
-        case 1:
-            return "";
-        case 2:
-            return "";
-        case 3:
-            return "";
-        default:
-            return QVariant();
-        }
+    else {
+        return QVariant();
     }
-
-    return QVariant();
 }
 
-Qt::ItemFlags TemplateModel::flags(const QModelIndex& index) const {
+Qt::ItemFlags TemplateModel::flags(const QModelIndex &index) const
+{
     if (!index.isValid())
         return 0;
 
     return QAbstractItemModel::flags(index);
 }
 
-QVariant TemplateModel::headerData(int section, Qt::Orientation orientation, int role) const {
-    if (orientation == Qt::Horizontal && role == Qt::DisplayRole) {
-        switch (section) {
-        case 0:
-            return tr("Name");
-        case 1:
-            return tr("Value");
-        case 2:
-            return tr("Start");
-        case 3:
-            return tr("Size");
-        default:
-            return QVariant();
-        }
-    }
+QVariant TemplateModel::headerData(int section, Qt::Orientation orientation,
+                               int role) const
+{
+    if (orientation == Qt::Horizontal && role == Qt::DisplayRole)
+        return rootItem->data(section);
 
     return QVariant();
 }
 
-QModelIndex TemplateModel::index(int row, int column, const QModelIndex& parent) const {
-    printf("Yikes [r:%i, c:%i]\n", row, column);
+QModelIndex TemplateModel::index(int row, int column, const QModelIndex &parent)
+            const
+{
     if (!hasIndex(row, column, parent))
         return QModelIndex();
 
-    ast_struct_t* strct = (ast_struct_t*)getItem(parent);
-    if (strct == NULL) {
-        return QModelIndex();
-    }
+    TemplateNode *parentItem;
 
-    ast_node_t* cnode = strct->nodes[row];
-    if (cnode == NULL) {
-        return QModelIndex();
-    }
+    if (!parent.isValid())
+        parentItem = rootItem;
+    else
+        parentItem = static_cast<TemplateNode*>(parent.internalPointer());
 
-    return createIndex(row, column, cnode);
+    TemplateNode *childItem = parentItem->child(row);
+    if (childItem)
+        return createIndex(row, column, childItem);
+    else
+        return QModelIndex();
 }
 
-QModelIndex TemplateModel::parent(const QModelIndex& child) const {
-    if (!child.isValid())
+QModelIndex TemplateModel::parent(const QModelIndex &index) const
+{
+    if (!index.isValid())
         return QModelIndex();
 
-    ast_node_t* node = (ast_node_t*)child.internalPointer();
-    if (node != NULL) {
-        if (node->type == AST_TYPE_STRUCT) {
-            ast_struct_t* strct = (ast_struct_t*)node;
-            return createIndex(strct->index, 0, strct->parent);
-        }
-        else if (node->type == AST_TYPE_VAR) {
-            ast_var_t* var = (ast_var_t*)node;
-            return createIndex(var->index, 0, var->parent);
-        }
-    }
+    TemplateNode *childItem = static_cast<TemplateNode*>(index.internalPointer());
+    TemplateNode *parentItem = childItem->parentItem();
 
-    return QModelIndex();
+    if (parentItem == rootItem)
+        return QModelIndex();
+
+    return createIndex(parentItem->row(), 0, parentItem);
 }
 
-int TemplateModel::rowCount(const QModelIndex& parent) const {
-    ast_struct_t* strct = (ast_struct_t*)getItem(parent);
-    if (strct == NULL) {
-        printf("%s: WTF NULL?", __func__);
+int TemplateModel::rowCount(const QModelIndex &parent) const
+{
+    TemplateNode *parentItem;
+    if (parent.column() > 0)
         return 0;
-    }
 
-    return strct->node_amt;
+    if (!parent.isValid())
+        parentItem = rootItem;
+    else
+        parentItem = static_cast<TemplateNode*>(parent.internalPointer());
+
+    return parentItem->childCount();
 }
 
-int TemplateModel::columnCount(const QModelIndex& parent) const {
-    return 4; // Change this if you add more headers to the itemmodel
+void TemplateModel::setupModelData(const QStringList &lines, TemplateNode *parent)
+{
+    QList<TemplateNode*> parents;
+    QList<int> indentations;
+    parents << parent;
+    indentations << 0;
+
+    int number = 0;
+
+    while (number < lines.count()) {
+        int position = 0;
+        while (position < lines[number].length()) {
+            if (lines[number].at(position) != ' ')
+                break;
+            position++;
+        }
+
+        QString lineData = lines[number].mid(position).trimmed();
+
+        if (!lineData.isEmpty()) {
+            // Read the column data from the rest of the line.
+            QStringList columnStrings = lineData.split("\t", QString::SkipEmptyParts);
+            QList<QVariant> columnData;
+            for (int column = 0; column < columnStrings.count(); ++column)
+                columnData << columnStrings[column];
+
+            if (position > indentations.last()) {
+                // The last child of the current parent is now the new parent
+                // unless the current parent has no children.
+
+                if (parents.last()->childCount() > 0) {
+                    parents << parents.last()->child(parents.last()->childCount()-1);
+                    indentations << position;
+                }
+            } else {
+                while (position < indentations.last() && parents.count() > 0) {
+                    parents.pop_back();
+                    indentations.pop_back();
+                }
+            }
+
+            // Append a new item to the current parent's list of children.
+            parents.last()->appendChild(new TemplateNode(columnData, parents.last()));
+        }
+
+        ++number;
+    }
 }

@@ -3,30 +3,25 @@
 
 #include <QList>
 #include <QVariant>
-#include <QVector>
 
 class TemplateNode {
-
-    QList<TemplateNode*> m_childitems;
-    QVector<QVariant> m_itemdata;
-    TemplateNode* m_parentitem;
-
 public:
-
-    TemplateNode(const QVector<QVariant>& data, TemplateNode* parent = NULL);
+    explicit TemplateNode(const QList<QVariant> &data, TemplateNode *parentItem = 0);
     ~TemplateNode();
 
-    TemplateNode* child(int number);
-    int childCount();
-    int columnCount();
-    QVariant data(int column);
-    bool insertChildren(int position, int count, int columns);
-    bool insertColumns(int position, int columns);
-    TemplateNode* parent();
-    bool removeChildren(int position, int count);
-    bool removeColumns(int position, int columns);
-    int childNumber();
-    bool setData(int column, const QVariant &value);
+    void appendChild(TemplateNode *child);
+
+    TemplateNode *child(int row);
+    int childCount() const;
+    int columnCount() const;
+    QVariant data(int column) const;
+    int row() const;
+    TemplateNode *parentItem();
+
+private:
+    QList<TemplateNode*> m_childItems;
+    QList<QVariant> m_itemData;
+    TemplateNode *m_parentItem;
 };
 
 #endif // TEMPLATENODE_H
