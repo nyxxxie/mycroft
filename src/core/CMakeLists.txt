@@ -46,9 +46,10 @@ set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
 # configure a header file to pass some of the CMake settings
 # to the source code
+
 configure_file(
-    "config.h.in"
-    "config.h"
+    ${CMAKE_CURRENT_SOURCE_DIR}/config.h.in
+    ${CMAKE_CURRENT_SOURCE_DIR}/config.h
 )
 
 # Specify the library to be built
