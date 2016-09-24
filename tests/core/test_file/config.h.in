@@ -1,1 +1,2 @@
-#define TEST_FILE_RES   "@TEST_FILE_RES@"
+#cmakedefine TEST_FILE_SRC_RES "${TEST_FILE_SRC_RES}"
+#cmakedefine TEST_FILE_BIN_RES "${TEST_FILE_BIN_RES}"
