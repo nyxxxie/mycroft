@@ -1,12 +1,5 @@
 cmake_minimum_required(VERSION 2.8.11)
 
-# Find required libs
-find_package(OpenSSL REQUIRED)
-
-# Create a variable that tells us where our resources are
-set(TEST_FILE_SRC_RES ${CMAKE_CURRENT_SOURCE_DIR}/res)
-set(TEST_FILE_BIN_RES ${CMAKE_CURRENT_BINARY_DIR}/res)
-
 # configure a header file to pass some of the CMake settings
 # to the source code
 configure_file(
@@ -14,16 +7,36 @@ configure_file(
     ${CMAKE_CURRENT_SOURCE_DIR}/config.h
 )
 
-# File test
-set(TEST_NAME test_core_file)
-add_executable(${TEST_NAME} main.cpp file.cpp)
+# Set test name
+set(TEST_FILE_NAME test_file)
+
+# Include external headers
 include_directories(${OPENSSL_INCLUDE_DIRS})
-target_link_libraries(${TEST_NAME} mcore gtest ${OPENSSL_LIBRARIES})
-add_dependencies(${TEST_BUILD_TARGET} ${TEST_NAME})
-add_test(${TEST_NAME} ${TEST_NAME})
 
-add_custom_target(${TEST_NAME}_copy_files
+# Create target
+add_executable(${TEST_FILE_NAME}
+    main.cpp
+    file.cpp
+)
+add_dependencies(${TEST_BUILD_TARGET} ${TEST_FILE_NAME})
+
+# Link libs
+target_link_libraries(${TEST_FILE_NAME}
+    ${MYCROFT_CORE_NAME}
+    gtest
+    ${OPENSSL_LIBRARIES}
+)
+
+# Create a variable that tells us where our resources are
+set(TEST_FILE_SRC_RES ${CMAKE_CURRENT_SOURCE_DIR}/res)
+set(TEST_FILE_BIN_RES ${CMAKE_CURRENT_BINARY_DIR}/res)
+
+# Copy resources every time make is run
+add_custom_target(${TEST_FILE_NAME}_copy_files
     COMMAND ${CMAKE_COMMAND} -E copy_directory
-    ${CMAKE_CURRENT_LIST_DIR}/res ${CMAKE_CURRENT_BINARY_DIR}/res)
+    ${TEST_FILE_SRC_RES}/res ${TEST_FILE_BIN_RES}/res
+)
+add_dependencies(${TEST_FILE_NAME} ${TEST_FILE_NAME}_copy_files)
 
-add_dependencies(${TEST_NAME} ${TEST_NAME}_copy_files)
+# Make CTest recognise this target as a test
+add_test(${TEST_FILE_NAME} ${TEST_FILE_NAME})

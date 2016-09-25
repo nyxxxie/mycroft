@@ -1,16 +1,16 @@
 cmake_minimum_required(VERSION 2.8.11)
 
 # Version
-set(MYCROFT_CLI_MAJOR_VERSION 0)
-set(MYCROFT_CLI_MINOR_VERSION 1)
+set(MYCROFT_CLIENT_CLI_MAJOR_VERSION 0)
+set(MYCROFT_CLIENT_CLI_MINOR_VERSION 1)
 
 # Project name
-set(PROJECT_NAME mycroft-cli)
-project(${PROJECT_NAME})
-set(MYCROFT_VERSION "${PROJECT_NAME}")
+set(MYCROFT_CLIENT_CLI_NAME mycroft-cli)
+project(${MYCROFT_CLIENT_CLI_NAME})
+set(MYCROFT_CLIENT_CLI_VERSION "${MYCROFT_CLIENT_CLI_NAME}")
 
 # Source files
-set(SRC
+set(MYCROFT_CLIENT_CLI_SRC
     main.c
 )
 
@@ -20,10 +20,10 @@ set(CMAKE_INCLUDE_CURRENT_DIR ON)
 # configure a header file to pass some of the CMake settings
 # to the source code
 configure_file(
-    "config.h.in"
-    "config.h"
+    ${CMAKE_CURRENT_SOURCE_DIR}/config.h.in
+    ${CMAKE_CURRENT_SOURCE_DIR}/config.h
 )
 
 # Specify the library to be built
-add_executable(${PROJECT_NAME} ${SRC})
-target_link_libraries(${PROJECT_NAME} mcore)
+add_executable(${MYCROFT_CLIENT_CLI_NAME} ${MYCROFT_CLIENT_CLI_SRC})
+target_link_libraries(${MYCROFT_CLIENT_CLI_NAME} ${MYCROFT_CORE_NAME})

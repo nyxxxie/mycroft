@@ -1,18 +1,28 @@
 cmake_minimum_required(VERSION 2.8.11)
 
-set(TEST_NAME test_core_template)
-add_executable(${TEST_NAME}
+# Set test name
+set(TEST_TEMPLATE_NAME test_template)
+
+# Create target
+add_executable(${TEST_TEMPLATE_NAME}
     main.cpp
     template_basicentry.cpp
     template_somestructs.cpp
 )
-target_link_libraries(${TEST_NAME} mcore gtest)
-add_dependencies(${TEST_BUILD_TARGET} ${TEST_NAME})
-add_test(${TEST_NAME} ${TEST_NAME})
+add_dependencies(${TEST_BUILD_TARGET} ${TEST_TEMPLATE_NAME})
 
-# Copy test files over to build directory every time make is run
-add_custom_target(${TEST_NAME}_copy_files
+# Link libs
+target_link_libraries(${TEST_TEMPLATE_NAME}
+    ${MYCROFT_CORE_NAME}
+    gtest
+)
+
+# Copy resources every time make is run
+add_custom_target(${TEST_TEMPLATE_NAME}_copy_files
     COMMAND ${CMAKE_COMMAND} -E copy_directory
-    ${CMAKE_CURRENT_LIST_DIR}/res ${CMAKE_CURRENT_BINARY_DIR}/res)
+    ${CMAKE_CURRENT_LIST_DIR}/res ${CMAKE_CURRENT_BINARY_DIR}/res
+)
+add_dependencies(${TEST_TEMPLATE_NAME} ${TEST_TEMPLATE_NAME}_copy_files)
 
-add_dependencies(${TEST_NAME} ${TEST_NAME}_copy_files)
+# Make CTest recognise this target as a test
+add_test(${TEST_TEMPLATE_NAME} ${TEST_TEMPLATE_NAME})

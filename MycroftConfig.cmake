@@ -1,4 +1,6 @@
-set(MAIN_PROJECT_NAME mycroft)
+# Set some project names
+set(MYCROFT_NAME mycroft)
+set(MYCROFT_CORE_NAME mcore)
 
 # Set module path
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_SOURCE_DIR}/cmake)

@@ -13,10 +13,8 @@ else ()
     set (CMAKE_C_STANDARD 99)
 endif ()
 
-# Project name
-set(PROJECT_NAME mcore)
-project(${PROJECT_NAME})
-set(MYCROFT_VERSION "${PROJECT_NAME}")
+project(${MYCROFT_CORE_NAME})
+set(MYCROFT_CORE_VERSION "${MYCROFT_CORE_NAME}")
 
 include_directories(
     ${SQLITE3_INCLUDE_DIRS}
@@ -26,7 +24,7 @@ include_directories(
 )
 
 # Source files
-set(SRC
+set(MYCROFT_CORE_SRC
     core.c
     cfg.c
     file.c
@@ -53,10 +51,10 @@ configure_file(
 )
 
 # Specify the library to be built
-add_library(${PROJECT_NAME} STATIC ${SRC})
+add_library(${MYCROFT_CORE_NAME} STATIC ${MYCROFT_CORE_SRC})
 
 # Link essential libraries
-target_link_libraries(${PROJECT_NAME}
+target_link_libraries(${MYCROFT_CORE_NAME}
     ${SQLITE3_LIBRARIES}
     ${OPENSSL_LIBRARIES}
     ${CAPSTONE_LIBRARIES}
