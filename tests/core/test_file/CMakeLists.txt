@@ -34,7 +34,7 @@ set(TEST_FILE_BIN_RES ${CMAKE_CURRENT_BINARY_DIR}/res)
 # Copy resources every time make is run
 add_custom_target(${TEST_FILE_NAME}_copy_files
     COMMAND ${CMAKE_COMMAND} -E copy_directory
-    ${TEST_FILE_SRC_RES}/res ${TEST_FILE_BIN_RES}/res
+    ${TEST_FILE_SRC_RES} ${TEST_FILE_BIN_RES}
 )
 add_dependencies(${TEST_FILE_NAME} ${TEST_FILE_NAME}_copy_files)
 
