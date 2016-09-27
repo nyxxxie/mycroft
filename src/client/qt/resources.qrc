@@ -2,5 +2,6 @@
 <qresource prefix="/">
     <file>resources/helloworld-transparent.png</file>
     <file>resources/default.txt</file>
+    <file>resources/somestructs.mtf</file>
 </qresource>
 </RCC>

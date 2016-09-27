@@ -21,8 +21,9 @@ void datatype_free(datatype_t* type);
  * AST node types.
  */
 typedef enum {
-    AST_TYPE_VAR = 0, /** Variable node. */
-    AST_TYPE_STRUCT   /** Struct node. */
+    AST_TYPE_ROOT = 0, /** Root node      */
+    AST_TYPE_VAR,      /** Variable node. */
+    AST_TYPE_STRUCT    /** Struct node.   */
 } ast_type_t;
 
 /**
@@ -36,7 +37,7 @@ typedef struct {
 } ast_node_t;
 
 /**
- * Struct in the ast.
+ * Var in the ast.
  */
 typedef struct {
     int         index;
@@ -60,6 +61,19 @@ typedef struct {
     ast_node_t** nodes;
     unsigned int node_amt;
 } ast_struct_t;
+
+/**
+ * Root of the ast.
+ */
+typedef struct {
+    int           index;
+    ast_type_t    type;
+    char*         name;
+    ast_struct_t* entry;
+} ast_root_t;
+
+ast_root_t* ast_root_create();
+void ast_root_free(ast_root_t* ast);
 
 ast_struct_t* ast_struct_create();
 void ast_struct_free(ast_struct_t* ast);
@@ -97,7 +111,7 @@ int struct_def_add_member(struct_def_t* def, member_t* member);
 typedef struct {
     struct_def_t** struct_defs;
     unsigned int   struct_def_amt;
-    ast_struct_t*  entry;
+    ast_root_t*    root;
 } template_t;
 
 template_t* template_create();

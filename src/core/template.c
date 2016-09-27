@@ -34,6 +34,28 @@ void datatype_free(datatype_t* type) {
     free(type);
 }
 
+ast_root_t* ast_root_create() {
+
+    ast_root_t* ast_root = NULL;
+
+    /* Alloc ast_root_t */
+    ast_root = (ast_root_t*)malloc(sizeof(*ast_root));
+    if (ast_root == NULL) {
+        return NULL;
+    }
+
+    /* Init ast_root_t */
+    ast_root->type = AST_TYPE_ROOT;
+    ast_root->name = NULL;
+
+    return ast_root;
+}
+
+void ast_root_free(ast_root_t* ast) {
+
+    free(ast);
+}
+
 ast_var_t* ast_var_create() {
 
     ast_var_t* ast_var = NULL;
@@ -76,8 +98,8 @@ ast_struct_t* ast_struct_create() {
     }
 
     /* Init ast_struct_t */
-    ast_struct->type     =  AST_TYPE_STRUCT;
-    ast_struct->name     =  NULL;
+    ast_struct->type     = AST_TYPE_STRUCT;
+    ast_struct->name     = NULL;
     ast_struct->nodes    = NULL;
     ast_struct->node_amt = 0;
 
@@ -309,21 +331,33 @@ ast_node_t* create_ast_node(template_t* t, ast_struct_t* parent, int index, memb
 
 int construct_ast(template_t* t) {
 
-    struct_def_t* entry = NULL;
+    struct_def_t* entry_def = NULL;
+    ast_root_t* root = NULL;
+    ast_struct_t* entry = NULL;
 
-    entry = template_find_struct_def(t, TPARSER_ENTRY);
-    if (entry == NULL) {
+    /* Find entry */
+    entry_def = template_find_struct_def(t, TPARSER_ENTRY);
+    if (entry_def == NULL) {
         fprintf(stderr, "Failed to find entry struct in template.\n");
         return -1;
     }
 
-    t->entry = create_ast_struct(t, NULL, 0, TPARSER_ENTRY, entry);
-    if (t->entry == NULL) {
+    /* Create root */
+    root = ast_root_create();
+    if (root == NULL) {
+        fprintf(stderr, "Failed to alloc ast_root_t.\n");
+        return -1;
+    }
+    t->root = root;
+
+    entry = create_ast_struct(t, NULL, 0, TPARSER_ENTRY, entry_def);
+    if (entry == NULL) {
         fprintf(stderr, "Failed to create entry struct.");
         return -1;
     }
-    t->entry->parent = NULL;
-    t->entry->index = 0;
+    entry->parent = NULL;
+    entry->index = 0;
+    root->entry = entry;
 
     return 0;
 }
@@ -341,7 +375,7 @@ template_t* template_create() {
     /* Init template_t */
     template->struct_defs    = NULL;
     template->struct_def_amt = 0;
-    template->entry          = NULL;
+    template->root           = NULL;
 
     return template;
 }
@@ -381,8 +415,8 @@ void template_free(template_t* t) {
         }
     }
 
-    if (t->entry != NULL) {
-        ast_struct_free(t->entry);
+    if (t->root != NULL) {
+        ast_root_free(t->root);
     }
 
     free(t);
