@@ -8,7 +8,6 @@ extern "C" {
 #include <stdint.h>
 #include <stdio.h>
 #include <mycroft/file.h>
-#include <mycroft/template.h>
 
 /**
  * Represents the buffer used by the editor to display bytes.  We read a
