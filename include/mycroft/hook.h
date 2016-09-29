@@ -12,6 +12,9 @@ typedef enum {
     PYTHON
 } mc_cb_type_t;
 
+/** */
+typedef unsigned int mc_hook_id_t;
+
 /**
  * Stores a hook callback function.  Since callback functions can be both
  * python objects or c functions, we can't just store a pointer to a function.
@@ -40,15 +43,15 @@ typedef void (*mc_hook_cbfunc_t)(mc_hook_data_t args);
 
 
 int hook_init();
-int hook_close();
+int hook_free();
 
-int hook_event_create(const char* hook_name);
-int hook_event_remove(const char* hook_name);
+int hook_event_create(mc_hook_id_t hook_id);
+int hook_event_remove(mc_hook_id_t hook_id);
 
-int hook_add(const char* hook_name, const char* hook_id, mc_hook_cb_t* callback);
-int hook_remove(const char* hook_name, const char* hook_id);
+int hook_add(mc_hook_id_t hook_id, const char* hook_name, mc_hook_cb_t* callback);
+int hook_remove(mc_hook_id_t hook_id, const char* hook_name);
 
-int hook_dispatch(const char* hook_name, mc_hook_data_t* args);
+int hook_dispatch(mc_hook_id_t hook_id, mc_hook_data_t* args);
 
 #ifdef __cplusplus
 }

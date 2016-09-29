@@ -13,8 +13,9 @@ extern "C" {
  */
 typedef struct mc_hook_reciever_t mc_hook_reciever_t;
 struct mc_hook_reciever_t {
-    char* identifier; /**< @internal */
-    void* callback;   /**< @internal */
+    char* name;     /**< @internal String that identifies the hook */
+    void* callback; /**< @internal */
+    mc_hook_reciever_t* prev; /**< @internal */
     mc_hook_reciever_t* next; /**< @internal */
 };
 
@@ -23,9 +24,10 @@ struct mc_hook_reciever_t {
  */
 typedef struct mc_hook_t mc_hook_t;
 struct mc_hook_t {
-    const char*         name;    /**< @internal */
-    mc_hook_reciever_t* entries; /**< @internal */
-    mc_hook_t*          next;    /**< @internal */
+    mc_hook_reciever_t* recievers; /**< @internal */
+    mc_hook_id_t id;   /**< @internal */
+    mc_hook_t*   prev; /**< @internal */
+    mc_hook_t*   next; /**< @internal */
 };
 
 /**
@@ -42,7 +44,7 @@ const char* default_hooks[] = {
     "INIT_PRE",
     "INIT_POST"
 };
-#define MC_HOOK_BUILTIN_TOTAL sizeof(default_hooks)/sizeof(default_hooks[0])
+#define MC_HOOK_BUILTIN_TOTAL sizeof(default_hooks)/sizeof(*default_hooks)
 
 #ifdef __cplusplus
 }
