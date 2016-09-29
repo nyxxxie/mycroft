@@ -16,7 +16,6 @@ set(MYCROFT_CLIENT_QT_SRC
     hexeditor.cpp
     templateeditor.cpp
     templatemodel.cpp
-    templatenode.cpp
 )
 
 # Save me from manually including the files ;)

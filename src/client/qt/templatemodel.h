@@ -5,7 +5,6 @@
 #include <QModelIndex>
 #include <QVariant>
 #include <mycroft/template.h>
-#include "templatenode.h"
 
 class TemplateEditor;
 
