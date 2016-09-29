@@ -5,8 +5,10 @@
 #include <QTextEdit>
 #include <QSplitter>
 #include <QVBoxLayout>
-#include "hexeditor.h"
-#include "templateeditor.h"
+#include <mycroft/mycroft.h>
+
+class HexEditor;
+class TemplateEditor;
 
 class MainEditor : public QWidget {
 
@@ -27,6 +29,8 @@ public:
 
     void setMycroftCtx(mc_ctx_t* ctx);
     mc_ctx_t* getMycroftCtx();
+    void setMainFile(mc_file_t* file);
+    mc_file_t* getMainFile();
 
     MainEditor(QWidget* parent);
     ~MainEditor();

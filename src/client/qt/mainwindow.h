@@ -46,7 +46,7 @@ class MainWindow : public QMainWindow {
     void CreateActions();
 
 public:
-    MainWindow(QWidget* parent = NULL);
+    MainWindow(mc_ctx_t* ctx);
     ~MainWindow();
 
     void setMycroftCtx(mc_ctx_t* ctx);

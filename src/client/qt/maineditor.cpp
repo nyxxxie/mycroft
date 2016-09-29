@@ -1,3 +1,5 @@
+#include "hexeditor.h"
+#include "templateeditor.h"
 #include "maineditor.h"
 
 void MainEditor::InitTemplateEditor() {
@@ -10,11 +12,18 @@ void MainEditor::InitHexEditor() {
 
 void MainEditor::setMycroftCtx(mc_ctx_t* ctx) {
     this->ctx = ctx;
-    hexedit->setCurrentFile(mycroft_get_file(ctx));
 }
 
 mc_ctx_t* MainEditor::getMycroftCtx() {
     return this->ctx;
+}
+
+void MainEditor::setMainFile(mc_file_t* file) {
+
+}
+
+mc_file_t* MainEditor::getMainFile() {
+    return mycroft_get_file(ctx);
 }
 
 MainEditor::MainEditor(QWidget* parent)

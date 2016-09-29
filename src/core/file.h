@@ -8,6 +8,7 @@ extern "C" {
 #include <stdint.h>
 #include <stdio.h>
 #include <mycroft/file.h>
+#include <mycroft/template.h>
 
 /**
  * Represents the buffer used by the editor to display bytes.  We read a
@@ -29,7 +30,7 @@ struct mc_file_t {
     FILE*   fp;     /**< @internal */
     fsize_t size;   /**< @internal */
     fsize_t cursor; /**< @internal */
-
+    template_t* t;  /**< @internal */
     file_cache_t* cache; /**< @internal */
 };
 

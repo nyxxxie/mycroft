@@ -12,11 +12,11 @@ QString quotes[QUOTE_AMOUNT] = {
     QString("WHAT'S IN THE BOX?!?!"),
 };
 
-MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent) {
+MainWindow::MainWindow(mc_ctx_t* ctx) : QMainWindow() {
 
     resize(800,800);
 
-    ctx = NULL;
+    this->ctx = ctx;
 
     /* Create widget to place all of the main elements in */
     window = new QWidget();

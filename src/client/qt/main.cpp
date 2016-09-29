@@ -38,8 +38,6 @@ int main(int argc, char *argv[]) {
         return 1;
     }
 
-    printf("File: %s\n", filename.toStdString().c_str());
-
     /* Create mycroft instance */
     mc_ctx_t* ctx = mycroft_init();
     if (ctx == NULL) {
@@ -56,8 +54,7 @@ int main(int argc, char *argv[]) {
     //TODO: free mycroft instance somewhere?
 
     /* Create main window */
-    MainWindow w;
-    w.setMycroftCtx(ctx);
+    MainWindow w(ctx);
     w.show();
 
     return a.exec();

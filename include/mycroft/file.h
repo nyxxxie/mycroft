@@ -6,6 +6,7 @@ extern "C" {
 #endif
 
 #include <stdint.h>
+#include <mycroft/template.h>
 
 /** Size used by internal file functions */
 typedef long int fsize_t;
@@ -20,6 +21,10 @@ int file_init(mc_file_t* file);
 int file_open(mc_file_t* file, const char* file_name);
 int file_close(mc_file_t* file);
 int file_reload(mc_file_t* file);
+
+/* Template functions */
+template_t* file_get_template(mc_file_t* file);
+int file_set_template(mc_file_t* file, template_t* t);
 
 /* Management functions */
 int file_get_cursor(mc_file_t* file);

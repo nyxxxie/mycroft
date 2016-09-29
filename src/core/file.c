@@ -52,6 +52,7 @@ int file_init(mc_file_t* file) {
     file->cursor = 0;
     file->name = NULL;
     file->path = NULL;
+    file->t = NULL;
     file->cache = NULL;
     return 0;
 }
@@ -117,6 +118,29 @@ int file_close(mc_file_t* file) {
         free(file->path);
     }
 
+    return 0;
+}
+
+/**
+ * Get template associated with this file.
+ *
+ * @param file mc_file_t struct to operate on.
+ *
+ * @return Returns the template or NULL if it's not set.
+ */
+template_t* file_get_template(mc_file_t* file) {
+    file->t;
+}
+
+/**
+ * Set template to be associated with this file.
+ *
+ * @param file mc_file_t struct to operate on.
+ *
+ * @return Returns 0 on success, negative value on error.
+ */
+int file_set_template(mc_file_t* file, template_t* t) {
+    file->t = t;
     return 0;
 }
 

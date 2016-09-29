@@ -12,17 +12,6 @@ FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
 You should have received a copy of the GNU General Public License along with
 this program; if not, write to the Free Software Foundation, Inc., 51 Franklin
 Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
-******************************************************************************
-
-FILE TODO:
-    * Some general refactoring would be nice; this file is a mess...
-    * Create a modular row display system, so plugins and etc can dynamically
-      add new row displays.
-    * Create a cursor variable that represents the line cursor position.
-        * Move this cusor up and down when the file is scrolled (?)
-    * Move all file_* operations to areas where bytes are read and written.
-        * Rogue set and get custor operations are all over, remove them.
 \*****************************************************************************/
 
 #include <QAbstractScrollArea>
@@ -97,9 +86,6 @@ void HighlightArea::render(HexEditor* editor, QPainter& painter) {
  * Initializes all variables to their default values.
  */
 void HexEditor::init() {
-
-    curfile = NULL;
-
     rows_total = 0;
     rows_shown = 0;
     row_top = 0;
@@ -130,6 +116,10 @@ void HexEditor::init() {
     widgets.append(new AsciiView(this));
 }
 
+mc_file_t* HexEditor::getCurFile() {
+    return ((MainEditor*)parent())->getMainFile();
+}
+
 /**
  * Recalculates spacing variables when something is changed.
  */
@@ -143,11 +133,11 @@ void HexEditor::adjust() {
     horizontalScrollBar()->setRange(0, widgets_width - viewport()->width());
     horizontalScrollBar()->setPageStep(viewport()->width());
 
-    if (curfile == NULL)
+    if (getCurFile() == NULL)
         return;
 
     rows_shown = ((viewport()->height() / (font_cheight+row_offset)) + 1);
-    rows_total = file_size(curfile) / QMC_HEXEDIT_BYTESPERROW;
+    rows_total = file_size(getCurFile()) / QMC_HEXEDIT_BYTESPERROW;
 
     verticalScrollBar()->setRange(0, rows_total);
     verticalScrollBar()->setPageStep(rows_shown);
@@ -171,7 +161,7 @@ int HexEditor::getNumLines() {
  */
 void HexEditor::setCurLine(int line) {
     row_top = line;
-    file_set_cursor(curfile, line*QMC_HEXEDIT_BYTESPERROW);
+    file_set_cursor(getCurFile(), line*QMC_HEXEDIT_BYTESPERROW);
 }
 
 /**
@@ -184,20 +174,14 @@ int HexEditor::getCurLine() {
 }
 
 void HexEditor::setCursorPos(int pos) {
-    file_set_cursor(curfile, pos*QMC_HEXEDIT_BYTESPERROW);
+    file_set_cursor(getCurFile(), pos*QMC_HEXEDIT_BYTESPERROW);
 }
 
 int HexEditor::getCursorPos() {
-    if (curfile == NULL)
+    if (getCurFile() == NULL)
         return 0;
 
-    return file_get_cursor(curfile);
-}
-
-void HexEditor::setCurrentFile(mc_file_t* file) {
-    curfile = file;
-    adjust();
-    viewport()->update();
+    return file_get_cursor(getCurFile());
 }
 
 void HexEditor::setFont(const QFont& font) {
@@ -266,7 +250,7 @@ void HexEditor::paintEvent(QPaintEvent* event) {
 
     QPainter painter(viewport());
 
-    if (curfile == NULL) {
+    if (getCurFile() == NULL) {
         drawNoFile(painter);
     }
     else {
@@ -276,16 +260,6 @@ void HexEditor::paintEvent(QPaintEvent* event) {
         for (HexEditorWidget* w : widgets) {
             w->render(painter);
         }
-
-        //painter.drawText(widget_start, font_cheight+row_offset, "DEBUG file info:");
-        //painter.drawText(widget_start, 2*(font_cheight+row_offset),
-        //    QString("  size:     %1").arg(file_size(curfile)));
-        //painter.drawText(widget_start, 3*(font_cheight+row_offset),
-        //    QString("  rows:     %1").arg(rows_shown));
-        //painter.drawText(widget_start, 4*(font_cheight+row_offset),
-        //    QString("  all rows: %1").arg(rows_total));
-        //painter.drawText(widget_start, 5*(font_cheight+row_offset),
-        //    QString("  top row:  %1").arg(row_top));
     }
 }
 
@@ -299,7 +273,7 @@ void HexEditor::resizeEvent(QResizeEvent*) {
 /**
  *
  */
-HexEditor::HexEditor(QWidget* parent) : QAbstractScrollArea(parent) {
+HexEditor::HexEditor(MainEditor* parent) : QAbstractScrollArea(parent) {
 
     /* Connect signals to slots */
     connect(verticalScrollBar(), SIGNAL(valueChanged(int)), this, SLOT(adjust()));
@@ -339,7 +313,7 @@ void AddressView::render(QPainter& painter) {
 
     /* Draw address part */
     for (int row=1, addr=editor->getCursorPos();
-        row <= editor->rows_shown && addr < file_size(editor->curfile);
+        row <= editor->rows_shown && addr < file_size(editor->getCurFile());
         row++, addr += QMC_HEXEDIT_BYTESPERROW) {
 
         painter.drawText(start+editor->widget_text_offset,
@@ -435,13 +409,13 @@ void HexView::renderHighlight(HighlightArea* area, QPainter& painter) {
     }
 
     /* Does the selection start in range of the file? */
-    if (selection_a > file_size(editor->curfile)) {
+    if (selection_a > file_size(editor->getCurFile())) {
         return;
     }
 
     /* If the selection extends past the end of the file, trim it */
-    if (selection_b > file_size(editor->curfile)) {
-        selection_b = file_size(editor->curfile);
+    if (selection_b > file_size(editor->getCurFile())) {
+        selection_b = file_size(editor->getCurFile());
     }
 
     /* Figure out the bytes and rows the selection will be on */
@@ -514,14 +488,14 @@ void HexView::render(QPainter& painter) {
     }
 
     /* Draw bytes */
-    int cursor_prev = file_get_cursor(editor->curfile);
+    int cursor_prev = file_get_cursor(editor->getCurFile());
     for (int row=1; row <= editor->rows_shown; row++) {
 
         /* Read file bytes */
         uint8_t bytes[QMC_HEXEDIT_BYTESPERROW];
 
         //TODO: maintain a single cache/file buffer?
-        int amnt = file_read(editor->curfile, QMC_HEXEDIT_BYTESPERROW, bytes);
+        int amnt = file_read(editor->getCurFile(), QMC_HEXEDIT_BYTESPERROW, bytes);
         if (amnt == 0) {
             break;
         }
@@ -538,7 +512,7 @@ void HexView::render(QPainter& painter) {
             offset += byte_gap;
         }
     }
-    file_set_cursor(editor->curfile, cursor_prev);
+    file_set_cursor(editor->getCurFile(), cursor_prev);
 
     editor->widget_start += width + editor->widget_gap;
 }
@@ -614,12 +588,12 @@ void AsciiView::render(QPainter& painter) {
         editor->palette().alternateBase().color());
 
     /* Draw bytes */
-    int cursor_prev = file_get_cursor(editor->curfile);
+    int cursor_prev = file_get_cursor(editor->getCurFile());
     for (int row=1; row <= editor->rows_shown; row++) {
 
         /* Read file bytes */
         uint8_t bytes[QMC_HEXEDIT_BYTESPERROW];
-        int amnt = file_read(editor->curfile, QMC_HEXEDIT_BYTESPERROW, bytes);
+        int amnt = file_read(editor->getCurFile(), QMC_HEXEDIT_BYTESPERROW, bytes);
         if (amnt == 0) {
             break;
         }
@@ -649,7 +623,7 @@ void AsciiView::render(QPainter& painter) {
             /* Print char */
         }
     }
-    file_set_cursor(editor->curfile, cursor_prev);
+    file_set_cursor(editor->getCurFile(), cursor_prev);
 
     editor->widget_start += width + editor->widget_gap;
 }

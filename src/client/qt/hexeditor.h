@@ -5,7 +5,7 @@
 #include <QColor>
 #include <mycroft/mdb.h>
 #include <mycroft/file.h>
-#include "hexeditor.h"
+#include "maineditor.h"
 
 //TODO: make these config variables
 #define QMC_HEXEDIT_ELEMENT_GAP 6
@@ -30,14 +30,13 @@ class HexEditor : public QAbstractScrollArea {
     /* Main internal funcs */
     void init();
 
-    /* File related */
-    mc_file_t* curfile;
-
     /* Font related */
     void setFont(const QFont& font);
 
     /* Section drawing */
     void drawNoFile(QPainter& painter);
+
+    mc_file_t* getCurFile();
 
 protected:
 
@@ -70,7 +69,7 @@ protected:
 
 public:
 
-    HexEditor(QWidget* parent = NULL);
+    HexEditor(MainEditor* parent);
 
     int getNumLines();
     void setCurLine(int line);

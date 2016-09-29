@@ -3,19 +3,19 @@
 
 #include <QString>
 #include <QTreeView>
-
+#include "maineditor.h"
 #include "templatemodel.h"
 
 class TemplateEditor : public QTreeView {
 
     Q_OBJECT
 
-    void init();
+    bool init();
 
 public:
 
-    TemplateEditor(QWidget* parent);
-    ast_struct_t* getAstEntry();
+    template_t* getCurTemplate();
+    TemplateEditor(MainEditor* parent);
 };
 
 #endif // TEMPLATEEDITOR_H

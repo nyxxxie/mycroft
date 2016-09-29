@@ -355,7 +355,7 @@ int construct_ast(template_t* t) {
         fprintf(stderr, "Failed to create entry struct.");
         return -1;
     }
-    entry->parent = NULL;
+    entry->parent = root;
     entry->index = 0;
     root->entry = entry;
 

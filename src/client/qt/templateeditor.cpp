@@ -1,27 +1,23 @@
 #include <QFile>
-
+#include <mycroft/mycroft.h>
+#include "maineditor.h"
 #include "templateeditor.h"
 #include "templatemodel.h"
 
 /**
  * Starts up the template viewer with the default struct.
  */
-void TemplateEditor::init() {
-    //TemplateModel model;
-    //parseTemplate(&model, "struct FILE {};");
-
-    QFile file(":/resources/default.txt");
-    if (!file.open(QIODevice::ReadOnly)) {
-        return;
-    }
-    TemplateModel* model = new TemplateModel(file.readAll());
+bool TemplateEditor::init() {
+    TemplateModel* model = new TemplateModel(this);
     setModel(model);
-    file.close();
-    for (int column = 0; column < model->columnCount(); ++column)
-        resizeColumnToContents(column);
 }
 
-TemplateEditor::TemplateEditor(QWidget* parent)
+template_t* TemplateEditor::getCurTemplate() {
+    mc_file_t* file = ((MainEditor*)parent())->getMainFile();
+    return file_get_template(file);
+}
+
+TemplateEditor::TemplateEditor(MainEditor* parent)
     : QTreeView(parent) {
     init();
 }
