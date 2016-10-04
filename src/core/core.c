@@ -4,14 +4,9 @@
 #include <libgen.h>
 #include <unistd.h>
 #include "core.h"
-#include "cfg.h"
 #include "database.h"
 #include "file.h"
 #include "plugin.h"
-
-mc_ctx_t* mycroft_get_ctx() {
-    return mc_active_ctx;
-}
 
 mc_ctx_t* mycroft_init() {
 
@@ -23,14 +18,6 @@ mc_ctx_t* mycroft_init() {
         perror("Failed to allocate space for mc_ctx_t");
         return NULL;
     }
-    mc_active_ctx = ctx;
-
-    ctx->config = (mc_config_t*)malloc(sizeof(mc_config_t));
-    if (ctx->config == NULL) {
-        perror("Failed to allocate space for mc_config_t");
-        return NULL;
-    }
-    cfg_init(ctx->config);
 
     ctx->db = (mc_mdb_t*)malloc(sizeof(mc_mdb_t));
     if (ctx->db == NULL) {
@@ -65,10 +52,6 @@ void mycroft_free(mc_ctx_t* ctx) {
     }
 
     if (ctx != NULL) {
-        if (ctx->config != NULL) {
-            cfg_close(ctx->config);
-            free(ctx->config);
-        }
         if (ctx->db != NULL) {
             mdb_close(ctx->db);
             free(ctx->db);
@@ -80,10 +63,6 @@ void mycroft_free(mc_ctx_t* ctx) {
 
         free(ctx);
     }
-}
-
-int mycroft_open_config(mc_ctx_t* ctx, const char* target_filename) {
-
 }
 
 int set_project(mc_mdb_t* mdb, mc_ctx_t* ctx) {

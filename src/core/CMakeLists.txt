@@ -26,17 +26,15 @@ include_directories(
 # Source files
 set(MYCROFT_CORE_SRC
     core.c
-    cfg.c
     file.c
     hook.c
     plugin.c
-    config_parse.c
     database.c
     membuf.c
     template.c
     template_parser.c
     binds/file.c
-    binds/core.c
+    #binds/core.c
 )
 
 # Save me from manually including the files ;)
