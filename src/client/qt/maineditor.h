@@ -32,6 +32,7 @@ public:
     void setMainFile(mc_file_t* file);
     mc_file_t* getMainFile();
 
+    void init();
     MainEditor(QWidget* parent);
     ~MainEditor();
 };

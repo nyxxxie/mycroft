@@ -14,6 +14,8 @@ TemplateModel::~TemplateModel() {
 }
 
 int TemplateModel::columnCount(const QModelIndex& parent) const {
+
+
     if (parent.isValid()) {
         ast_node_t* node = (ast_node_t*)(parent.internalPointer());
         if (node == NULL) {
@@ -92,8 +94,13 @@ QVariant TemplateModel::headerData(int section, Qt::Orientation orientation, int
 }
 
 QModelIndex TemplateModel::index(int row, int column, const QModelIndex& parent) const {
-    if (!hasIndex(row, column, parent))
+    if (!hasIndex(row, column, parent)) {
         return QModelIndex();
+    }
+
+    if (getCurTemplate() == NULL) {
+        return QModelIndex();
+    }
 
     ast_struct_t* strct = NULL;
     if (!parent.isValid())
@@ -109,8 +116,13 @@ QModelIndex TemplateModel::index(int row, int column, const QModelIndex& parent)
 }
 
 QModelIndex TemplateModel::parent(const QModelIndex& index) const {
-    if (!index.isValid())
+    if (!index.isValid()) {
         return QModelIndex();
+    }
+
+    if (getCurTemplate() == NULL) {
+        return QModelIndex();
+    }
 
     ast_var_t* child = (ast_var_t*)(index.internalPointer());
     ast_struct_t* parent = (ast_struct_t*)child->parent;
@@ -122,8 +134,13 @@ QModelIndex TemplateModel::parent(const QModelIndex& index) const {
 }
 
 int TemplateModel::rowCount(const QModelIndex& parent) const {
-    if (parent.column() > 0)
+    if (parent.column() > 0) {
         return 0;
+    }
+
+    if (getCurTemplate() == NULL) {
+        return 0;
+    }
 
     ast_struct_t* strct = NULL;
     if (!parent.isValid())

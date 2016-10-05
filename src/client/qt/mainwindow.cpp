@@ -85,6 +85,8 @@ void MainWindow::CreateMenuBar() {
 
 void MainWindow::CreateEditor() {
     editor = new MainEditor(this);
+    editor->setMycroftCtx(ctx);
+    editor->init();
 }
 
 void MainWindow::CreateStatusBar() {

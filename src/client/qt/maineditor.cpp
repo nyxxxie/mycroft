@@ -26,8 +26,7 @@ mc_file_t* MainEditor::getMainFile() {
     return mycroft_get_file(ctx);
 }
 
-MainEditor::MainEditor(QWidget* parent)
-    : QWidget(parent) {
+void MainEditor::init() {
 
     /* Create the two main elements of this widget */
     InitTemplateEditor();
@@ -49,6 +48,10 @@ MainEditor::MainEditor(QWidget* parent)
     layout->addWidget(splitter);
 
     setLayout(layout);
+}
+
+MainEditor::MainEditor(QWidget* parent)
+    : QWidget(parent) {
 }
 
 MainEditor::~MainEditor() {
