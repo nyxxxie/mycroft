@@ -49,7 +49,7 @@ int hook_free() {
     return rc;
 }
 
-int hook_event_create(mc_hook_id_t hook_id); {
+int hook_event_create(mc_hook_id_t hook_id) {
     int rc = 0;
 
     /* Search for hook_id and error if it exists */
