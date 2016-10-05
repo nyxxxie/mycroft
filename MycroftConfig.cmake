@@ -57,6 +57,6 @@ set(MYCROFT_TEMPLATE ${MYCROFT_DATA_PATH}/templates) # template directory
 set(MYCROFT_TYPES    ${MYCROFT_DATA_PATH}/types)     # template directory
 
 # Set project directory locations
-set(MYCROFT_CORE_DIR   ${CMAKE_SOURCE_DIR}/src/core)
+set(MYCROFT_CORE_DIR   ${CMAKE_SOURCE_DIR}/lib/core)
 set(MYCROFT_CLIENT_DIR ${CMAKE_SOURCE_DIR}/src/client)
 set(MYCROFT_TEST_DIR   ${CMAKE_SOURCE_DIR}/tests)

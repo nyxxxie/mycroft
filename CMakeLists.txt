@@ -16,8 +16,11 @@ set(MYCROFT_PACKAGE_MINOR_VERSION 1)
 # Enable testing
 enable_testing()
 
-# Include the directory with all our code
+# Include the directory with all application code
 add_subdirectory(src)
+
+# Include the directory with all library code
+add_subdirectory(lib)
 
 # Include the third party code library
 add_subdirectory(third_party)
