@@ -89,15 +89,15 @@ int init_bindings() {
 
     int rc = 0;
 
-    rc = init_binds_file();
-    if (rc < 0) {
-        return rc;
-    }
+    //rc = init_binds_file();
+    //if (rc < 0) {
+    //    return rc;
+    //}
 
-    rc = init_binds_core();
-    if (rc < 0) {
-        return rc;
-    }
+    //rc = init_binds_core();
+    //if (rc < 0) {
+    //    return rc;
+    //}
 
     return rc;
 }
