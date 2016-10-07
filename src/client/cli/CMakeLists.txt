@@ -5,9 +5,7 @@ set(MYCROFT_CLIENT_CLI_MAJOR_VERSION 0)
 set(MYCROFT_CLIENT_CLI_MINOR_VERSION 1)
 
 # Project name
-set(MYCROFT_CLIENT_CLI_NAME mycroft-cli)
 project(${MYCROFT_CLIENT_CLI_NAME})
-set(MYCROFT_CLIENT_CLI_VERSION "${MYCROFT_CLIENT_CLI_NAME}")
 
 # Source files
 set(MYCROFT_CLIENT_CLI_SRC
@@ -26,4 +24,7 @@ configure_file(
 
 # Specify the library to be built
 add_executable(${MYCROFT_CLIENT_CLI_NAME} ${MYCROFT_CLIENT_CLI_SRC})
+add_dependencies(${MYCROFT_CLIENT_CLI_NAME} ${MYCROFT_CORE_NAME})
+
+# Link libraries
 target_link_libraries(${MYCROFT_CLIENT_CLI_NAME} ${MYCROFT_CORE_NAME})

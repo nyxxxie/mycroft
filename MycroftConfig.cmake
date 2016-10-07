@@ -1,6 +1,18 @@
-# Set some project names
+# Define project name
 set(MYCROFT_NAME mycroft)
-set(MYCROFT_CORE_NAME mcore)
+
+# Define target names.  THESE MUST MATCH UP WITH DIRECTORIES.
+set(MYCROFT_CLIENT_QT_NAME ${MYCROFT_NAME}-qt)
+set(MYCROFT_CLIENT_CLI_NAME ${MYCROFT_NAME}-cli)
+set(MYCROFT_CORE_NAME core)
+
+# Define finished binary file names
+set(MYCROFT_CLIENT_BIN ${MYCROFT_CLIENT_NAME})
+set(MYCROFT_CLI_BIN ${MYCROFT_CLI_NAME})
+set(MYCROFT_CORE_BIN ${MYCROFT_NAME}${MYCROFT_CORE_NAME})
+
+# Define common project include directories
+set(MYCROFT_INCLUDE_DIRS ${CMAKE_SOURCE_DIR}/include)
 
 # Set module path
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_SOURCE_DIR}/cmake)

@@ -1,6 +1,6 @@
 # Location of header files
 include_directories(
-    ${CMAKE_SOURCE_DIR}/include
+    ${MYCROFT_INCLUDE_DIRS}
     ${CMAKE_SOURCE_DIR}/third_party/googletest
     ${CMAKE_SOURCE_DIR}/third_party/googletest/include
 )

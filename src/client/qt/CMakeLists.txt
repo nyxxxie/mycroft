@@ -5,8 +5,7 @@ set(MYCROFT_CLIENT_QT_MAJOR_VERSION 0)
 set(MYCROFT_CLIENT_QT_MAJOR_VERSION 1)
 
 # Project name
-set(MYCROFT_CLIENT_QT_NAME mycroft-qt)
-project(${PROJECT_NAME} CXX)
+project(${MYCROFT_CLIENT_QT_NAME} CXX)
 
 # Source files
 set(MYCROFT_CLIENT_QT_SRC
@@ -29,6 +28,7 @@ set(CMAKE_AUTOMOC ON)
 
 # Specify the exe to be built
 add_executable(${MYCROFT_CLIENT_QT_NAME} ${MYCROFT_CLIENT_QT_SRC} ${UI_HEADERS} ${QRCS})
+add_dependencies(${MYCROFT_CLIENT_QT_NAME} ${MYCROFT_CORE_NAME})
 
 # Link libraries
 target_link_libraries(${MYCROFT_CLIENT_QT_NAME} Qt5::Widgets ${MYCROFT_CORE_NAME})
