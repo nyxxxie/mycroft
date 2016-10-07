@@ -1,9 +1,4 @@
 cmake_minimum_required(VERSION 2.8.11)
 
-include_directories(${CMAKE_SOURCE_DIR}/include)
-
+include_directories(${MYCROFT_INCLUDE_DIRS})
 add_subdirectory(client)
-
-# Dependencies
-add_dependencies(mycroft-cli mcore)
-add_dependencies(mycroft-qt mcore)

@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 2.8.11)
 
-# configure a header file to pass some of the CMake settings
+# Configure a header file to pass some of the CMake settings
 # to the source code
 configure_file(
     ${CMAKE_CURRENT_SOURCE_DIR}/config.h.in
