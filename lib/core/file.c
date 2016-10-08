@@ -54,6 +54,7 @@ int file_init(mc_file_t* file) {
     file->path = NULL;
     file->t = NULL;
     file->cache = NULL;
+
     return 0;
 }
 
@@ -450,8 +451,6 @@ int file_write_value(mc_file_t* file, fsize_t offset, fsize_t amount, uint8_t* o
         return -1;
     }
 
-    printf("cursor PRE = %i\n", ftell(file->fp));
-
     /* Read desired content */
     long int res = fwrite(outbuf, 1, amount, file->fp);
     if (res != amount) {
@@ -468,8 +467,6 @@ int file_write_value(mc_file_t* file, fsize_t offset, fsize_t amount, uint8_t* o
             return -1;
         }
     }
-
-    printf("cursor PST = %i\n", ftell(file->fp));
 
     /* Set original position */
     if (file_set_cursor(file, old_cursor) < 0) {
