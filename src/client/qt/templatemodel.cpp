@@ -2,8 +2,19 @@
 #include "templateeditor.h"
 #include "templatemodel.h"
 
-template_t* TemplateModel::getCurTemplate() const {
-    return p->getCurTemplate();
+bool TemplateModel::shouldRender() const {
+    return (p->t != NULL);
+}
+
+ast_struct_t* TemplateModel::getParent(const QModelIndex& parent) const {
+    ast_struct_t* ret = NULL;
+
+    if (!parent.isValid())
+        ret = p->t->root->entry;
+    else
+        ret = (ast_struct_t*)(parent.internalPointer());
+
+    return ret;
 }
 
 TemplateModel::TemplateModel(TemplateEditor* parent) {
@@ -14,15 +25,12 @@ TemplateModel::~TemplateModel() {
 }
 
 int TemplateModel::columnCount(const QModelIndex& parent) const {
-
-
     if (parent.isValid()) {
         ast_node_t* node = (ast_node_t*)(parent.internalPointer());
         if (node == NULL) {
             fprintf(stderr, "%s: Node was null.\n", __func__);
             return 0;
         }
-
 
         /* Return data */
         switch (node->type) {
@@ -40,6 +48,10 @@ int TemplateModel::columnCount(const QModelIndex& parent) const {
 }
 
 QVariant TemplateModel::data(const QModelIndex& index, int role) const {
+    if (!shouldRender()) {
+        return QVariant();
+    }
+
     if (!index.isValid())
         return QVariant();
 
@@ -48,7 +60,7 @@ QVariant TemplateModel::data(const QModelIndex& index, int role) const {
         ast_node_t* node = (ast_node_t*)(index.internalPointer());
         if (node == NULL) {
             fprintf(stderr, "%s: Node was null.\n", __func__);
-            return 0;
+            return QVariant();
         }
 
         /* Return data */
@@ -94,59 +106,59 @@ QVariant TemplateModel::headerData(int section, Qt::Orientation orientation, int
 }
 
 QModelIndex TemplateModel::index(int row, int column, const QModelIndex& parent) const {
+    if (!shouldRender()) {
+        return QModelIndex();
+    }
+
     if (!hasIndex(row, column, parent)) {
         return QModelIndex();
     }
 
-    if (getCurTemplate() == NULL) {
+    ast_struct_t* strct = getParent(parent);
+    if (strct == NULL) {
         return QModelIndex();
     }
 
-    ast_struct_t* strct = NULL;
-    if (!parent.isValid())
-        strct = getCurTemplate()->root->entry;
-    else
-        strct = (ast_struct_t*)(parent.internalPointer());
-
     ast_node_t* node = strct->nodes[row];
-    if (node == NULL)
+    if (node == NULL) {
         return QModelIndex();
+    }
 
     return createIndex(row, column, node);
 }
 
 QModelIndex TemplateModel::parent(const QModelIndex& index) const {
-    if (!index.isValid()) {
+    if (!shouldRender()) {
         return QModelIndex();
     }
 
-    if (getCurTemplate() == NULL) {
+    if (!index.isValid()) {
         return QModelIndex();
     }
 
     ast_var_t* child = (ast_var_t*)(index.internalPointer());
     ast_struct_t* parent = (ast_struct_t*)child->parent;
 
-    if (((void*)parent) == ((void*)getCurTemplate()->root)) //TODO: this will likely fail, modify template code
+    if (((void*)parent) == ((void*)p->t->root)) {
         return QModelIndex();
+    }
 
     return createIndex(parent->index, 0, parent);
 }
 
 int TemplateModel::rowCount(const QModelIndex& parent) const {
+    if (!shouldRender()) {
+        return 0;
+    }
+
     if (parent.column() > 0) {
         return 0;
     }
 
-    if (getCurTemplate() == NULL) {
+    ast_struct_t* strct = getParent(parent);
+    if (strct == NULL) {
         return 0;
     }
-
-    ast_struct_t* strct = NULL;
-    if (!parent.isValid())
-        strct = getCurTemplate()->root->entry;
-    else
-        strct = (ast_struct_t*)(parent.internalPointer());
 
     return strct->node_amt;
 }

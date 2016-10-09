@@ -27,6 +27,8 @@ class HexEditor : public QAbstractScrollArea {
 
     Q_OBJECT
 
+    mc_ctx_t* ctx;
+
     /* Main internal funcs */
     void init();
 
@@ -36,10 +38,7 @@ class HexEditor : public QAbstractScrollArea {
     /* Section drawing */
     void drawNoFile(QPainter& painter);
 
-    mc_file_t* getCurFile();
-
 protected:
-
     /* Highlights */
     QList<HighlightArea*> highlights; // TODO: replace with template rendering, leave this for testing
     QList<HighlightArea*> search_results;
@@ -66,9 +65,7 @@ protected:
     int font_cwidth;
     int font_cheight;
 
-
 public:
-
     HexEditor(MainEditor* parent);
 
     int getNumLines();
@@ -77,18 +74,17 @@ public:
     void setCursorPos(int pos);
     int getCursorPos();
 
-    void setCurrentFile(mc_file_t* file);
-
 protected:
-
     void keyPressEvent(QKeyEvent* event);
     void mouseMoveEvent(QMouseEvent* event);
     void mousePressEvent(QMouseEvent* event);
     void paintEvent(QPaintEvent* event);
     void resizeEvent(QResizeEvent* event);
 
-private slots:
+public slots:
+    void setContext(mc_ctx_t* ctx);
 
+private slots:
     void adjust();
 };
 

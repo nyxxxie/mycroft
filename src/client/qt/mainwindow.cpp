@@ -38,6 +38,9 @@ MainWindow::MainWindow(mc_ctx_t* ctx) : QMainWindow() {
 
     /* Print the initial message */
     status_bar->showMessage(quotes[rand() % QUOTE_AMOUNT]);
+
+    /* Set the mycroft ctx to use */
+    setContext(ctx);
 }
 
 void MainWindow::contextMenuEvent(QContextMenuEvent *event) {
@@ -85,7 +88,6 @@ void MainWindow::CreateMenuBar() {
 
 void MainWindow::CreateEditor() {
     editor = new MainEditor(this);
-    editor->setMycroftCtx(ctx);
     editor->init();
 }
 
@@ -146,9 +148,9 @@ void MainWindow::CreateActions() {
             this, &MainWindow::on_act_help_about_triggered);
 }
 
-void MainWindow::setMycroftCtx(mc_ctx_t* ctx) {
+void MainWindow::setContext(mc_ctx_t* ctx) {
     this->ctx = ctx;
-    this->editor->setMycroftCtx(ctx);
+    emit contextChanged(ctx);
 }
 
 void MainWindow::on_act_file_new_triggered() {

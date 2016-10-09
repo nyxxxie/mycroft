@@ -10,22 +10,6 @@ void MainEditor::InitHexEditor() {
     hexedit = new HexEditor(this);
 }
 
-void MainEditor::setMycroftCtx(mc_ctx_t* ctx) {
-    this->ctx = ctx;
-}
-
-mc_ctx_t* MainEditor::getMycroftCtx() {
-    return this->ctx;
-}
-
-void MainEditor::setMainFile(mc_file_t* file) {
-
-}
-
-mc_file_t* MainEditor::getMainFile() {
-    return mycroft_get_file(ctx);
-}
-
 void MainEditor::init() {
 
     /* Create the two main elements of this widget */
@@ -48,6 +32,11 @@ void MainEditor::init() {
     layout->addWidget(splitter);
 
     setLayout(layout);
+
+    connect(parent(), SIGNAL(contextChanged(mc_ctx_t*)),
+            hexedit, SLOT(setContext(mc_ctx_t*)));
+    connect(parent(), SIGNAL(contextChanged(mc_ctx_t*)),
+            tedit, SLOT(setContext(mc_ctx_t*)));
 }
 
 MainEditor::MainEditor(QWidget* parent)
