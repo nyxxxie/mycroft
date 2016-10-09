@@ -49,7 +49,11 @@ public:
     MainWindow(mc_ctx_t* ctx);
     ~MainWindow();
 
-    void setMycroftCtx(mc_ctx_t* ctx);
+public slots:
+    void setContext(mc_ctx_t* ctx);
+
+signals:
+    void contextChanged(mc_ctx_t* ctx);
 
 protected:
     void contextMenuEvent(QContextMenuEvent* event) Q_DECL_OVERRIDE;

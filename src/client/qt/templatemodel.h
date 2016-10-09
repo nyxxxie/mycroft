@@ -13,8 +13,8 @@ class TemplateModel : public QAbstractItemModel {
     Q_OBJECT
 
     TemplateEditor* p;
-
-    template_t* getCurTemplate() const;
+    bool shouldRender() const;
+    ast_struct_t* getParent(const QModelIndex& parent) const;
 
 public:
     explicit TemplateModel(TemplateEditor* parent);

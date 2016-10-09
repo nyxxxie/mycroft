@@ -86,6 +86,8 @@ void HighlightArea::render(HexEditor* editor, QPainter& painter) {
  * Initializes all variables to their default values.
  */
 void HexEditor::init() {
+    ctx = NULL;
+
     rows_total = 0;
     rows_shown = 0;
     row_top = 0;
@@ -116,10 +118,6 @@ void HexEditor::init() {
     widgets.append(new AsciiView(this));
 }
 
-mc_file_t* HexEditor::getCurFile() {
-    return ((MainEditor*)parent())->getMainFile();
-}
-
 /**
  * Recalculates spacing variables when something is changed.
  */
@@ -133,11 +131,11 @@ void HexEditor::adjust() {
     horizontalScrollBar()->setRange(0, widgets_width - viewport()->width());
     horizontalScrollBar()->setPageStep(viewport()->width());
 
-    if (getCurFile() == NULL)
+    if (ctx == NULL)
         return;
 
     rows_shown = ((viewport()->height() / (font_cheight+row_offset)) + 1);
-    rows_total = file_size(getCurFile()) / QMC_HEXEDIT_BYTESPERROW;
+    rows_total = file_size(mycroft_get_file(ctx)) / QMC_HEXEDIT_BYTESPERROW;
 
     verticalScrollBar()->setRange(0, rows_total);
     verticalScrollBar()->setPageStep(rows_shown);
@@ -161,7 +159,7 @@ int HexEditor::getNumLines() {
  */
 void HexEditor::setCurLine(int line) {
     row_top = line;
-    file_set_cursor(getCurFile(), line*QMC_HEXEDIT_BYTESPERROW);
+    file_set_cursor(mycroft_get_file(ctx), line*QMC_HEXEDIT_BYTESPERROW);
 }
 
 /**
@@ -174,14 +172,14 @@ int HexEditor::getCurLine() {
 }
 
 void HexEditor::setCursorPos(int pos) {
-    file_set_cursor(getCurFile(), pos*QMC_HEXEDIT_BYTESPERROW);
+    file_set_cursor(mycroft_get_file(ctx), pos*QMC_HEXEDIT_BYTESPERROW);
 }
 
 int HexEditor::getCursorPos() {
-    if (getCurFile() == NULL)
+    if (ctx == NULL)
         return 0;
 
-    return file_get_cursor(getCurFile());
+    return file_get_cursor(mycroft_get_file(ctx));
 }
 
 void HexEditor::setFont(const QFont& font) {
@@ -250,7 +248,7 @@ void HexEditor::paintEvent(QPaintEvent* event) {
 
     QPainter painter(viewport());
 
-    if (getCurFile() == NULL) {
+    if (ctx == NULL) {
         drawNoFile(painter);
     }
     else {
@@ -276,11 +274,16 @@ void HexEditor::resizeEvent(QResizeEvent*) {
 HexEditor::HexEditor(MainEditor* parent) : QAbstractScrollArea(parent) {
 
     /* Connect signals to slots */
-    connect(verticalScrollBar(), SIGNAL(valueChanged(int)), this, SLOT(adjust()));
+    connect(verticalScrollBar(),   SIGNAL(valueChanged(int)), this, SLOT(adjust()));
     connect(horizontalScrollBar(), SIGNAL(valueChanged(int)), this, SLOT(adjust()));
 
     /* Initialize variables */
     init();
+}
+
+void HexEditor::setContext(mc_ctx_t* ctx) {
+    this->ctx = ctx;
+    printf("HexEditor::setContext\n");
 }
 
 /**
@@ -313,7 +316,8 @@ void AddressView::render(QPainter& painter) {
 
     /* Draw address part */
     for (int row=1, addr=editor->getCursorPos();
-        row <= editor->rows_shown && addr < file_size(editor->getCurFile());
+        row <= editor->rows_shown &&
+        addr < file_size(mycroft_get_file(editor->ctx));
         row++, addr += QMC_HEXEDIT_BYTESPERROW) {
 
         painter.drawText(start+editor->widget_text_offset,
@@ -409,13 +413,13 @@ void HexView::renderHighlight(HighlightArea* area, QPainter& painter) {
     }
 
     /* Does the selection start in range of the file? */
-    if (selection_a > file_size(editor->getCurFile())) {
+    if (selection_a > file_size(mycroft_get_file(editor->ctx))) {
         return;
     }
 
     /* If the selection extends past the end of the file, trim it */
-    if (selection_b > file_size(editor->getCurFile())) {
-        selection_b = file_size(editor->getCurFile());
+    if (selection_b > file_size(mycroft_get_file(editor->ctx))) {
+        selection_b = file_size(mycroft_get_file(editor->ctx));
     }
 
     /* Figure out the bytes and rows the selection will be on */
@@ -488,14 +492,14 @@ void HexView::render(QPainter& painter) {
     }
 
     /* Draw bytes */
-    int cursor_prev = file_get_cursor(editor->getCurFile());
+    int cursor_prev = file_get_cursor(mycroft_get_file(editor->ctx));
     for (int row=1; row <= editor->rows_shown; row++) {
 
         /* Read file bytes */
         uint8_t bytes[QMC_HEXEDIT_BYTESPERROW];
 
         //TODO: maintain a single cache/file buffer?
-        int amnt = file_read(editor->getCurFile(), QMC_HEXEDIT_BYTESPERROW, bytes);
+        int amnt = file_read(mycroft_get_file(editor->ctx), QMC_HEXEDIT_BYTESPERROW, bytes);
         if (amnt == 0) {
             break;
         }
@@ -512,7 +516,7 @@ void HexView::render(QPainter& painter) {
             offset += byte_gap;
         }
     }
-    file_set_cursor(editor->getCurFile(), cursor_prev);
+    file_set_cursor(mycroft_get_file(editor->ctx), cursor_prev);
 
     editor->widget_start += width + editor->widget_gap;
 }
@@ -588,12 +592,12 @@ void AsciiView::render(QPainter& painter) {
         editor->palette().alternateBase().color());
 
     /* Draw bytes */
-    int cursor_prev = file_get_cursor(editor->getCurFile());
+    int cursor_prev = file_get_cursor(mycroft_get_file(editor->ctx));
     for (int row=1; row <= editor->rows_shown; row++) {
 
         /* Read file bytes */
         uint8_t bytes[QMC_HEXEDIT_BYTESPERROW];
-        int amnt = file_read(editor->getCurFile(), QMC_HEXEDIT_BYTESPERROW, bytes);
+        int amnt = file_read(mycroft_get_file(editor->ctx), QMC_HEXEDIT_BYTESPERROW, bytes);
         if (amnt == 0) {
             break;
         }
@@ -623,7 +627,7 @@ void AsciiView::render(QPainter& painter) {
             /* Print char */
         }
     }
-    file_set_cursor(editor->getCurFile(), cursor_prev);
+    file_set_cursor(mycroft_get_file(editor->ctx), cursor_prev);
 
     editor->widget_start += width + editor->widget_gap;
 }

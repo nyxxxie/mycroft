@@ -17,8 +17,6 @@ class MainEditor : public QWidget {
     HexEditor* hexedit;
     TemplateEditor* tedit;
 
-    mc_ctx_t* ctx;
-
     QVBoxLayout* layout;
     QSplitter* splitter;
 
@@ -27,14 +25,10 @@ class MainEditor : public QWidget {
 
 public:
 
-    void setMycroftCtx(mc_ctx_t* ctx);
-    mc_ctx_t* getMycroftCtx();
-    void setMainFile(mc_file_t* file);
-    mc_file_t* getMainFile();
-
     void init();
     MainEditor(QWidget* parent);
     ~MainEditor();
+
 };
 
 #endif // MAINEDITOR_H

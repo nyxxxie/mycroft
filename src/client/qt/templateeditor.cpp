@@ -7,17 +7,18 @@
 /**
  * Starts up the template viewer with the default struct.
  */
-bool TemplateEditor::init() {
+void TemplateEditor::init() {
+    this->t = NULL;
     TemplateModel* model = new TemplateModel(this);
     setModel(model);
-}
-
-template_t* TemplateEditor::getCurTemplate() {
-    mc_file_t* file = ((MainEditor*)parent())->getMainFile();
-    return file_get_template(file);
 }
 
 TemplateEditor::TemplateEditor(MainEditor* parent)
     : QTreeView(parent) {
     init();
+}
+
+void TemplateEditor::setContext(mc_ctx_t* ctx) {
+    this->t = file_get_template(mycroft_get_file(ctx));
+    printf("TemplateEditor::setContext [0x%08x]\n", this->t);
 }
