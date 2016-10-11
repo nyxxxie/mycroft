@@ -283,7 +283,7 @@ HexEditor::HexEditor(MainEditor* parent) : QAbstractScrollArea(parent) {
 
 void HexEditor::setContext(mc_ctx_t* ctx) {
     this->ctx = ctx;
-
+}
 
 /**
  * Determines if point is inside widget.
