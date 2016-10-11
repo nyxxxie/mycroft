@@ -119,12 +119,10 @@ int mycroft_open_file(mc_ctx_t* ctx, const char* target_filename) {
     char mdb_filename[b + 5];
 
     /* Open target file */
-    printf("Opening %s\n", target_filename);
     if (file_open(ctx->file, target_filename) < 0) {
-        printf("NOOOO\n");
+        printf("Failed to open file.\n");
         return -1;
     }
-    printf("YEEE\n");
 
     /* Generate the mdb filename from the target's filename */
     strcpy(mdb_filename, target_filename);
