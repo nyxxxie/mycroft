@@ -130,7 +130,7 @@ int file_close(mc_file_t* file) {
  * @return Returns the template or NULL if it's not set.
  */
 template_t* file_get_template(mc_file_t* file) {
-    file->t;
+    return file->t;
 }
 
 /**
