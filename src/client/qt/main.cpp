@@ -22,22 +22,6 @@ int main(int argc, char *argv[]) {
     /* Add command line arguments */
     parser.addPositionalArgument("target", "File to play with.");
 
-    /* Process parser arguments */
-    parser.process(a);
-    const QStringList args = parser.positionalArguments();
-    if (args.size() <= 0) {
-        printf("You didn't specify a file to open, please do that.\n");
-        return 1;
-    }
-
-    QString filename = args.at(0);
-
-    /* Check if we were given a file */
-    if (filename.size() == 0) {
-        printf("You didn't specify a file to open, please do that.\n");
-        return 1;
-    }
-
     /* Create mycroft instance */
     mc_ctx_t* ctx = mycroft_init();
     if (ctx == NULL) {
@@ -45,13 +29,22 @@ int main(int argc, char *argv[]) {
         return 1;
     }
 
-    int rc = mycroft_open_file(ctx, filename.toStdString().c_str());
-    if (rc < 0) {
-        printf("Failed to open file.\n");
-        return 1;
-    }
+    /* Process parser arguments */
+    parser.process(a);
+    const QStringList args = parser.positionalArguments();
+    if (args.size() > 0) {
+        QString filename = args.at(0);
+        if (filename.size() == 0) {
+            printf("File to open was null.");
+            return 1;
+        }
 
-    //TODO: free mycroft instance somewhere?
+        int rc = mycroft_open_file(ctx, filename.toStdString().c_str());
+        if (rc < 0) {
+            printf("Failed to open file.\n");
+            return 1;
+        }
+    }
 
     /* Create main window */
     MainWindow w(ctx);
