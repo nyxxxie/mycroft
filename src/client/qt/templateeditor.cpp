@@ -20,5 +20,4 @@ TemplateEditor::TemplateEditor(MainEditor* parent)
 
 void TemplateEditor::setContext(mc_ctx_t* ctx) {
     this->t = file_get_template(mycroft_get_file(ctx));
-    printf("TemplateEditor::setContext [0x%08x]\n", this->t);
 }
