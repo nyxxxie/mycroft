@@ -24,9 +24,9 @@ typedef struct {
  * fields, they may change in the future.
  */
 struct mc_file_t {
-    char*   name;   /**< @internal */
-    char*   path;   /**< @internal */
-    FILE*   fp;     /**< @internal */
+    char* name;     /**< @internal */
+    char* path;     /**< @internal */
+    FILE* fp;       /**< @internal */
     fsize_t size;   /**< @internal */
     fsize_t cursor; /**< @internal */
     template_t* t;  /**< @internal */

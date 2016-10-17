@@ -41,11 +41,16 @@ int file_exists(const char* file_name) {
  * prior to using any other function that takes the same mc_file_t struct as an
  * argument.  Failure to do so will yeild undefined behavior.
  *
- * @param file mc_file_t struct to initialize.
- *
- * @return Returns 0 on success, negative value on error.
+ * @return Returns the created mc_file_t, NULL otherwise.
  */
-int file_init(mc_file_t* file) {
+mc_file_t* mc_file_create() {
+    mc_file_t* file = NULL;
+
+    /* Alloc the project */
+    file = (mc_file_t*)malloc(sizeof(mc_file_t));
+    if (file == NULL) {
+        return NULL;
+    }
 
     file->fp = NULL;
     file->size = 0;
@@ -55,7 +60,7 @@ int file_init(mc_file_t* file) {
     file->t = NULL;
     file->cache = NULL;
 
-    return 0;
+    return file;
 }
 
 /**
@@ -63,29 +68,35 @@ int file_init(mc_file_t* file) {
  * call file_close after you're done with the file you've opened.  Do not call
  * this function twice on the same struct without closing and reinitializing it.
  *
- * @param file mc_file_t struct to operate on.
  * @param file_name File to open.
  *
- * @return Returns 0 on success, negative value on error.
+ * @return Returns the created mc_file_t, NULL otherwise.
  */
-int file_open(mc_file_t* file, const char* file_name) {
+mc_file_t* mc_file_open(const char* file_name) {
+    mc_file_t* file = NULL;
 
     /* Make sure we're passed a nonempty path */
     if (file_name == 0 || strlen(file_name) == 0) {
-        return -1;
+        return NULL;
+    }
+
+    /* Create file */
+    file = mc_file_create();
+    if (file == NULL) {
+        return NULL;
     }
 
     /* Fill the file name and path members of the mc_file_t struct */
     file->path = (char*)malloc(strlen(file_name));
     if (file->path == NULL) {
-        return -1;
+        return NULL;
     }
     strcpy(file->path, file_name);
     file->name = file->path;  //TODO: figure out how to get basename
 
     /* Try to open file */
     if ((file->fp = fopen(file->path, "rb+")) == NULL) {
-        return -1;
+        return NULL;
     }
 
     /* Copy file name and path */
@@ -99,7 +110,7 @@ int file_open(mc_file_t* file, const char* file_name) {
     file->size = ftell(file->fp);
     fseek(file->fp, 0, SEEK_SET);
 
-    return 0;
+    return file;
 }
 
 /**
@@ -110,7 +121,7 @@ int file_open(mc_file_t* file, const char* file_name) {
  *
  * @return Returns 0 on success, negative value on error.
  */
-int file_close(mc_file_t* file) {
+int mc_file_close(mc_file_t* file) {
     if (file->fp != NULL) {
         fclose(file->fp);
     }
@@ -129,7 +140,7 @@ int file_close(mc_file_t* file) {
  *
  * @return Returns the template or NULL if it's not set.
  */
-template_t* file_get_template(mc_file_t* file) {
+template_t* mc_file_get_template(mc_file_t* file) {
     return file->t;
 }
 
@@ -140,7 +151,7 @@ template_t* file_get_template(mc_file_t* file) {
  *
  * @return Returns 0 on success, negative value on error.
  */
-int file_set_template(mc_file_t* file, template_t* t) {
+int mc_file_set_template(mc_file_t* file, template_t* t) {
     file->t = t;
     return 0;
 }
@@ -153,7 +164,7 @@ int file_set_template(mc_file_t* file, template_t* t) {
  *
  * @return Returns 0 on success, negative value on error.
  */
-int file_get_cursor(mc_file_t* file) {
+int mc_file_get_cursor(mc_file_t* file) {
     //file->cursor = ftell(file->fp);
     return file->cursor;
 }
@@ -167,7 +178,7 @@ int file_get_cursor(mc_file_t* file) {
  *
  * @return Returns 0 on success, negative value on error.
  */
-int file_set_cursor(mc_file_t* file, int cursor) {
+int mc_file_set_cursor(mc_file_t* file, int cursor) {
 
     if (cursor > file->size) {
         fprintf(stderr, "Tried to set cursor past the end of the file.");
@@ -192,7 +203,7 @@ int file_set_cursor(mc_file_t* file, int cursor) {
  *
  * @return Returns the file size.
  */
-fsize_t file_size(mc_file_t* file) {
+fsize_t mc_file_size(mc_file_t* file) {
     return file->size;
 }
 
@@ -203,7 +214,7 @@ fsize_t file_size(mc_file_t* file) {
  *
  * @return Returns the file name.
  */
-char* file_name(mc_file_t* file) {
+char* mc_file_name(mc_file_t* file) {
     return file->name;
 }
 
@@ -214,7 +225,7 @@ char* file_name(mc_file_t* file) {
  *
  * @return Returns the file path.
  */
-char* file_path(mc_file_t* file) {
+char* mc_file_path(mc_file_t* file) {
     return file->path;
 }
 
@@ -230,7 +241,7 @@ char* file_path(mc_file_t* file) {
  *
  * @return Returns 0 on success, negative value on error.
  */
-int file_cache_init(mc_file_t* file, int size) {
+int mc_file_cache_init(mc_file_t* file, int size) {
 
     /* Create cache struct */
     file->cache = (file_cache_t*)malloc(sizeof(file_cache_t));
@@ -264,7 +275,7 @@ int file_cache_init(mc_file_t* file, int size) {
  *
  * @return Returns 0 on success, negative value on error.
  */
-int file_cache_loadzone(mc_file_t* file, int cursor) {
+int mc_file_cache_loadzone(mc_file_t* file, int cursor) {
     file->cache->base = cursor;
     return file_cache_reload(file); // Why duplicate efforts?
 }
@@ -276,7 +287,7 @@ int file_cache_loadzone(mc_file_t* file, int cursor) {
  *
  * @return Returns 0 on success, negative value on error.
  */
-int file_cache_reload(mc_file_t* file) {
+int mc_file_cache_reload(mc_file_t* file) {
 
     int diff = 0;
     int rc = 0;
@@ -305,7 +316,7 @@ int file_cache_reload(mc_file_t* file) {
  *
  * @return Returns 0 on success, negative value on error.
  */
-int file_read(mc_file_t* file, fsize_t amount, uint8_t* outbuf) {
+int mc_file_read(mc_file_t* file, fsize_t amount, uint8_t* outbuf) {
 
     /* Read desired content */
     long int res = fread(outbuf, 1, amount, file->fp);
@@ -329,7 +340,7 @@ int file_read(mc_file_t* file, fsize_t amount, uint8_t* outbuf) {
  *
  * @return Returns 0 on success, negative value on error.
  */
-int file_read_raw(mc_file_t* file, fsize_t amount, uint8_t* outbuf) {
+int mc_file_read_raw(mc_file_t* file, fsize_t amount, uint8_t* outbuf) {
 
     /* Read desired content */
     long int res = fread(outbuf, 1, amount, file->fp);
@@ -356,7 +367,7 @@ int file_read_raw(mc_file_t* file, fsize_t amount, uint8_t* outbuf) {
  *
  * @return Returns 0 on success, negative value on error.
  */
-int file_read_value(mc_file_t* file, fsize_t offset, fsize_t amount, uint8_t* outbuf) {
+int mc_file_read_value(mc_file_t* file, fsize_t offset, fsize_t amount, uint8_t* outbuf) {
 
     /* Make sure that we don't read off the end of the file */
     if ((offset + amount) >= file->size) {
@@ -409,7 +420,7 @@ int file_read_value(mc_file_t* file, fsize_t offset, fsize_t amount, uint8_t* ou
  *
  * @return Returns 0 on success, negative value on error.
  */
-int file_write(mc_file_t* file, fsize_t amount, uint8_t* outbuf) {
+int mc_file_write(mc_file_t* file, fsize_t amount, uint8_t* outbuf) {
 
     /* Read desired content */
     long int res = fwrite(outbuf, 1, amount, file->fp);
@@ -437,7 +448,7 @@ int file_write(mc_file_t* file, fsize_t amount, uint8_t* outbuf) {
  *
  * @return Returns 0 on success, negative value on error.
  */
-int file_write_value(mc_file_t* file, fsize_t offset, fsize_t amount, uint8_t* outbuf) {
+int mc_file_write_value(mc_file_t* file, fsize_t offset, fsize_t amount, uint8_t* outbuf) {
 
     /* Make sure that we don't write past file contents */
     if ((offset + amount) >= file->size) {
@@ -492,7 +503,7 @@ int file_write_value(mc_file_t* file, fsize_t offset, fsize_t amount, uint8_t* o
  *
  * @return Returns 0 on success, negative value on error.
  */
-int file_read_cache(mc_file_t* file, fsize_t offset, fsize_t amount, uint8_t* outbuf) {
+int mc_file_read_cache(mc_file_t* file, fsize_t offset, fsize_t amount, uint8_t* outbuf) {
 
     int rc = file_cache_loadzone(file, offset);
     if (rc < 0) {
