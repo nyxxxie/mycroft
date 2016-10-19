@@ -10,7 +10,6 @@ extern "C" {
 #include <openssl/sha.h>
 #include <mycroft/mdb.h>
 #include <mycroft/membuf.h>
-#include "core.h"
 
 struct mc_mdb_t {
     char*    filename;

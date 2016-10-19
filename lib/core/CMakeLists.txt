@@ -25,7 +25,8 @@ include_directories(
 
 # Source files
 set(MYCROFT_CORE_SRC
-    core.c
+    context.c
+    project.c
     file.c
     hook.c
     plugin.c
