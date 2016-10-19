@@ -3,7 +3,6 @@
 
 #include <QAbstractScrollArea>
 #include <QColor>
-#include <mycroft/mdb.h>
 #include <mycroft/file.h>
 #include "maineditor.h"
 
@@ -27,7 +26,7 @@ class HexEditor : public QAbstractScrollArea {
 
     Q_OBJECT
 
-    mc_ctx_t* ctx;
+    mc_file_t* file;
 
     /* Main internal funcs */
     void init();
