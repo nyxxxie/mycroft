@@ -82,6 +82,11 @@ void mc_project_free(mc_project_t* project) {
 uint32_t mc_project_add_file(mc_project_t* project, mc_file_t* file) {
     int cur_index = 0;
 
+    /* Ensure that file isn't null */
+    if (file == NULL) {
+        return (uint32_t)(-1);
+    }
+
     /* Save index that the file should be saved to, then iterate total */
     cur_index = project->file_amt;
     project->file_amt++;
