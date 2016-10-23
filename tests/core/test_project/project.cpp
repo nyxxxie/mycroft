@@ -1,88 +1,138 @@
 #include <gtest/gtest.h>
 #include <mycroft/mycroft.h>
 
-TEST(context, create_ctx) {
-    mc_ctx_t* ctx = mc_ctx_create();
-    ASSERT_TRUE(ctx != NULL);
-}
-
-TEST(context, create_and_free_ctx) {
-    mc_ctx_t* ctx = mc_ctx_create();
-    ASSERT_TRUE(ctx != NULL);
-    mc_ctx_free(ctx);
-}
-
-TEST(project, create_project) {
-    mc_ctx_t* ctx = mc_ctx_create();
-    ASSERT_TRUE(ctx != NULL);
-    mc_ctx_free(ctx);
-}
-
-TEST(project, create_and_free_project) {
-    mc_ctx_t* ctx = mc_ctx_create();
-    ASSERT_TRUE(ctx != NULL);
-    mc_ctx_free(ctx);
-}
-
-TEST(project_new, add_project_to_ctx) {
-    mc_ctx_t* ctx = mc_ctx_create();
-    ASSERT_TRUE(ctx != NULL);
-
+/**
+ * Ensure that we actually can allocate and free a project.  Hopefully this
+ * test works!
+ */
+TEST(project_new, create_project) {
     mc_project_t* project = mc_project_create("name");
-    mc_ctx_add_project(ctx, project);
-
-
-    mc_ctx_free(ctx);
+    ASSERT_TRUE(project != NULL);
+    mc_project_free(project);
 }
 
-TEST(project_new, add_many_projects_to_ctx) {
+/**
+ * Make sure that internal values are set properly.
+ */
+TEST(project_new, verify_default_values) {
+    mc_project_t* project = mc_project_create("name");
+    ASSERT_TRUE(project != NULL);
+
+
+
+    mc_project_free(project);
 }
 
-TEST(project_new, verify_project_is_stored) {
+/**
+ * Test to see if we can add files to the project.  Also bonus test to make
+ * sure we actually record the number of files!
+ */
+TEST(project_new, add_file) {
+    mc_project_t* project = mc_project_create("name");
+    ASSERT_TRUE(project != NULL);
+
+    mc_file_t* files[3] = {NULL};
+    ASSERT_TRUE((files[0] = mc_file_create()) != NULL);
+    ASSERT_TRUE((files[1] = mc_file_create()) != NULL);
+    ASSERT_TRUE((files[2] = mc_file_create()) != NULL);
+
+    ASSERT_TRUE(mc_project_add_file(project, files[0]) == 0);
+    ASSERT_TRUE(mc_project_add_file(project, files[1]) == 1);
+    ASSERT_TRUE(mc_project_add_file(project, files[2]) == 2);
+
+    ASSERT_TRUE(mc_project_get_file_amount(project) == 3);
+
+    mc_project_free(project);
 }
 
-TEST(project_new, verify_projects_are_stored) {
+/**
+ * Test to make adding a NULL file fails.
+ */
+TEST(project_new, add_null_file) {
+    mc_project_t* project = mc_project_create("name");
+    ASSERT_TRUE(project != NULL);
+
+    ASSERT_TRUE(mc_project_add_file(project, NULL) == -1);
+
+    mc_project_free(project);
 }
 
-//TEST(core_basic, mycroft_init_and_free) {
-//    mc_ctx_t* ctx = mycroft_init();
-//    ASSERT_TRUE(ctx != NULL);
-//    mycroft_free(ctx);
-//}
-//
-//TEST(core_basic, mycroft_open_file_new) {
-//    mc_ctx_t* ctx = mycroft_init();
-//    ASSERT_TRUE(ctx != NULL);
-//
-//    ASSERT_EQ(mycroft_open_file(ctx, "res/testbin1"), 0);
-//
-//    mycroft_free(ctx);
-//}
-//
-//TEST(core_basic, mycroft_open_file_existing) {
-//    mc_ctx_t* ctx = mycroft_init();
-//    ASSERT_TRUE(ctx != NULL);
-//
-//    ASSERT_EQ(mycroft_open_file(ctx, "res/testbin1"), 0);
-//
-//    mycroft_free(ctx);
-//}
-//
-//TEST(core_basic, mycroft_open_file_new_verify) {
-//    mc_ctx_t* ctx = mycroft_init();
-//    ASSERT_TRUE(ctx != NULL);
-//
-//    ASSERT_EQ(mycroft_open_file(ctx, "res/testbin2"), 0);
-//    ASSERT_EQ(mycroft_open_file(ctx, "res/testbin2"), 0);
-//
-//    mycroft_free(ctx);
-//}
-//
-//TEST(core_basic, mycroft_open_file_existing_verify) {
-//    mc_ctx_t* ctx = mycroft_init();
-//    ASSERT_TRUE(ctx != NULL);
-//
-//    ASSERT_EQ(mycroft_open_file(ctx, "res/testbin2"), 0);
-//
-//    mycroft_free(ctx);
-//}
+
+/**
+ * Check to make sure we can retrieve files we add to the project.
+ */
+TEST(project_new, get_file) {
+    mc_project_t* project = mc_project_create("name");
+    ASSERT_TRUE(project != NULL);
+
+    mc_file_t* files[3] = {NULL};
+    ASSERT_TRUE((files[0] = mc_file_create()) != NULL);
+    ASSERT_TRUE((files[1] = mc_file_create()) != NULL);
+    ASSERT_TRUE((files[2] = mc_file_create()) != NULL);
+
+    uint32_t fileind[3] = { 0 };
+    fileind[0] = mc_project_add_file(project, files[0]);
+    fileind[1] = mc_project_add_file(project, files[1]);
+    fileind[2] = mc_project_add_file(project, files[2]);
+
+    ASSERT_TRUE(fileind[0] == 0);
+    ASSERT_TRUE(fileind[1] == 1);
+    ASSERT_TRUE(fileind[2] == 2);
+
+    ASSERT_TRUE(files[0] == mc_project_get_file(project, fileind[0]));
+    ASSERT_TRUE(files[1] == mc_project_get_file(project, fileind[1]));
+    ASSERT_TRUE(files[2] == mc_project_get_file(project, fileind[2]));
+
+    mc_project_free(project);
+}
+
+/**
+ * Check to make sure we can remove files we add to the project.
+ */
+TEST(project_new, remove_file) {
+    mc_project_t* project = mc_project_create("name");
+    ASSERT_TRUE(project != NULL);
+
+    mc_file_t* files[3] = {NULL};
+    ASSERT_TRUE((files[0] = mc_file_create()) != NULL);
+    ASSERT_TRUE((files[1] = mc_file_create()) != NULL);
+    ASSERT_TRUE((files[2] = mc_file_create()) != NULL);
+
+    uint32_t fileind[3] = { 0 };
+    fileind[0] = mc_project_add_file(project, files[0]);
+    fileind[1] = mc_project_add_file(project, files[1]);
+    fileind[2] = mc_project_add_file(project, files[2]);
+
+    ASSERT_TRUE(fileind[0] == 0);
+    ASSERT_TRUE(fileind[1] == 1);
+    ASSERT_TRUE(fileind[2] == 2);
+
+    ASSERT_TRUE(mc_project_remove_file(project, fileind[0]) == 0);
+    ASSERT_TRUE(mc_project_remove_file(project, fileind[1]) == 0);
+    ASSERT_TRUE(mc_project_remove_file(project, fileind[2]) == 0);
+
+    ASSERT_TRUE(mc_project_get_file_amount(project) == 0);
+
+    mc_project_free(project);
+}
+
+/**
+ * Test focused file functionality.
+ */
+TEST(project_new, focused_file) {
+    mc_project_t* project = mc_project_create("name");
+    ASSERT_TRUE(project != NULL);
+
+    mc_file_t* file = NULL;
+    ASSERT_TRUE((file = mc_file_create()) != NULL);
+
+    uint32_t i = mc_project_add_file(project, file);
+    ASSERT_TRUE(i == 0);
+
+    mc_project_set_focused_file(project, file);
+    ASSERT_TRUE(file == mc_project_get_focused_file(project));
+
+    ASSERT_TRUE(mc_project_remove_file(project, i) == 0);
+
+    mc_project_free(project);
+}
