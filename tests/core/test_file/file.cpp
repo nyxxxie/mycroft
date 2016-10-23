@@ -23,7 +23,7 @@ TEST(file_basic, file_exists_invalid) {
  * Tests to see if the file_init function works
  */
 TEST(file_basic, file_init) {
-    mc_file_t* f = mc_file_close();
+    mc_file_t* f = mc_file_open("res/testfile1");
     ASSERT_TRUE(f != NULL);
     ASSERT_EQ(mc_file_close(f), 0);
 }
@@ -116,7 +116,7 @@ TEST(file_mgmt, file_cursor_manip) {
  * See if the file_read_value reads properly.
  */
 TEST(file_read, file_read_value) {
-r   mc_file_t* f = mc_file_open("res/testfile1");
+    mc_file_t* f = mc_file_open("res/testfile1");
     ASSERT_TRUE(f != NULL);
 
     uint8_t recieved[4];
