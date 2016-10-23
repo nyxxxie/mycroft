@@ -42,6 +42,11 @@ mc_project_t* mc_project_create(const char* name) {
 mc_project_t* mc_project_load(const char* mdb_file) {
     mc_project_t* project = NULL;
 
+    /* Make sure our target database exists */
+    if (file_exists(mdb_file) < 0) {
+        return NULL;
+    }
+
     /* Alloc the project */
     project = (mc_project_t*)malloc(sizeof(mc_project_t));
     if (project == NULL) {
