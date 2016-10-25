@@ -112,7 +112,8 @@ int mc_project_remove_file(mc_project_t* project, uint32_t file_index) {
 
 mc_file_t* mc_project_get_file(mc_project_t* project, uint32_t file_index) {
 
-    if (project->files) {
+    if (project->files == NULL ||
+        file_index >= project->file_amt) {
         return NULL;
     }
 
