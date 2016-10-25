@@ -100,6 +100,7 @@ ast_struct_t* ast_struct_create() {
     /* Init ast_struct_t */
     ast_struct->type     = AST_TYPE_STRUCT;
     ast_struct->name     = NULL;
+    ast_struct->parent   = NULL;
     ast_struct->nodes    = NULL;
     ast_struct->node_amt = 0;
 
@@ -355,6 +356,7 @@ int construct_ast(template_t* t) {
         fprintf(stderr, "Failed to create entry struct.");
         return -1;
     }
+
     entry->parent = root;
     entry->index = 0;
     root->entry = entry;
