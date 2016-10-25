@@ -17,9 +17,8 @@ TEST(project_new, create_project) {
 TEST(project_new, verify_default_values) {
     mc_project_t* project = mc_project_create("name");
     ASSERT_TRUE(project != NULL);
-
-
-
+    ASSERT_TRUE(mc_project_get_focused_file(project) == NULL);
+    ASSERT_TRUE(mc_project_get_file_amount(project) == 0);
     mc_project_free(project);
 }
 
@@ -83,6 +82,18 @@ TEST(project_new, get_file) {
     ASSERT_TRUE(files[1] == mc_project_get_file(project, fileind[1]));
     ASSERT_TRUE(files[2] == mc_project_get_file(project, fileind[2]));
 
+    mc_project_free(project);
+}
+
+/**
+ * Check to make sure we can't retrieve files we didn't add to the project.
+ */
+TEST(project_new, get_null_file) {
+    mc_project_t* project = mc_project_create("name");
+    ASSERT_TRUE(project != NULL);
+    ASSERT_TRUE(mc_project_get_file(project, 0) == NULL);
+    ASSERT_TRUE(mc_project_get_file(project, 1) == NULL);
+    ASSERT_TRUE(mc_project_get_file(project, 123) == NULL);
     mc_project_free(project);
 }
 
