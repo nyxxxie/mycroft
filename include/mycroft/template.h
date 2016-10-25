@@ -36,15 +36,17 @@ typedef struct {
     char*      name;
 } ast_node_t;
 
+typedef struct ast_struct_t ast_struct_t; // forward decl
+
 /**
  * Var in the ast.
  */
 typedef struct {
-    int         index;
-    ast_type_t  type;
-    char*       name;
-    ast_node_t* parent;
-    datatype_t* datatype;
+    int           index;
+    ast_type_t    type;
+    char*         name;
+    ast_struct_t* parent;
+    datatype_t*   datatype;
 } ast_var_t;
 
 ast_var_t* ast_var_create();
@@ -53,14 +55,14 @@ void ast_var_free(ast_var_t* ast);
 /**
  * Struct in the ast.
  */
-typedef struct {
-    int          index;
-    ast_type_t   type;
-    char*        name;
-    ast_node_t*  parent;
-    ast_node_t** nodes;
-    unsigned int node_amt;
-} ast_struct_t;
+struct ast_struct_t {
+    int           index;
+    ast_type_t    type;
+    char*         name;
+    ast_struct_t* parent;
+    ast_node_t**  nodes;
+    unsigned int  node_amt;
+};
 
 /**
  * Root of the ast.
