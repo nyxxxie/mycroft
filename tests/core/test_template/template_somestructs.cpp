@@ -34,8 +34,8 @@ TEST(template_somestructs, check_entry) {
     entry = t->root->entry;
     ASSERT_TRUE(entry != NULL);
 
-    /* Since this is the entry node, there should be no parent */
-    ASSERT_TRUE(entry->parent == NULL);
+    /* Since this is the entry node, the parent should be root */
+    ASSERT_TRUE((ast_node_t*)entry->parent == (ast_node_t*)t->root);
 
     /* Check to make sure we have exactly three nodes */
     ASSERT_EQ(entry->node_amt, 3);
@@ -73,7 +73,7 @@ TEST(template_somestructs, check_struct1) {
     ASSERT_TRUE(strct != NULL);
 
     /* Check to make sure that the entry node is this node's parent */
-    ASSERT_TRUE(strct->parent == (ast_node_t*)t->root->entry);
+    ASSERT_TRUE(strct->parent == t->root->entry);
 
     /* Check to make sure we have exactly two nodes */
     ASSERT_EQ(strct->node_amt, 2);
@@ -107,7 +107,7 @@ TEST(template_somestructs, check_struct2) {
     ASSERT_TRUE(strct != NULL);
 
     /* Check to make sure that the entry node is this node's parent */
-    ASSERT_TRUE(strct->parent == (ast_node_t*)t->root->entry);
+    ASSERT_TRUE(strct->parent == t->root->entry);
 
     /* Check to make sure we have exactly two nodes */
     ASSERT_EQ(strct->node_amt, 2);
