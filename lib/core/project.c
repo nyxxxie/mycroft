@@ -105,7 +105,32 @@ uint32_t mc_project_add_file(mc_project_t* project, mc_file_t* file) {
 
 int mc_project_remove_file(mc_project_t* project, uint32_t file_index) {
 
-    // TODO: implement
+    /* Ensure that the index is valid */
+    if (file_index >= project->file_amt) {
+        return (uint32_t)(-1);
+    }
+
+    /* If this operation will remove the last file, just delete the array */
+    if (project->file_amt == 1) {
+        free(project->files);
+        project->files = NULL;
+        project->file_amt = 0;
+        return 0;
+    }
+
+    /* Shift contents of memory over to replace removed element */
+    memmove(&project->files[file_index], &project->files[file_index+1],
+        (project->file_amt-file_index) * sizeof(project->files[0]));
+
+
+    /* Decrement the amount of files we're tracking. */
+    project->file_amt--;
+
+    /* Create more space in the file array */
+    project->files = realloc(project->files, project->file_amt);
+    if (project->files == NULL) {
+        return (uint32_t)(-1);
+    }
 
     return 0;
 }
