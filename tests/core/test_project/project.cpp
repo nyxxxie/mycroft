@@ -118,11 +118,69 @@ TEST(project_new, remove_file) {
     ASSERT_TRUE(fileind[1] == 1);
     ASSERT_TRUE(fileind[2] == 2);
 
-    ASSERT_TRUE(mc_project_remove_file(project, fileind[0]) == 0);
-    ASSERT_TRUE(mc_project_remove_file(project, fileind[1]) == 0);
     ASSERT_TRUE(mc_project_remove_file(project, fileind[2]) == 0);
+    ASSERT_TRUE(mc_project_remove_file(project, fileind[1]) == 0);
+    ASSERT_TRUE(mc_project_remove_file(project, fileind[0]) == 0);
 
     ASSERT_TRUE(mc_project_get_file_amount(project) == 0);
+
+    mc_project_free(project);
+}
+
+/**
+ * Check in a different way if we can remove files we add to the project.
+ */
+TEST(project_new, remove_file_2) {
+    mc_project_t* project = mc_project_create("name");
+    ASSERT_TRUE(project != NULL);
+
+    mc_file_t* files[3] = {NULL};
+    ASSERT_TRUE((files[0] = mc_file_create()) != NULL);
+    ASSERT_TRUE((files[1] = mc_file_create()) != NULL);
+    ASSERT_TRUE((files[2] = mc_file_create()) != NULL);
+
+    uint32_t fileind[3] = { 0 };
+    fileind[0] = mc_project_add_file(project, files[0]);
+    fileind[1] = mc_project_add_file(project, files[1]);
+    fileind[2] = mc_project_add_file(project, files[2]);
+
+    ASSERT_TRUE(fileind[0] == 0);
+    ASSERT_TRUE(fileind[1] == 1);
+    ASSERT_TRUE(fileind[2] == 2);
+
+    ASSERT_TRUE(mc_project_remove_file(project, 0) == 0);
+    ASSERT_TRUE(mc_project_remove_file(project, 0) == 0);
+    ASSERT_TRUE(mc_project_remove_file(project, 0) == 0);
+
+    ASSERT_TRUE(mc_project_get_file_amount(project) == 0);
+
+    mc_project_free(project);
+}
+
+/**
+ * Check to make sure that the remove function shifts over elements
+ */
+TEST(project_new, remove_shiftover) {
+    mc_project_t* project = mc_project_create("name");
+    ASSERT_TRUE(project != NULL);
+
+    mc_file_t* files[3] = {NULL};
+    ASSERT_TRUE((files[0] = mc_file_create()) != NULL);
+    ASSERT_TRUE((files[1] = mc_file_create()) != NULL);
+    ASSERT_TRUE((files[2] = mc_file_create()) != NULL);
+
+    uint32_t fileind[3] = { 0 };
+    fileind[0] = mc_project_add_file(project, files[0]);
+    fileind[1] = mc_project_add_file(project, files[1]);
+    fileind[2] = mc_project_add_file(project, files[2]);
+
+    ASSERT_TRUE(fileind[0] == 0);
+    ASSERT_TRUE(fileind[1] == 1);
+    ASSERT_TRUE(fileind[2] == 2);
+
+    ASSERT_TRUE(files[1] == mc_project_get_file(project, 1));
+    ASSERT_TRUE(mc_project_remove_file(project, 1) == 0);
+    ASSERT_TRUE(files[2] == mc_project_get_file(project, 1));
 
     mc_project_free(project);
 }
