@@ -98,9 +98,9 @@ TEST(project_new, get_null_project) {
 }
 
 /**
- * Check to make sure we can remove projects we add to the ctx.
+ * Check to make sure we can remove files we add to the project.
  */
-TEST(ctx_new, remove_project) {
+TEST(project_new, remove_project) {
     mc_ctx_t* ctx = mc_ctx_create();
     ASSERT_TRUE(ctx != NULL);
 
@@ -118,11 +118,69 @@ TEST(ctx_new, remove_project) {
     ASSERT_TRUE(projectind[1] == 1);
     ASSERT_TRUE(projectind[2] == 2);
 
-    ASSERT_TRUE(mc_ctx_remove_project(ctx, projectind[0]) == 0);
-    ASSERT_TRUE(mc_ctx_remove_project(ctx, projectind[1]) == 0);
     ASSERT_TRUE(mc_ctx_remove_project(ctx, projectind[2]) == 0);
+    ASSERT_TRUE(mc_ctx_remove_project(ctx, projectind[1]) == 0);
+    ASSERT_TRUE(mc_ctx_remove_project(ctx, projectind[0]) == 0);
 
     ASSERT_TRUE(mc_ctx_get_project_amount(ctx) == 0);
+
+    mc_ctx_free(ctx);
+}
+
+/**
+ * Check in a different way if we can remove files we add to the project.
+ */
+TEST(project_new, remove_file_2) {
+    mc_ctx_t* ctx = mc_ctx_create();
+    ASSERT_TRUE(ctx != NULL);
+
+    mc_project_t* projects[3] = {NULL};
+    ASSERT_TRUE((projects[0] = mc_project_create("project1")) != NULL);
+    ASSERT_TRUE((projects[1] = mc_project_create("project2")) != NULL);
+    ASSERT_TRUE((projects[2] = mc_project_create("project3")) != NULL);
+
+    uint32_t projectind[3] = { 0 };
+    projectind[0] = mc_ctx_add_project(ctx, projects[0]);
+    projectind[1] = mc_ctx_add_project(ctx, projects[1]);
+    projectind[2] = mc_ctx_add_project(ctx, projects[2]);
+
+    ASSERT_TRUE(projectind[0] == 0);
+    ASSERT_TRUE(projectind[1] == 1);
+    ASSERT_TRUE(projectind[2] == 2);
+
+    ASSERT_TRUE(mc_ctx_remove_project(ctx, 0) == 0);
+    ASSERT_TRUE(mc_ctx_remove_project(ctx, 0) == 0);
+    ASSERT_TRUE(mc_ctx_remove_project(ctx, 0) == 0);
+
+    ASSERT_TRUE(mc_ctx_get_project_amount(ctx) == 0);
+
+    mc_ctx_free(ctx);
+}
+
+/**
+ * Check to make sure that the remove function shifts over elements
+ */
+TEST(project_new, remove_shiftover) {
+    mc_ctx_t* ctx = mc_ctx_create();
+    ASSERT_TRUE(ctx != NULL);
+
+    mc_project_t* projects[3] = {NULL};
+    ASSERT_TRUE((projects[0] = mc_project_create("project1")) != NULL);
+    ASSERT_TRUE((projects[1] = mc_project_create("project2")) != NULL);
+    ASSERT_TRUE((projects[2] = mc_project_create("project3")) != NULL);
+
+    uint32_t projectind[3] = { 0 };
+    projectind[0] = mc_ctx_add_project(ctx, projects[0]);
+    projectind[1] = mc_ctx_add_project(ctx, projects[1]);
+    projectind[2] = mc_ctx_add_project(ctx, projects[2]);
+
+    ASSERT_TRUE(projectind[0] == 0);
+    ASSERT_TRUE(projectind[1] == 1);
+    ASSERT_TRUE(projectind[2] == 2);
+
+    ASSERT_TRUE(projects[1] == mc_ctx_get_project(ctx, 1));
+    ASSERT_TRUE(mc_ctx_remove_project(ctx, 1) == 0);
+    ASSERT_TRUE(projects[2] == mc_ctx_get_project(ctx, 1));
 
     mc_ctx_free(ctx);
 }

@@ -40,6 +40,11 @@ void mc_ctx_free(mc_ctx_t* ctx) {
 uint32_t mc_ctx_add_project(mc_ctx_t* ctx, mc_project_t* project) {
     int cur_index = 0;
 
+    /* Ensure that file isn't null */
+    if (project == NULL) {
+        return (uint32_t)(-1);
+    }
+
     /* Save index that the project should be saved to, then iterate total */
     cur_index = ctx->project_amt;
     ctx->project_amt++;
@@ -58,7 +63,32 @@ uint32_t mc_ctx_add_project(mc_ctx_t* ctx, mc_project_t* project) {
 
 int mc_ctx_remove_project(mc_ctx_t* ctx, uint32_t project_index) {
 
-    // TODO: implement
+    /* Ensure that the index is valid */
+    if (project_index >= ctx->project_amt) {
+        return (uint32_t)(-1);
+    }
+
+    /* If this operation will remove the last file, just delete the array */
+    if (ctx->project_amt == 1) {
+        free(ctx->projects);
+        ctx->projects = NULL;
+        ctx->project_amt = 0;
+        return 0;
+    }
+
+    /* Shift contents of memory over to replace removed element */
+    memmove(&ctx->projects[project_index], &ctx->projects[project_index+1],
+        (ctx->project_amt-project_index) * sizeof(ctx->projects[0]));
+
+
+    /* Decrement the amount of files we're tracking. */
+    ctx->project_amt--;
+
+    /* Create more space in the file array */
+    ctx->projects = realloc(ctx->projects, ctx->project_amt);
+    if (ctx->projects == NULL) {
+        return (uint32_t)(-1);
+    }
 
     return 0;
 }
