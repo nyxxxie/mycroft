@@ -3,8 +3,70 @@
 #include "project.h"
 #include "file.h"
 
+#define QUERYNO 3
+int create_default_tables(sqlite3* db) {
+    const char* create_queries[QUERYNO] = {
+        /* This table stores project information like name, date created, date
+         * last modified, etc... */
+        "create table project_info("
+        "key       text  unique,"
+        "value     blob);",
+
+        /* This table stores the files opened by this project.  Please note
+         * the file attribute is the name of the file (including extension),
+         * whereas path contains the full path to the file. */
+        "create table files("
+        "file      text"
+        "path      text);",
+
+        /* This stores generic metadata about a file.  More detailed metadata
+         * can be found in other tables using the datatype specified (for
+         * example, comments) . */
+        "create table metadata("
+        "byte_num  integer"
+        "datatype  integer"
+        "file      text);",
+    };
+
+    // TODO: make function that creates a key/value table (so we can make more
+    //       easily for testing
+
+    for (int i = 0; i < QUERYNO; i++) {
+        sqlite3_stmt* stmt;
+        int rc = 0;
+
+        if ((rc = sqlite3_prepare_v2(db,
+            create_queries[i], -1,
+            &stmt, NULL)) != SQLITE_OK) {
+//            fprintf(stderr, "asdf: %s\n",
+//                sqlite3_errmsg(mdb->db));
+
+            return -1;
+        }
+
+        rc = sqlite3_step(stmt);
+        if (rc != SQLITE_DONE) {
+//            fprintf(stderr, "asdf: %s\n",
+//                sqlite3_errmsg(mdb->db));
+
+            return -1;
+        }
+
+        rc = sqlite3_finalize(stmt);
+        if (rc != SQLITE_OK) {
+//            fprintf(stderr, "asdf: %s\n",
+//                sqlite3_errmsg(mdb->db));
+
+            return -1;
+        }
+    }
+
+    return 0;
+}
+
 mc_project_t* mc_project_create(const char* name) {
     mc_project_t* project = NULL;
+    int rc = 0;
     int name_len = 0;
 
     /* Alloc the project */
@@ -35,6 +97,19 @@ mc_project_t* mc_project_create(const char* name) {
         return NULL;
     }
     strncpy(project->name, name, name_len);
+
+    /* Create in-memory sqlite database */
+    rc = sqlite3_open_v2(":memory:", &project->db,
+        SQLITE_OPEN_READWRITE|SQLITE_OPEN_CREATE, NULL);
+    if (rc != SQLITE_OK) {
+        return -1;
+    }
+
+    /* Create default tables for this project */
+    rc = create_default_tables(project->db);
+    if (rc < 0) {
+        return -1;
+    }
 
     return project;
 }

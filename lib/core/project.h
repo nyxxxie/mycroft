@@ -5,16 +5,16 @@
 extern "C" {
 #endif
 
-#include <mycroft/mdb.h>
+#include <sqlite3.h>
+#include <mycroft/project.h>
 #include "file.h"
-#include "database.h"
 
 struct mc_project_t {
     char*       name;
     mc_file_t** files;
     uint32_t    file_amt;
     mc_file_t*  file_focused;
-    mc_mdb_t*   db;
+    sqlite3* db;
 };
 
 #ifdef __cplusplus
