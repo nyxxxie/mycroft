@@ -31,9 +31,9 @@ TEST(project_new, add_file) {
     ASSERT_TRUE(project != NULL);
 
     mc_file_t* files[3] = {NULL};
-    ASSERT_TRUE((files[0] = mc_file_create()) != NULL);
-    ASSERT_TRUE((files[1] = mc_file_create()) != NULL);
-    ASSERT_TRUE((files[2] = mc_file_create()) != NULL);
+    ASSERT_TRUE((files[0] = mc_file_open("res/testfile1")) != NULL);
+    ASSERT_TRUE((files[1] = mc_file_open("res/testfile2")) != NULL);
+    ASSERT_TRUE((files[2] = mc_file_open("res/testfile3")) != NULL);
 
     ASSERT_TRUE(mc_project_add_file(project, files[0]) == 0);
     ASSERT_TRUE(mc_project_add_file(project, files[1]) == 1);
@@ -65,9 +65,9 @@ TEST(project_new, get_file) {
     ASSERT_TRUE(project != NULL);
 
     mc_file_t* files[3] = {NULL};
-    ASSERT_TRUE((files[0] = mc_file_create()) != NULL);
-    ASSERT_TRUE((files[1] = mc_file_create()) != NULL);
-    ASSERT_TRUE((files[2] = mc_file_create()) != NULL);
+    ASSERT_TRUE((files[0] = mc_file_open("res/testfile1")) != NULL);
+    ASSERT_TRUE((files[1] = mc_file_open("res/testfile2")) != NULL);
+    ASSERT_TRUE((files[2] = mc_file_open("res/testfile3")) != NULL);
 
     uint32_t fileind[3] = { 0 };
     fileind[0] = mc_project_add_file(project, files[0]);
@@ -105,9 +105,9 @@ TEST(project_new, remove_file) {
     ASSERT_TRUE(project != NULL);
 
     mc_file_t* files[3] = {NULL};
-    ASSERT_TRUE((files[0] = mc_file_create()) != NULL);
-    ASSERT_TRUE((files[1] = mc_file_create()) != NULL);
-    ASSERT_TRUE((files[2] = mc_file_create()) != NULL);
+    ASSERT_TRUE((files[0] = mc_file_open("res/testfile1")) != NULL);
+    ASSERT_TRUE((files[1] = mc_file_open("res/testfile2")) != NULL);
+    ASSERT_TRUE((files[2] = mc_file_open("res/testfile3")) != NULL);
 
     uint32_t fileind[3] = { 0 };
     fileind[0] = mc_project_add_file(project, files[0]);
@@ -135,9 +135,9 @@ TEST(project_new, remove_file_2) {
     ASSERT_TRUE(project != NULL);
 
     mc_file_t* files[3] = {NULL};
-    ASSERT_TRUE((files[0] = mc_file_create()) != NULL);
-    ASSERT_TRUE((files[1] = mc_file_create()) != NULL);
-    ASSERT_TRUE((files[2] = mc_file_create()) != NULL);
+    ASSERT_TRUE((files[0] = mc_file_open("res/testfile1")) != NULL);
+    ASSERT_TRUE((files[1] = mc_file_open("res/testfile2")) != NULL);
+    ASSERT_TRUE((files[2] = mc_file_open("res/testfile3")) != NULL);
 
     uint32_t fileind[3] = { 0 };
     fileind[0] = mc_project_add_file(project, files[0]);
@@ -165,9 +165,9 @@ TEST(project_new, remove_shiftover) {
     ASSERT_TRUE(project != NULL);
 
     mc_file_t* files[3] = {NULL};
-    ASSERT_TRUE((files[0] = mc_file_create()) != NULL);
-    ASSERT_TRUE((files[1] = mc_file_create()) != NULL);
-    ASSERT_TRUE((files[2] = mc_file_create()) != NULL);
+    ASSERT_TRUE((files[0] = mc_file_open("res/testfile1")) != NULL);
+    ASSERT_TRUE((files[1] = mc_file_open("res/testfile2")) != NULL);
+    ASSERT_TRUE((files[2] = mc_file_open("res/testfile3")) != NULL);
 
     uint32_t fileind[3] = { 0 };
     fileind[0] = mc_project_add_file(project, files[0]);
@@ -202,6 +202,30 @@ TEST(project_new, focused_file) {
     ASSERT_TRUE(file == mc_project_get_focused_file(project));
 
     ASSERT_TRUE(mc_project_remove_file(project, i) == 0);
+
+    mc_project_free(project);
+}
+
+/**
+ * Test to see if we can add files to the project.  Also bonus test to make
+ * sure we actually record the number of files!
+ */
+TEST(project_save, add_and_save) {
+    mc_project_t* project = mc_project_create("name");
+    ASSERT_TRUE(project != NULL);
+
+    mc_file_t* files[3] = {NULL};
+    ASSERT_TRUE((files[0] = mc_file_open("res/testfile1")) != NULL);
+    ASSERT_TRUE((files[1] = mc_file_open("res/testfile2")) != NULL);
+    ASSERT_TRUE((files[2] = mc_file_open("res/testfile3")) != NULL);
+
+    ASSERT_TRUE(mc_project_add_file(project, files[0]) == 0);
+    ASSERT_TRUE(mc_project_add_file(project, files[1]) == 1);
+    ASSERT_TRUE(mc_project_add_file(project, files[2]) == 2);
+
+    ASSERT_TRUE(mc_project_get_file_amount(project) == 3);
+
+    mc_project_save(project, "testprojectdb1.mdb");
 
     mc_project_free(project);
 }
