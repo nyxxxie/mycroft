@@ -5,7 +5,7 @@
 #include "file.h"
 
 #define QUERYNO 3
-int create_default_tables(sqlite3* db) {
+mc_error_t create_default_tables(sqlite3* db) {
     const char* create_queries[QUERYNO] = {
         /* This table stores project information like name, date created, date
          * last modified, etc... */
@@ -17,7 +17,7 @@ int create_default_tables(sqlite3* db) {
          * the file attribute is the name of the file (including extension),
          * whereas path contains the full path to the file. */
         "create table files("
-        "file      text,"
+        "file      text  unique,"
         "path      text);",
 
         /* This stores generic metadata about a file.  More detailed metadata
@@ -39,24 +39,24 @@ int create_default_tables(sqlite3* db) {
         if ((rc = sqlite3_prepare_v2(db,
             create_queries[i], -1,
             &stmt, NULL)) != SQLITE_OK) {
-            MC_ERROR("SQL ERROR: %s\n", sqlite3_errmsg(db));
-            return 0;
+            MC_ERROR("SQL ERROR %i: %s\n", rc, sqlite3_errmsg(db));
+            return MC_ERR;
         }
 
         rc = sqlite3_step(stmt);
         if (rc != SQLITE_DONE) {
-            MC_ERROR("SQL ERROR: %s\n", sqlite3_errmsg(db));
-            return 0;
+            MC_ERROR("SQL ERROR %i: %s\n", rc, sqlite3_errmsg(db));
+            return MC_ERR;
         }
 
         rc = sqlite3_finalize(stmt);
         if (rc != SQLITE_OK) {
-            MC_ERROR("SQL ERROR: %s\n", sqlite3_errmsg(db));
-            return 0;
+            MC_ERROR("SQL ERROR %i: %s\n", rc, sqlite3_errmsg(db));
+            return MC_ERR;
         }
     }
 
-    return 1;
+    return MC_OK;
 }
 
 mc_project_t* mc_project_create(const char* name) {
@@ -99,12 +99,12 @@ mc_project_t* mc_project_create(const char* name) {
     rc = sqlite3_open_v2(":memory:", &project->db,
         SQLITE_OPEN_READWRITE|SQLITE_OPEN_CREATE, NULL);
     if (rc != SQLITE_OK) {
-        return -1;
+        return NULL;
     }
 
     /* Create default tables for this project */
-    if (!create_default_tables(project->db)) {
-        return -1;
+    if (create_default_tables(project->db) != MC_OK) {
+        return NULL;
     }
 
     return project;
@@ -129,7 +129,7 @@ mc_project_t* mc_project_load(const char* mdb_file) {
     return NULL;
 }
 
-void mc_project_save(mc_project_t* project, const char* mdb_file) {
+mc_error_t mc_project_save(mc_project_t* project, const char* mdb_file) {
     int rc = 0;
     sqlite3* savefile = NULL;
     sqlite3_backup* backup = NULL;
@@ -137,10 +137,11 @@ void mc_project_save(mc_project_t* project, const char* mdb_file) {
     /* Open the database to save to */
     rc = sqlite3_open(mdb_file, &savefile);
     if (rc == SQLITE_OK) {
+
         /* */
         backup = sqlite3_backup_init(savefile, "main", project->db, "main");
         if (backup == NULL) {
-            return;
+            return MC_ERR;
         }
         else {
             sqlite3_backup_step(backup, -1);
@@ -150,11 +151,13 @@ void mc_project_save(mc_project_t* project, const char* mdb_file) {
         /* */
         rc = sqlite3_errcode(savefile);
         if (rc != SQLITE_OK) {
-            return;
+            return MC_ERR;
         }
     }
 
     sqlite3_close(savefile);
+
+    return MC_OK;
 }
 
 void mc_project_free(mc_project_t* project) {
@@ -185,7 +188,7 @@ void mc_project_free(mc_project_t* project) {
     }
 }
 
-int db_add_file(sqlite3* db, mc_file_t* file) {
+mc_error_t db_add_file(sqlite3* db, mc_file_t* file) {
     int rc = 0;
     sqlite3_stmt* stmt = NULL;
     const char* query = "insert into files values (?, ?);";
@@ -193,39 +196,54 @@ int db_add_file(sqlite3* db, mc_file_t* file) {
     /* Prepare query */
     rc = sqlite3_prepare_v2(db, query, -1, &stmt, NULL);
     if (rc != SQLITE_OK) {
-        MC_ERROR("SQL ERROR: %s\n", sqlite3_errmsg(db));
-        return 0;
+        MC_ERROR("SQL ERROR %i: %s\n", rc, sqlite3_errmsg(db));
+        return MC_ERR;
     }
 
     /* Bind values to SQL statement */
     if (sqlite3_bind_text(stmt, 1, file->name, -1, SQLITE_TRANSIENT) != SQLITE_OK ||
         sqlite3_bind_text(stmt, 2, file->path, -1, SQLITE_TRANSIENT) != SQLITE_OK) {
-        MC_ERROR("SQL ERROR: %s\n", sqlite3_errmsg(db));
-        return 0;
+        MC_ERROR("SQL ERROR %i: %s\n", rc, sqlite3_errmsg(db));
+        return MC_ERR;
     }
 
     /* */
     rc = sqlite3_step(stmt);
     if (rc != SQLITE_DONE) {
-        MC_ERROR("SQL ERROR: %s\n", sqlite3_errmsg(db));
-        return 0;
+        MC_ERROR("SQL ERROR %i: %s\n", rc, sqlite3_errmsg(db));
+        return MC_ERR;
     }
 
+    /* */
     rc = sqlite3_finalize(stmt);
     if (rc != SQLITE_OK) {
-        MC_ERROR("SQL ERROR: %s\n", sqlite3_errmsg(db));
-        return 0;
+        MC_ERROR("SQL ERROR %i: %s\n", rc, sqlite3_errmsg(db));
+        return MC_ERR;
     }
 
-    return 1;
+    return MC_OK;
 }
 
-uint32_t mc_project_add_file(mc_project_t* project, mc_file_t* file) {
-    int cur_index = 0;
+mc_error_t mc_project_add_file(mc_project_t* project, mc_file_t* file) {
+    mc_error_t rc = 0;
+    uint32_t cur_index = 0;
+    uint32_t i = 0;
 
     /* Ensure that file isn't null */
     if (file == NULL) {
-        return (uint32_t)(-1);
+        MC_ERROR("Input file is null.\n");
+        return MC_ERR;
+    }
+
+    /* Ensure we haven't already added the file */
+    for (i=0; i < project->file_amt; i++) {
+        mc_file_t* curfile = project->files[i];
+        if (curfile == file ||
+            strcmp(curfile->name, file->name) == 0 ||
+            strcmp(curfile->path, file->path) == 0) {
+                MC_ERROR("Input file already has been added to project.\n");
+                return MC_ERR;
+            }
     }
 
     /* Save index that the file should be saved to, then iterate total */
@@ -235,25 +253,33 @@ uint32_t mc_project_add_file(mc_project_t* project, mc_file_t* file) {
     /* Create more space in the file array */
     project->files = realloc(project->files, project->file_amt);
     if (project->files == NULL) {
-        return (uint32_t)(-1);
+        MC_ERROR("Failed to (re)alloc file array.\n");
+        return MC_ERR;
     }
 
     /* Add file to the array */
     project->files[cur_index] = file;
 
     /* */
-    if (!db_add_file(project->db, file)) {
-        return (uint32_t)(-1);
+    rc = db_add_file(project->db, file);
+    if (rc != MC_OK) {
+        MC_ERROR("Failed to add file to database.\n");
+        return rc;
     }
 
-    return cur_index;
+    return MC_OK;
 }
 
-int mc_project_remove_file(mc_project_t* project, uint32_t file_index) {
+mc_error_t mc_project_remove_file(mc_project_t* project, uint32_t file_index) {
 
     /* Ensure that the index is valid */
     if (file_index >= project->file_amt) {
-        return (uint32_t)(-1);
+        return MC_ERR;
+    }
+
+    /* If the file to be removed is focused, set focused to NULL */
+    if (project->files[file_index] == project->file_focused) {
+        project->file_focused = NULL;
     }
 
     /* If this operation will remove the last file, just delete the array */
@@ -261,13 +287,12 @@ int mc_project_remove_file(mc_project_t* project, uint32_t file_index) {
         free(project->files);
         project->files = NULL;
         project->file_amt = 0;
-        return 0;
+        return MC_OK;
     }
 
     /* Shift contents of memory over to replace removed element */
     memmove(&project->files[file_index], &project->files[file_index+1],
         (project->file_amt-file_index) * sizeof(project->files[0]));
-
 
     /* Decrement the amount of files we're tracking. */
     project->file_amt--;
@@ -275,10 +300,10 @@ int mc_project_remove_file(mc_project_t* project, uint32_t file_index) {
     /* Create more space in the file array */
     project->files = realloc(project->files, project->file_amt);
     if (project->files == NULL) {
-        return (uint32_t)(-1);
+        return MC_ERR;
     }
 
-    return 0;
+    return MC_OK;
 }
 
 mc_file_t* mc_project_get_file(mc_project_t* project, uint32_t file_index) {
@@ -296,7 +321,19 @@ uint32_t mc_project_get_file_amount(mc_project_t* project) {
 }
 
 void mc_project_set_focused_file(mc_project_t* project, mc_file_t* file) {
-    project->file_focused = file;
+    uint32_t i = 0;
+
+    /* Ensure we added the file */
+    for (i=0; i < project->file_amt; i++) {
+        if (file == project->files[i]) {
+            /* We've found the file, focus it and return */
+            project->file_focused = file;
+            return MC_OK;
+        }
+    }
+
+    /* We didn't find the file */
+    return MC_ERR;
 }
 
 mc_file_t* mc_project_get_focused_file(mc_project_t* project) {
