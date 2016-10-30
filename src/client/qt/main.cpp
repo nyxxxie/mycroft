@@ -43,7 +43,7 @@ int main(int argc, char *argv[]) {
             return 1;
         }
     } else {
-        project = mc_project_create("dumb_project"); // TODO: figure out how to name/rename this.
+        project = mc_project_create("default"); // TODO: figure out how to name/rename this.
         if (project == NULL) {
             printf("Failed to open project \"%s\".\n", arg_project.toUtf8().data());
             return 1;
@@ -52,6 +52,7 @@ int main(int argc, char *argv[]) {
         // Set project name and etc
     }
     mc_ctx_add_project(ctx, project); // Add project to ctx
+    mc_ctx_set_focused_project(ctx, project);
 
     /* Read files */
     const QStringList args = parser.positionalArguments();
@@ -72,7 +73,10 @@ int main(int argc, char *argv[]) {
         }
 
         /* Add file to project */
-        mc_project_add_file(project, file);
+        if (mc_project_add_file(project, file) == MC_OK) {
+            printf("Failed to add file to project.\n");
+            return 1;
+        }
     }
 
     /* Create main window */
