@@ -12,6 +12,7 @@ typedef struct mc_project_t mc_project_t;
 /* Create/free */
 mc_project_t* mc_project_create(const char* name);
 mc_project_t* mc_project_load(const char* mdb_file);
+void mc_project_save(mc_project_t* project, const char* mdb_file);
 void mc_project_free(mc_project_t* project);
 
 /* File management */
