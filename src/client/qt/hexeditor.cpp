@@ -282,7 +282,13 @@ HexEditor::HexEditor(MainEditor* parent) : QAbstractScrollArea(parent) {
 }
 
 void HexEditor::setContext(mc_ctx_t* ctx) {
-    this->file = mc_project_get_focused_file(mc_ctx_get_focused_project(ctx));
+    mc_project_t* project = mc_ctx_get_focused_project(ctx);
+    if (project == NULL) {
+        this->file = NULL;
+    }
+    else {
+        this->file = mc_project_get_focused_file(project);
+    }
 }
 
 /**

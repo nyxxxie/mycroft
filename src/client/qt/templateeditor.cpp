@@ -19,6 +19,19 @@ TemplateEditor::TemplateEditor(MainEditor* parent)
 }
 
 void TemplateEditor::setContext(mc_ctx_t* ctx) {
-    mc_file_t* file = mc_project_get_focused_file(mc_ctx_get_focused_project(ctx));
-    this->t = mc_file_get_template(file);
+    mc_file_t* file = NULL;
+    mc_project_t* project = mc_ctx_get_focused_project(ctx);
+    if (project == NULL) {
+        file = NULL;
+    }
+    else {
+        file = mc_project_get_focused_file(project);
+    }
+
+    if (file == NULL) {
+        this->t = NULL;
+    }
+    else {
+        this->t = mc_file_get_template(file);
+    }
 }
