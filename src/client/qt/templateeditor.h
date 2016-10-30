@@ -21,7 +21,7 @@ public:
     TemplateEditor(MainEditor* parent);
 
 public slots:
-    void setContext(mc_ctx_t* ctx);
+    void setFile(mc_file_t* file);
 };
 
 #endif // TEMPLATEEDITOR_H

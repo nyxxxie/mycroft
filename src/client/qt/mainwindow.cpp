@@ -153,12 +153,86 @@ void MainWindow::setContext(mc_ctx_t* ctx) {
     emit contextChanged(ctx);
 }
 
+bool MainWindow::addFile(mc_file_t* file) {
+
+    /* Check to make sure we have a usable ctx */
+    if (ctx == NULL) {
+        return false;
+    }
+
+    mc_project_t* proj = mc_ctx_get_focused_project(ctx);
+    if (proj == NULL) {
+        return false;
+    }
+
+    return addFile(proj, file);
+}
+
+bool MainWindow::addFile(mc_project_t* proj, mc_file_t* file) {
+
+    /* Add file to project and notify others */
+    if (mc_project_add_file(proj, file) != MC_OK) {
+        return false;
+    }
+    emit fileAdded(proj, file);
+
+    /* Set the file we just added to be focused and notfiy others */
+    mc_project_set_focused_file(proj, file);
+    emit fileFocused(file);
+
+    return true;
+}
+
+bool MainWindow::removeFile(mc_file_t* file) {
+
+    /* Check to make sure we have a usable ctx */
+    if (ctx == NULL) {
+        return false;
+    }
+
+    mc_project_t* proj = mc_ctx_get_focused_project(ctx);
+    if (proj == NULL) {
+        return false;
+    }
+
+    return removeFile(proj, file);
+}
+
+bool MainWindow::removeFile(mc_project_t* proj, mc_file_t* file) {
+
+    /* If we currently have the given file focused, let everyone know we
+       unfocused it */
+    if (file == mc_project_get_focused_file(proj)) {
+        emit fileFocused(NULL);
+    }
+
+    /* Remove file from project and notify others */
+    //if (mc_project_remove_file(proj, mc_project_get_file_index(file)) != MC_OK) {
+    //    return false;
+    //}
+    //emit fileRemoved(proj, file);
+
+    return true;
+}
+
 void MainWindow::on_act_file_new_triggered() {
     printf("on_act_file_new_triggered\n");
 }
 
 void MainWindow::on_act_file_open_triggered() {
-    printf("on_act_file_open_triggered\n");
+    QString file = QFileDialog::getOpenFileName(
+        NULL,
+        "Open Script File",
+        QDir::currentPath(),
+        "",
+        NULL);
+
+    if (file.size() > 0) {
+        mc_file_t* f = mc_file_open(file.toUtf8().data());
+        if (f != NULL) {
+            addFile(f);
+        }
+    }
 }
 
 void MainWindow::on_act_file_save_triggered() {
@@ -199,7 +273,6 @@ void MainWindow::on_act_script_runfile_triggered() {
     QString filters("Python Scripts (*.py);;All files (*.*)");
     QString defaultFilter("Python Scripts (*.py)");
 
-    /* Static method approach */
     QString file = QFileDialog::getOpenFileName(
         NULL,
         "Open Script File",
@@ -207,10 +280,12 @@ void MainWindow::on_act_script_runfile_triggered() {
         filters,
         &defaultFilter);
 
-    printf("Running script: \"%s\"\n", file.toStdString().c_str());
-    int rc = mc_plugin_runfile(file.toStdString().c_str());
-    if (rc < 0) {
-        printf("Failed to run script!\n");
+    if (file.size() > 0) {
+        printf("Running script: \"%s\"\n", file.toStdString().c_str());
+        int rc = mc_plugin_runfile(file.toStdString().c_str());
+        if (rc < 0) {
+            printf("Failed to run script!\n");
+        }
     }
 }
 

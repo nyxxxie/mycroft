@@ -18,16 +18,7 @@ TemplateEditor::TemplateEditor(MainEditor* parent)
     init();
 }
 
-void TemplateEditor::setContext(mc_ctx_t* ctx) {
-    mc_file_t* file = NULL;
-    mc_project_t* project = mc_ctx_get_focused_project(ctx);
-    if (project == NULL) {
-        file = NULL;
-    }
-    else {
-        file = mc_project_get_focused_file(project);
-    }
-
+void TemplateEditor::setFile(mc_file_t* file) {
     if (file == NULL) {
         this->t = NULL;
     }
