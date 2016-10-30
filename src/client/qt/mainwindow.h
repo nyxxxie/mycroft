@@ -51,9 +51,16 @@ public:
 
 public slots:
     void setContext(mc_ctx_t* ctx);
+    bool addFile(mc_file_t* file);
+    bool addFile(mc_project_t* proj, mc_file_t* file);
+    bool removeFile(mc_file_t* file);
+    bool removeFile(mc_project_t* proj, mc_file_t* file);
 
 signals:
     void contextChanged(mc_ctx_t* ctx);
+    void fileAdded(mc_project_t* proj, mc_file_t* file);
+    void fileRemoved(mc_project_t* proj, mc_file_t* file);
+    void fileFocused(mc_file_t* file);
 
 protected:
     void contextMenuEvent(QContextMenuEvent* event) Q_DECL_OVERRIDE;

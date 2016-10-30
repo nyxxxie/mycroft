@@ -33,10 +33,10 @@ void MainEditor::init() {
 
     setLayout(layout);
 
-    connect(parent(), SIGNAL(contextChanged(mc_ctx_t*)),
-            hexedit, SLOT(setContext(mc_ctx_t*)));
-    connect(parent(), SIGNAL(contextChanged(mc_ctx_t*)),
-            tedit, SLOT(setContext(mc_ctx_t*)));
+    connect(parent(), SIGNAL(fileFocused(mc_file_t*)),
+            hexedit, SLOT(setFile(mc_file_t*)));
+    connect(parent(), SIGNAL(fileFocused(mc_file_t*)),
+            tedit, SLOT(setFile(mc_file_t*)));
 }
 
 MainEditor::MainEditor(QWidget* parent)

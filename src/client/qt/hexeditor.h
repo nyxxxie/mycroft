@@ -81,7 +81,7 @@ protected:
     void resizeEvent(QResizeEvent* event);
 
 public slots:
-    void setContext(mc_ctx_t* ctx);
+    void setFile(mc_file_t* file);
 
 private slots:
     void adjust();
