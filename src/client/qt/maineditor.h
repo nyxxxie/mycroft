@@ -18,10 +18,20 @@ class MainEditor : public QWidget {
     TemplateEditor* tedit;
 
     QVBoxLayout* layout;
-    QSplitter* splitter;
+    QSplitter* vertsplit;
 
     void InitTemplateEditor();
     void InitHexEditor();
+
+    QWidget* c1;
+    QVBoxLayout* c1_l;
+    QSplitter* lsp1;
+    void CreateEditorSplit();
+
+    QWidget* c2;
+    QVBoxLayout* c2_l;
+    QSplitter* lsp2;
+    void CreateTemplateSplit();
 
 public:
 

@@ -14,7 +14,7 @@ QString quotes[QUOTE_AMOUNT] = {
 
 MainWindow::MainWindow(mc_ctx_t* ctx) : QMainWindow() {
 
-    resize(800,800);
+    resize(910,800);
 
     this->ctx = ctx;
 
