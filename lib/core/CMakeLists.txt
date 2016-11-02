@@ -34,8 +34,8 @@ set(MYCROFT_CORE_SRC
     membuf.c
     template.c
     template_parser.c
+    binds/context.c
     binds/file.c
-    #binds/core.c
 )
 
 # Save me from manually including the files ;)

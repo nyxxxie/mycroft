@@ -1,33 +1,16 @@
-#include "binds/core.h"
+#include "binds/context.h"
 #include "binds/file.h"
+#include "context.h"
 
 static mfile_data_t* mcore_get_file(mcore_ctx_t* self, PyObject* dontuse) {
-
-    PyObject* ret = NULL;
-    mc_file_t* file = NULL;
-
-    file = mycroft_get_file(self->ctx);
-    if (file == NULL) {
-        Py_INCREF(Py_None);
-        return Py_None;
-    }
-
-    ret = create_mfile(file);
-    if (ret == NULL) {
-        PyErr_SetString(PyExc_RuntimeError, "failed to create mfile object");
-        return NULL;
-    }
-
-    return ret;
 }
 
 static PyMethodDef mcore_ctx_methods[] = {
-    {"get_file", mcore_get_file, METH_NOARGS, ""},
+    {"get_project_amount", (PyCFunction)mcore_get_file, METH_NOARGS, ""},
     {NULL, NULL, 0, NULL}
 };
 
 static mcore_ctx_t* mcore_ctx_new(PyTypeObject* type, PyObject* args, PyObject* kwds) {
-
     mcore_ctx_t* self = NULL;
 
     /* Allocate space for the data struct */
@@ -109,45 +92,43 @@ static PyTypeObject mcore_ctx_type = {
 // 
 //    return ctx;
 //}
-//
-//static PyMethodDef mcore_methods[] = {
-//    {"get_ctx", mcore_get_ctx, METH_NOARGS, "Checks if a file exists."},
-//    {NULL, NULL, 0, NULL}
-//};
-//
-//PyObject* create_mcore_ctx(mc_ctx_t* c) {
-//
-//    mcore_ctx_t* ret = NULL;
-//
-//    /* Create object */
-//    ret = PyObject_New(mcore_ctx_t, &mcore_ctx_type);
-//    if (ret == NULL) {
-//        return NULL;
-//    }
-//
-//    /* Initialize object */
-//    ret = PyObject_Init(ret, &mcore_ctx_type);
-//    if (ret == NULL) {
-//        return NULL;
-//    }
-//
-//    /* Set ctx */
-//    ret->ctx = mycroft_get_ctx();
-//
-//    return (PyObject*)ret;
-//}
+
+static PyMethodDef mcore_methods[] = {
+    {NULL, NULL, 0, NULL}
+};
+
+PyObject* create_mcore_ctx(mc_ctx_t* c) {
+
+    mcore_ctx_t* ret = NULL;
+
+    /* Create object */
+    ret = PyObject_New(mcore_ctx_t, &mcore_ctx_type);
+    if (ret == NULL) {
+        return NULL;
+    }
+
+    /* Initialize object */
+    ret = PyObject_Init(ret, &mcore_ctx_type);
+    if (ret == NULL) {
+        return NULL;
+    }
+
+    /* Set ctx */
+    ret->ctx = c;
+
+    return (PyObject*)ret;
+}
 
 static PyModuleDef mcore_module = {
     PyModuleDef_HEAD_INIT,
-    "mcore",
+    "mcore_ctx",
     "Bindings for mcore's file api.",
     -1,
-    NULL, // mcore_methods,
+    mcore_methods,
     NULL, NULL, NULL, NULL
 };
 
 static PyMODINIT_FUNC PyInit_mcore() {
-
     PyObject* m = NULL;
 
     /* Assign new function */
@@ -172,7 +153,6 @@ static PyMODINIT_FUNC PyInit_mcore() {
 
 
 int init_binds_core() {
-
     int rc = 0;
 
     rc = PyImport_AppendInittab("mcore", PyInit_mcore);
