@@ -18,6 +18,11 @@ mc_ctx_t* mc_ctx_create() {
     ctx->project_amt = 0;
     ctx->project_focused = NULL;
 
+    /* Init plugin system */
+    if (mc_plugin_init() < 0) {
+        return NULL;
+    }
+
     return ctx;
 }
 
@@ -95,7 +100,6 @@ int mc_ctx_remove_project(mc_ctx_t* ctx, uint32_t project_index) {
 }
 
 mc_project_t* mc_ctx_get_project(mc_ctx_t* ctx, uint32_t project_index) {
-
     if (ctx->projects == NULL ||
         project_index >= ctx->project_amt) {
         return NULL;
