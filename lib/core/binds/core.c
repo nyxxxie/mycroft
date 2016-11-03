@@ -21,8 +21,17 @@ static mfile_data_t* mcore_get_file(mcore_ctx_t* self, PyObject* dontuse) {
     return ret;
 }
 
+static PyObject* mctx_get_projects(mcore_ctx_t* self, PyObject* dontuse) {
+
+}
+
+static PyObject* mctx_get_project_amt(mcore_ctx_t* self, PyObject* dontuse) {
+
+}
+
 static PyMethodDef mcore_ctx_methods[] = {
-    {"get_file", (PyCFunction)mcore_get_file, METH_NOARGS, ""},
+    {"get_projects", (PyCFunction)mctx_get_projects, METH_NOARGS, ""},
+    {"get_project_amt", (PyCFunction)mctx_get_project_amt, METH_NOARGS, ""},
     {NULL, NULL, 0, NULL}
 };
 
