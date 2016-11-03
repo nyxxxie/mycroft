@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <stdlib.h>
 #include <dirent.h>
 #include <Python.h>
 #include <mycroft/plugin.h>
@@ -15,7 +16,6 @@
  * @internal
  */
 int mc_plugin_entry_init(mc_plugin_entry_t** entry) {
-
     mc_plugin_entry_t* tmp = NULL;
 
     /* Allocate space for the entry */
@@ -45,7 +45,6 @@ int mc_plugin_entry_init(mc_plugin_entry_t** entry) {
  * @internal
  */
 int mc_plugin_entry_free(mc_plugin_entry_t* entry) {
-
     mc_plugin_entry_t* next = NULL;
     mc_plugin_entry_t* prev = NULL;
 
@@ -86,7 +85,6 @@ int mc_plugin_entry_free(mc_plugin_entry_t* entry) {
  * @internal
  */
 int init_bindings() {
-
     int rc = 0;
 
     //rc = init_binds_file();
@@ -108,7 +106,6 @@ int init_bindings() {
  * @internal
  */
 int init_path() {
-
     int rc = 0;
     int i = 0;
 
@@ -129,41 +126,7 @@ int init_path() {
     return 0;
 }
 
-int load_plugin_dir(const char* plugins_dir) {
-
-    DIR* dir;
-    struct dirent* dent;
-
-    dir = opendir(plugins_dir);
-
-    if (dir != NULL) {
-        while ((dent = readdir(dir)) != NULL) {
-            if (dent->d_type == DT_DIR) {
-                int i;
-                int good=1;
-
-                /* Look for . char */
-                for (i=0; i < strlen(dent->d_name); i++) {
-                    if (dent->d_name[i] == '.') {
-                        good=0;
-                        break;
-                    }
-                }
-
-                if (good != 0) {
-                    load_plugin(plugins_dir, dent->d_name);
-                }
-            }
-        }
-
-        closedir(dir);
-    }
-
-    return 0;
-}
-
 int load_plugin(const char* plugins_dir, const char* plugin_dir) {
-
     int rc = 0;
     char* initfile = NULL;
 
@@ -197,6 +160,38 @@ int load_plugin(const char* plugins_dir, const char* plugin_dir) {
     return 0;
 }
 
+int load_plugin_dir(const char* plugins_dir) {
+    DIR* dir;
+    struct dirent* dent;
+
+    dir = opendir(plugins_dir);
+
+    if (dir != NULL) {
+        while ((dent = readdir(dir)) != NULL) {
+            if (dent->d_type == DT_DIR) {
+                int i;
+                int good=1;
+
+                /* Look for . char */
+                for (i=0; i < strlen(dent->d_name); i++) {
+                    if (dent->d_name[i] == '.') {
+                        good=0;
+                        break;
+                    }
+                }
+
+                if (good != 0) {
+                    load_plugin(plugins_dir, dent->d_name);
+                }
+            }
+        }
+
+        closedir(dir);
+    }
+
+    return 0;
+}
+
 /**
  * Loads all plugins from the plugin directory(s).  Tries to account for
  * dependencies.
@@ -205,7 +200,6 @@ int load_plugin(const char* plugins_dir, const char* plugin_dir) {
  * @internal
  */
 int load_plugins() {
-
     int i = 0;
     int rc = 0;
 
@@ -231,7 +225,6 @@ int load_plugins() {
  * @internal
  */
 int unload_plugins() {
-
     int rc = 0;
     mc_plugin_entry_t* entry = NULL;
 
@@ -257,7 +250,6 @@ int unload_plugins() {
  * @return Returns 0 on success, negative value on error.
  */
 int mc_plugin_init() {
-
     int rc = 0;
 
     /* */
@@ -293,7 +285,6 @@ int mc_plugin_init() {
  * @return Returns 0 on success, negative value on error.
  */
 int mc_plugin_close() {
-
     int rc = 0;
 
     rc = unload_plugins();
@@ -313,7 +304,6 @@ int mc_plugin_close() {
  * @return Returns 0 on success, negative value on error.
  */
 int mc_plugin_addpath(const char* path) {
-
     PyObject *pypath=NULL, *localname=NULL;
 
     pypath = PySys_GetObject("path");
@@ -330,7 +320,6 @@ int mc_plugin_addpath(const char* path) {
  *
  */
 int mc_plugin_runscript(const char* script) {
-
     int rc = 0;
 
     /* Run script */
@@ -346,7 +335,6 @@ int mc_plugin_runscript(const char* script) {
  *
  */
 int mc_plugin_runfile(const char* script) {
-
     int rc = 0;
     FILE* file = NULL;;
 
@@ -378,7 +366,6 @@ int mc_plugin_runfile(const char* script) {
  * @internal
  */
 PyObject* call_plugin_infofunc(PyObject* module, const char* funcname) {
-
     PyObject* func=NULL, *value=NULL;
 
     /* Find the function */
@@ -408,7 +395,6 @@ PyObject* call_plugin_infofunc(PyObject* module, const char* funcname) {
  * @internal
  */
 int get_plugin_name(PyObject* module, mc_plugin_entry_t* entry, const char* path) {
-
     PyObject* value=NULL;
     char* str=NULL;
 
@@ -441,7 +427,6 @@ int get_plugin_name(PyObject* module, mc_plugin_entry_t* entry, const char* path
  * @internal
  */
 int get_plugin_version(PyObject* module, mc_plugin_entry_t* entry, const char* path) {
-
     PyObject* value=NULL;
     char* str=NULL;
 
@@ -474,7 +459,6 @@ int get_plugin_version(PyObject* module, mc_plugin_entry_t* entry, const char* p
  * @internal
  */
 int get_plugin_depends(PyObject* module, mc_plugin_entry_t* entry, const char* path) {
-
     PyObject* value=NULL;
     char* str=NULL;
 
@@ -499,7 +483,6 @@ int get_plugin_depends(PyObject* module, mc_plugin_entry_t* entry, const char* p
  * @internal
  */
 int get_plugin_entry(PyObject* module, mc_plugin_entry_t* entry, const char* path) {
-
     PyObject* value=NULL;
     char* str=NULL;
 
@@ -530,7 +513,6 @@ int get_plugin_entry(PyObject* module, mc_plugin_entry_t* entry, const char* pat
  * @return Returns 0 on success, negative value on error.
  */
 int mc_plugin_load(const char* path) {
-
     int rc = 0;
     mc_plugin_entry_t* entry = NULL;
     PyObject* name = NULL;
@@ -609,7 +591,6 @@ int mc_plugin_load(const char* path) {
  * @return Returns 0 on success, negative value on error.
  */
 int mc_plugin_unload(const char* name) {
-
     int rc = 0;
     mc_plugin_entry_t* entry=NULL, *next=NULL, *prev=NULL;
 

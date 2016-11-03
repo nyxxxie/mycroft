@@ -22,7 +22,7 @@ static mfile_data_t* mcore_get_file(mcore_ctx_t* self, PyObject* dontuse) {
 }
 
 static PyMethodDef mcore_ctx_methods[] = {
-    {"get_file", mcore_get_file, METH_NOARGS, ""},
+    {"get_file", (PyCFunction)mcore_get_file, METH_NOARGS, ""},
     {NULL, NULL, 0, NULL}
 };
 
@@ -96,53 +96,53 @@ static PyTypeObject mcore_ctx_type = {
     mcore_ctx_new,             /* tp_new */
 };
 
-//static mcore_ctx_t* mcore_get_ctx(mcore_ctx_t* self, PyObject* dontuse) {
-//
-//    mcore_ctx_t* ctx = NULL;
-//
-//    /* Create ctx */
-//    ctx = create_mcore_ctx(mycroft_get_ctx());
-//    if (ctx == NULL) {
-//        PyErr_SetString(PyExc_RuntimeError, "failed to create mctx object");
-//        return NULL;
-//    }
-// 
-//    return ctx;
-//}
-//
-//static PyMethodDef mcore_methods[] = {
-//    {"get_ctx", mcore_get_ctx, METH_NOARGS, "Checks if a file exists."},
-//    {NULL, NULL, 0, NULL}
-//};
-//
-//PyObject* create_mcore_ctx(mc_ctx_t* c) {
-//
-//    mcore_ctx_t* ret = NULL;
-//
-//    /* Create object */
-//    ret = PyObject_New(mcore_ctx_t, &mcore_ctx_type);
-//    if (ret == NULL) {
-//        return NULL;
-//    }
-//
-//    /* Initialize object */
-//    ret = PyObject_Init(ret, &mcore_ctx_type);
-//    if (ret == NULL) {
-//        return NULL;
-//    }
-//
-//    /* Set ctx */
-//    ret->ctx = mycroft_get_ctx();
-//
-//    return (PyObject*)ret;
-//}
+static mcore_ctx_t* mcore_get_ctx(mcore_ctx_t* self, PyObject* dontuse) {
+
+    mcore_ctx_t* ctx = NULL;
+
+    /* Create ctx */
+    ctx = create_mcore_ctx(mycroft_get_ctx());
+    if (ctx == NULL) {
+        PyErr_SetString(PyExc_RuntimeError, "failed to create mctx object");
+        return NULL;
+    }
+
+    return ctx;
+}
+
+static PyMethodDef mcore_methods[] = {
+    {"get_ctx", (PyCFunction)mcore_get_ctx, METH_NOARGS, "Checks if a file exists."},
+    {NULL, NULL, 0, NULL}
+};
+
+PyObject* create_mcore_ctx(mc_ctx_t* c) {
+
+    mcore_ctx_t* ret = NULL;
+
+    /* Create object */
+    ret = PyObject_New(mcore_ctx_t, &mcore_ctx_type);
+    if (ret == NULL) {
+        return NULL;
+    }
+
+    /* Initialize object */
+    ret = PyObject_Init(ret, &mcore_ctx_type);
+    if (ret == NULL) {
+        return NULL;
+    }
+
+    /* Set ctx */
+    ret->ctx = mycroft_get_ctx();
+
+    return (PyObject*)ret;
+}
 
 static PyModuleDef mcore_module = {
     PyModuleDef_HEAD_INIT,
     "mcore",
     "Bindings for mcore's file api.",
     -1,
-    NULL, // mcore_methods,
+    mcore_methods,
     NULL, NULL, NULL, NULL
 };
 
