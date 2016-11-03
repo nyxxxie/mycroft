@@ -2,13 +2,22 @@
 #include "binds/file.h"
 #include "context.h"
 
-static mfile_data_t* mcore_get_file(mcore_ctx_t* self, PyObject* dontuse) {
+static PyObject* mctx_get_project_amt(mcore_ctx_t* self, PyObject* dontuse) {
+
+}
+
+static mfile_data_t* mctx_get_project(mcore_ctx_t* self, PyObject* dontuse) {
+
+}
+
+static PyObject* mctx_projects(mcore_ctx_t* self, PyObject* dontuse) {
+
 }
 
 static PyMethodDef mcore_ctx_methods[] = {
-    {"get_project_amount", (PyCFunction)mcore_get_file, METH_NOARGS, ""},
-    {"get_project", (PyCFunction)mcore_get_file, METH_NOARGS, ""},
-    {"projects", (PyCFunction)mcore_get_file, METH_NOARGS, ""},
+    {"get_project_amount", (PyCFunction)mctx_get_project_amt, METH_NOARGS, ""},
+    {"get_project", (PyCFunction)mctx_get_project, METH_NOARGS, ""},
+    {"projects", (PyCFunction)mctx_projects, METH_NOARGS, ""},
     {NULL, NULL, 0, NULL}
 };
 
