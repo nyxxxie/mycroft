@@ -126,23 +126,21 @@ static PyObject* mfile_exists(PyObject* self, PyObject* args) {
 }
 
 static PyObject* mfile_open(PyObject* self, PyObject* args) {
-
     printf("RAN A THING OHHMMEEEHGGEEEEEE");
 
     Py_RETURN_TRUE;
 }
 
 static PyObject* mfile_close(PyObject* self, PyObject* args) {
-
     printf("RAN A THING OHHMMEEEHGGEEEEEE");
 
     Py_RETURN_TRUE;
 }
 
 static PyMethodDef mcore_file_methods[] = {
-    {"exists",    mfile_exists, METH_VARARGS, "Checks if a file exists."},
-    {"open",      mfile_open,   METH_VARARGS, "Opens a file."},
-    {"close",     mfile_close,  METH_VARARGS, "Closes a file."},
+    {"exists", (PyCFunction)mfile_exists, METH_VARARGS, "Checks if a file exists."},
+    {"open",   (PyCFunction)mfile_open,   METH_VARARGS, "Opens a file."},
+    {"close",  (PyCFunction)mfile_close,  METH_VARARGS, "Closes a file."},
     {NULL, NULL, 0, NULL}
 };
 

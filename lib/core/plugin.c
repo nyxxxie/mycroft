@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <stdlib.h>
 #include <dirent.h>
 #include <Python.h>
 #include <mycroft/plugin.h>
@@ -125,38 +126,6 @@ int init_path() {
     return 0;
 }
 
-int load_plugin_dir(const char* plugins_dir) {
-    DIR* dir;
-    struct dirent* dent;
-
-    dir = opendir(plugins_dir);
-
-    if (dir != NULL) {
-        while ((dent = readdir(dir)) != NULL) {
-            if (dent->d_type == DT_DIR) {
-                int i;
-                int good=1;
-
-                /* Look for . char */
-                for (i=0; i < strlen(dent->d_name); i++) {
-                    if (dent->d_name[i] == '.') {
-                        good=0;
-                        break;
-                    }
-                }
-
-                if (good != 0) {
-                    load_plugin(plugins_dir, dent->d_name);
-                }
-            }
-        }
-
-        closedir(dir);
-    }
-
-    return 0;
-}
-
 int load_plugin(const char* plugins_dir, const char* plugin_dir) {
     int rc = 0;
     char* initfile = NULL;
@@ -186,6 +155,38 @@ int load_plugin(const char* plugins_dir, const char* plugin_dir) {
     rc = mc_plugin_load(plugin_dir);
     if (rc < 0) {
         return rc;
+    }
+
+    return 0;
+}
+
+int load_plugin_dir(const char* plugins_dir) {
+    DIR* dir;
+    struct dirent* dent;
+
+    dir = opendir(plugins_dir);
+
+    if (dir != NULL) {
+        while ((dent = readdir(dir)) != NULL) {
+            if (dent->d_type == DT_DIR) {
+                int i;
+                int good=1;
+
+                /* Look for . char */
+                for (i=0; i < strlen(dent->d_name); i++) {
+                    if (dent->d_name[i] == '.') {
+                        good=0;
+                        break;
+                    }
+                }
+
+                if (good != 0) {
+                    load_plugin(plugins_dir, dent->d_name);
+                }
+            }
+        }
+
+        closedir(dir);
     }
 
     return 0;

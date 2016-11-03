@@ -7,6 +7,8 @@ static mfile_data_t* mcore_get_file(mcore_ctx_t* self, PyObject* dontuse) {
 
 static PyMethodDef mcore_ctx_methods[] = {
     {"get_project_amount", (PyCFunction)mcore_get_file, METH_NOARGS, ""},
+    {"get_project", (PyCFunction)mcore_get_file, METH_NOARGS, ""},
+    {"projects", (PyCFunction)mcore_get_file, METH_NOARGS, ""},
     {NULL, NULL, 0, NULL}
 };
 

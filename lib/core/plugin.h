@@ -12,10 +12,10 @@ extern "C" {
  * Represents a plugin that is currently loaded.
  */
 struct mc_plugin_entry_t {
-    const char* name;
-    const char* version;
-    PyObject*   module;
-    PyObject*   entryfunc;
+    char* name;
+    char* version;
+    PyObject* module;
+    PyObject* entryfunc;
     mc_plugin_entry_t* next;
     mc_plugin_entry_t* prev;
 };

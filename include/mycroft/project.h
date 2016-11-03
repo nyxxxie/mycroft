@@ -21,7 +21,7 @@ mc_error_t mc_project_add_file(mc_project_t* project, mc_file_t* file);
 mc_error_t mc_project_remove_file(mc_project_t* project, uint32_t file_index);
 mc_file_t* mc_project_get_file(mc_project_t* project, uint32_t file_index);
 uint32_t mc_project_get_file_amount(mc_project_t* project);
-void mc_project_set_focused_file(mc_project_t* project, mc_file_t* file);
+mc_error_t mc_project_set_focused_file(mc_project_t* project, mc_file_t* file);
 mc_file_t* mc_project_get_focused_file(mc_project_t* project);
 
 #ifdef __cplusplus

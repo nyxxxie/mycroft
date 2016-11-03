@@ -320,7 +320,7 @@ uint32_t mc_project_get_file_amount(mc_project_t* project) {
     return project->file_amt;
 }
 
-void mc_project_set_focused_file(mc_project_t* project, mc_file_t* file) {
+mc_error_t mc_project_set_focused_file(mc_project_t* project, mc_file_t* file) {
     uint32_t i = 0;
 
     /* Ensure we added the file */
