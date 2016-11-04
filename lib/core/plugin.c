@@ -509,7 +509,6 @@ int get_plugin_entry(PyObject* module, mc_plugin_entry_t* entry, const char* pat
  * the various information functions.
  *
  * @param path Plugin file or directory.
- *
  * @return Returns 0 on success, negative value on error.
  */
 int mc_plugin_load(const char* path) {
@@ -567,7 +566,7 @@ int mc_plugin_load(const char* path) {
     printf("\tVER:  %s\n", entry->version);
 
     /* Call plugin entry point */
-    PyObject_CallObject(entry->entryfunc, NULL);
+    PyObject_CallObject(entry->entryfunc, NULL); // TODO: use this to pass ctx to plugin.
 
     /* Either start the list or add the entry to the end of the list */
     if (plugin_first == NULL) {
@@ -587,7 +586,6 @@ int mc_plugin_load(const char* path) {
  * Unloads a plugin.
  *
  * @param path Plugin file or directory.
- *
  * @return Returns 0 on success, negative value on error.
  */
 int mc_plugin_unload(const char* name) {
