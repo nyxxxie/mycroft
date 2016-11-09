@@ -3,7 +3,7 @@
 #include <Python.h>
 #include <mycroft/plugin.h>
 #include "binds/file.h"
-#include "binds/core.h"
+#include "binds/context.h"
 #include "file.h"
 #include "plugin.h"
 #include "config.h"
