@@ -10,11 +10,12 @@ project(${MYCROFT_CLIENT_QT_NAME} CXX)
 # Source files
 set(MYCROFT_CLIENT_QT_SRC
     main.cpp
-    mainwindow.cpp
-    maineditor.cpp
-    hexeditor.cpp
-    templateeditor.cpp
-    templatemodel.cpp
+    mycroft.cpp
+)
+
+# UI files
+set(MYCROFT_CLIENT_QT_UI
+    mycroft.ui
 )
 
 # Save me from manually including the files ;)
@@ -22,7 +23,7 @@ set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
 # QT5 stuff
 find_package(Qt5Widgets REQUIRED)
-#qt5_wrap_ui(UI_HEADERS mainwindow.ui)
+qt5_wrap_ui(UI_HEADERS ${MYCROFT_CLIENT_QT_UI})
 qt5_add_resources(QRCS resources.qrc)
 set(CMAKE_AUTOMOC ON)
 
