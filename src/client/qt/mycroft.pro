@@ -13,8 +13,20 @@ TEMPLATE = app
 
 
 SOURCES += main.cpp\
-        mycroft.cpp
+        mycroft.cpp \
+    templateeditor.cpp \
+    templatemodel.cpp \
+    hexeditor.cpp \
+    mainhexeditor.cpp
 
-HEADERS  += mycroft.h
+HEADERS  += mycroft.h \
+    templateeditor.h \
+    templatemodel.h \
+    hexeditor.h \
+    mainhexeditor.h
 
-FORMS    += mycroft.ui
+FORMS    += mycroft.ui \
+    mainhexeditor.ui
+
+DISTFILES += \
+    CMakeLists.txt

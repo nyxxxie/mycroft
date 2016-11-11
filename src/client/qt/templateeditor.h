@@ -4,7 +4,6 @@
 #include <QString>
 #include <QTreeView>
 #include <mycroft/mycroft.h>
-#include "maineditor.h"
 #include "templatemodel.h"
 
 class TemplateEditor : public QTreeView {
@@ -18,7 +17,7 @@ protected:
     template_t* t;
 
 public:
-    TemplateEditor(MainEditor* parent);
+    TemplateEditor(QWidget* parent);
 
 public slots:
     void setFile(mc_file_t* file);

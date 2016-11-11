@@ -4,7 +4,6 @@
 #include <QAbstractScrollArea>
 #include <QColor>
 #include <mycroft/file.h>
-#include "maineditor.h"
 
 //TODO: make these config variables
 #define QMC_HEXEDIT_ELEMENT_GAP 6
@@ -65,7 +64,7 @@ protected:
     int font_cheight;
 
 public:
-    HexEditor(MainEditor* parent);
+    HexEditor(QWidget* parent);
 
     int getNumLines();
     void setCurLine(int line);

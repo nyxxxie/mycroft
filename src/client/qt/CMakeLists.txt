@@ -11,11 +11,16 @@ project(${MYCROFT_CLIENT_QT_NAME} CXX)
 set(MYCROFT_CLIENT_QT_SRC
     main.cpp
     mycroft.cpp
+    mainhexeditor.cpp
+    hexeditor.cpp
+    templateeditor.cpp
+    templatemodel.cpp
 )
 
 # UI files
 set(MYCROFT_CLIENT_QT_UI
     mycroft.ui
+    mainhexeditor.ui
 )
 
 # Save me from manually including the files ;)

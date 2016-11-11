@@ -21,7 +21,6 @@ Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #include <mycroft/mdb.h>
 #include <mycroft/file.h>
 #include <stdio.h>
-#include "mainwindow.h"
 #include "hexeditor.h"
 
 HighlightArea::HighlightArea() {
@@ -271,7 +270,7 @@ void HexEditor::resizeEvent(QResizeEvent*) {
 /**
  *
  */
-HexEditor::HexEditor(MainEditor* parent) : QAbstractScrollArea(parent) {
+HexEditor::HexEditor(QWidget* parent) : QAbstractScrollArea(parent) {
 
     /* Connect signals to slots */
     connect(verticalScrollBar(),   SIGNAL(valueChanged(int)), this, SLOT(adjust()));

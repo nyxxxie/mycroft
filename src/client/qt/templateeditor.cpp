@@ -1,6 +1,5 @@
 #include <QFile>
 #include <mycroft/mycroft.h>
-#include "maineditor.h"
 #include "templateeditor.h"
 #include "templatemodel.h"
 
@@ -13,7 +12,7 @@ void TemplateEditor::init() {
     setModel(model);
 }
 
-TemplateEditor::TemplateEditor(MainEditor* parent)
+TemplateEditor::TemplateEditor(QWidget* parent)
     : QTreeView(parent) {
     init();
 }
