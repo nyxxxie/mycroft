@@ -566,7 +566,7 @@ int mc_plugin_load(const char* path) {
     printf("\tVER:  %s\n", entry->version);
 
     /* Call plugin entry point */
-    PyObject_CallObject(entry->entryfunc, NULL);
+    PyObject_CallObject(entry->entryfunc, NULL); // TODO: pass calling context to this
 
     /* Either start the list or add the entry to the end of the list */
     if (plugin_first == NULL) {
