@@ -5,9 +5,8 @@
 extern "C" {
 #endif
 
-#include <mycroft/mycroft.h>
+#include <mycroft/context.h>
 #include <mycroft/project.h>
-#include <mycroft/mdb.h>
 
 /** Represents the state of a file opened in mycroft */
 struct mc_ctx_t {
