@@ -273,14 +273,14 @@ mc_error_t db_add_file(sqlite3* db, mc_file_t* file) {
  * @return mc_error_t indicating success or failure.
  */
 mc_error_t mc_project_add_file(mc_project_t* project, mc_file_t* file) {
-    mc_error_t rc = 0;
+    mc_error_t rc = MC_ERR;
     uint32_t cur_index = 0;
     uint32_t i = 0;
 
     /* Ensure that file isn't null */
     if (file == NULL) {
         MC_ERROR("Input file is null.\n");
-        return MC_ERR;
+        return rc;
     }
 
     /* Ensure we haven't already added the file */
@@ -289,9 +289,9 @@ mc_error_t mc_project_add_file(mc_project_t* project, mc_file_t* file) {
         if (curfile == file ||
             strcmp(curfile->name, file->name) == 0 ||
             strcmp(curfile->path, file->path) == 0) {
-                MC_ERROR("Input file already has been added to project.\n");
-                return MC_ERR;
-            }
+            MC_ERROR("Input file already has been added to project.\n");
+            return rc;
+        }
     }
 
     /* Save index that the file should be saved to, then iterate total */
@@ -302,7 +302,7 @@ mc_error_t mc_project_add_file(mc_project_t* project, mc_file_t* file) {
     project->files = realloc(project->files, project->file_amt);
     if (project->files == NULL) {
         MC_ERROR("Failed to (re)alloc file array.\n");
-        return MC_ERR;
+        return rc;
     }
 
     /* Add file to the array */
@@ -314,6 +314,9 @@ mc_error_t mc_project_add_file(mc_project_t* project, mc_file_t* file) {
         MC_ERROR("Failed to add file to database.\n");
         return rc;
     }
+
+    /* Focus ctx */
+    project->file_focused = file;
 
     return MC_OK;
 }
