@@ -6,18 +6,21 @@
 /**
  * Starts up the template viewer with the default struct.
  */
-void TemplateEditor::init() {
+void TemplateEditor::init()
+{
     this->t = NULL;
     TemplateModel* model = new TemplateModel(this);
     setModel(model);
 }
 
 TemplateEditor::TemplateEditor(QWidget* parent)
-    : QTreeView(parent) {
+    : QTreeView(parent)
+{
     init();
 }
 
-void TemplateEditor::setFile(mc_file_t* file) {
+void TemplateEditor::setFile(mc_file_t* file)
+{
     if (file == NULL) {
         this->t = NULL;
     }

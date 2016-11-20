@@ -2,11 +2,13 @@
 #include "templateeditor.h"
 #include "templatemodel.h"
 
-bool TemplateModel::shouldRender() const {
+bool TemplateModel::shouldRender() const
+{
     return (p->t != NULL);
 }
 
-ast_struct_t* TemplateModel::getParent(const QModelIndex& parent) const {
+ast_struct_t* TemplateModel::getParent(const QModelIndex& parent) const
+{
     ast_struct_t* ret = NULL;
 
     if (!parent.isValid())
@@ -17,14 +19,17 @@ ast_struct_t* TemplateModel::getParent(const QModelIndex& parent) const {
     return ret;
 }
 
-TemplateModel::TemplateModel(TemplateEditor* parent) {
+TemplateModel::TemplateModel(TemplateEditor* parent)
+{
     p = parent;
 }
 
-TemplateModel::~TemplateModel() {
+TemplateModel::~TemplateModel()
+{
 }
 
-int TemplateModel::columnCount(const QModelIndex& parent) const {
+int TemplateModel::columnCount(const QModelIndex& parent) const
+{
     if (parent.isValid()) {
         ast_node_t* node = (ast_node_t*)(parent.internalPointer());
         if (node == NULL) {
@@ -47,7 +52,8 @@ int TemplateModel::columnCount(const QModelIndex& parent) const {
     }
 }
 
-QVariant TemplateModel::data(const QModelIndex& index, int role) const {
+QVariant TemplateModel::data(const QModelIndex& index, int role) const
+{
     if (!shouldRender()) {
         return QVariant();
     }
@@ -85,14 +91,16 @@ QVariant TemplateModel::data(const QModelIndex& index, int role) const {
     return QVariant();
 }
 
-Qt::ItemFlags TemplateModel::flags(const QModelIndex& index) const {
+Qt::ItemFlags TemplateModel::flags(const QModelIndex& index) const
+{
     if (!index.isValid())
         return 0;
 
     return QAbstractItemModel::flags(index);
 }
 
-QVariant TemplateModel::headerData(int section, Qt::Orientation orientation, int role) const {
+QVariant TemplateModel::headerData(int section, Qt::Orientation orientation, int role) const
+{
     if (orientation == Qt::Horizontal && role == Qt::DisplayRole) {
         switch (section) {
         case 0:
@@ -105,7 +113,8 @@ QVariant TemplateModel::headerData(int section, Qt::Orientation orientation, int
     return QVariant();
 }
 
-QModelIndex TemplateModel::index(int row, int column, const QModelIndex& parent) const {
+QModelIndex TemplateModel::index(int row, int column, const QModelIndex& parent) const
+{
     if (!shouldRender()) {
         return QModelIndex();
     }
@@ -127,7 +136,8 @@ QModelIndex TemplateModel::index(int row, int column, const QModelIndex& parent)
     return createIndex(row, column, node);
 }
 
-QModelIndex TemplateModel::parent(const QModelIndex& index) const {
+QModelIndex TemplateModel::parent(const QModelIndex& index) const
+{
     if (!shouldRender()) {
         return QModelIndex();
     }
@@ -146,7 +156,8 @@ QModelIndex TemplateModel::parent(const QModelIndex& index) const {
     return createIndex(parent->index, 0, parent);
 }
 
-int TemplateModel::rowCount(const QModelIndex& parent) const {
+int TemplateModel::rowCount(const QModelIndex& parent) const
+{
     if (!shouldRender()) {
         return 0;
     }

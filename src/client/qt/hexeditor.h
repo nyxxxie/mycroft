@@ -16,7 +16,8 @@ class AddressView;
 class HexView;
 class AsciiView;
 
-class HexEditor : public QAbstractScrollArea {
+class HexEditor : public QAbstractScrollArea
+{
     friend class HighlightArea;
     friend class HexEditorWidget;
     friend class AddressView;
@@ -119,7 +120,8 @@ public:
 /**
  * 
  */
-class HexEditorWidget {
+class HexEditorWidget
+{
     friend class HexEditor;
 
 protected:
@@ -141,8 +143,8 @@ public:
 /**
  * 
  */
-class AddressView : public HexEditorWidget {
-
+class AddressView : public HexEditorWidget
+{
     int num_max;
 
 public:
@@ -157,8 +159,8 @@ public:
 /**
  * 
  */
-class HexView : public HexEditorWidget {
-
+class HexView : public HexEditorWidget
+{
     int byte_gap;
 
     void renderHighlight(HighlightArea* area, QPainter& painter);
@@ -179,8 +181,8 @@ public:
 /**
  * 
  */
-class AsciiView : public HexEditorWidget {
-
+class AsciiView : public HexEditorWidget
+{
     void renderHighlight(HighlightArea* area, QPainter& painter);
 
 public:

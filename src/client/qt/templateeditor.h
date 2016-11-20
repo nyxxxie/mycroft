@@ -6,7 +6,8 @@
 #include <mycroft/mycroft.h>
 #include "templatemodel.h"
 
-class TemplateEditor : public QTreeView {
+class TemplateEditor : public QTreeView
+{
     friend class TemplateModel;
 
     Q_OBJECT

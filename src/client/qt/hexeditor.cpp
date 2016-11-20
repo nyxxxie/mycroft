@@ -23,68 +23,82 @@ Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #include <stdio.h>
 #include "hexeditor.h"
 
-HighlightArea::HighlightArea() {
+HighlightArea::HighlightArea()
+{
     init(0, 0);
 }
 
-HighlightArea::HighlightArea(int a, int b) {
+HighlightArea::HighlightArea(int a, int b)
+{
     init(a, b);
 }
 
-HighlightArea::HighlightArea(int a, int b, const QColor& color) {
+HighlightArea::HighlightArea(int a, int b, const QColor& color)
+{
     init(a, b, color);
 }
 
-void HighlightArea::init(int a, int b) {
+void HighlightArea::init(int a, int b)
+{
     init(a, b, QColor(255, 255, 255));
 }
 
-void HighlightArea::init(int a, int b, const QColor& color) {
-
+void HighlightArea::init(int a, int b, const QColor& color)
+{
     this->a = a;
     this->b = b;
     this->color = color;
 }
 
-void HighlightArea::update(int a, int b) {
+void HighlightArea::update(int a, int b)
+{
     init(a, b);
 }
 
-void HighlightArea::update(int a, int b, const QColor& color) {
+void HighlightArea::update(int a, int b, const QColor& color)
+{
     init(a, b, color);
 }
 
-void HighlightArea::setA(int a) {
+void HighlightArea::setA(int a)
+{
     this->a = a;
 }
 
-void HighlightArea::setB(int b) {
+void HighlightArea::setB(int b)
+{
     this->b = b;
 }
 
-void HighlightArea::setColor(const QColor& color) {
+void HighlightArea::setColor(const QColor& color)
+{
     this->color = color;
 }
 
-int HighlightArea::getA() {
+int HighlightArea::getA()
+{
     return this->a;
 }
 
-int HighlightArea::getB() {
+int HighlightArea::getB()
+{
     return this->b;
 }
 
-QColor HighlightArea::getColor() {
+QColor HighlightArea::getColor()
+{
     return this->color;
 }
 
-void HighlightArea::render(HexEditor* editor, QPainter& painter) {
+void HighlightArea::render(HexEditor* editor, QPainter& painter)
+{
 }
 
 /**
  * Initializes all variables to their default values.
  */
-void HexEditor::init() {
+void HexEditor::init()
+{
     file = NULL;
 
     rows_total = 0;
@@ -120,7 +134,8 @@ void HexEditor::init() {
 /**
  * Recalculates spacing variables when something is changed.
  */
-void HexEditor::adjust() {
+void HexEditor::adjust()
+{
 
     widgets_width = (widgets.size() > 0) ? (widgets.size()-1) * widget_gap : 0;
     for (HexEditorWidget* w : widgets) {
@@ -147,7 +162,8 @@ void HexEditor::adjust() {
  *
  * @return Total number of lines in the current file.
  */
-int HexEditor::getNumLines() {
+int HexEditor::getNumLines()
+{
     return rows_total;
 }
 
@@ -156,7 +172,8 @@ int HexEditor::getNumLines() {
  *
  * @param line Line to focus on.
  */
-void HexEditor::setCurLine(int line) {
+void HexEditor::setCurLine(int line)
+{
     row_top = line;
     mc_file_set_cursor(file, line*QMC_HEXEDIT_BYTESPERROW);
 }
@@ -166,23 +183,26 @@ void HexEditor::setCurLine(int line) {
  *
  * @return Line number of the top line in the editor.
  */
-int HexEditor::getCurLine() {
+int HexEditor::getCurLine()
+{
     return row_top;
 }
 
-void HexEditor::setCursorPos(int pos) {
+void HexEditor::setCursorPos(int pos)
+{
     mc_file_set_cursor(file, pos*QMC_HEXEDIT_BYTESPERROW);
 }
 
-int HexEditor::getCursorPos() {
+int HexEditor::getCursorPos()
+{
     if (file == NULL)
         return 0;
 
     return mc_file_get_cursor(file);
 }
 
-void HexEditor::setFont(const QFont& font) {
-
+void HexEditor::setFont(const QFont& font)
+{
     QWidget::setFont(font);
 
     QFontMetrics fm(font);
@@ -196,7 +216,8 @@ void HexEditor::setFont(const QFont& font) {
 /**
  * Called internally to display when there is no file loaded.
  */
-void HexEditor::drawNoFile(QPainter& painter) {
+void HexEditor::drawNoFile(QPainter& painter)
+{
     painter.drawText(geometry(),
         Qt::AlignHCenter|Qt::AlignVCenter,
         "No file loaded.");
@@ -205,8 +226,8 @@ void HexEditor::drawNoFile(QPainter& painter) {
 /**
  * Handles a key press event.
  */
-void HexEditor::keyPressEvent(QKeyEvent* event) {
-
+void HexEditor::keyPressEvent(QKeyEvent* event)
+{
     /* Move down one */
     if (event->matches(QKeySequence::MoveToNextLine) ||
         event->key() == Qt::Key_J) {
@@ -225,7 +246,8 @@ void HexEditor::keyPressEvent(QKeyEvent* event) {
 /**
  * Handles a move movement event.
  */
-void HexEditor::mouseMoveEvent(QMouseEvent* event) {
+void HexEditor::mouseMoveEvent(QMouseEvent* event)
+{
     for (HexEditorWidget* w : widgets) {
         w->mouseMoveEvent(event);
     }
@@ -234,7 +256,8 @@ void HexEditor::mouseMoveEvent(QMouseEvent* event) {
 /**
  * Handles a mouse press event.
  */
-void HexEditor::mousePressEvent(QMouseEvent* event) {
+void HexEditor::mousePressEvent(QMouseEvent* event)
+{
     for (HexEditorWidget* w : widgets) {
         w->mousePressEvent(event);
     }
@@ -243,8 +266,8 @@ void HexEditor::mousePressEvent(QMouseEvent* event) {
 /**
  * Handles a paint event.
  */
-void HexEditor::paintEvent(QPaintEvent* event) {
-
+void HexEditor::paintEvent(QPaintEvent* event)
+{
     QPainter painter(viewport());
 
     if (file == NULL) {
@@ -263,15 +286,16 @@ void HexEditor::paintEvent(QPaintEvent* event) {
 /**
  * Handles a resize event.
  */
-void HexEditor::resizeEvent(QResizeEvent*) {
+void HexEditor::resizeEvent(QResizeEvent*)
+{
     adjust();
 }
 
 /**
  *
  */
-HexEditor::HexEditor(QWidget* parent) : QAbstractScrollArea(parent) {
-
+HexEditor::HexEditor(QWidget* parent) : QAbstractScrollArea(parent)
+{
     /* Connect signals to slots */
     connect(verticalScrollBar(),   SIGNAL(valueChanged(int)), this, SLOT(adjust()));
     connect(horizontalScrollBar(), SIGNAL(valueChanged(int)), this, SLOT(adjust()));
@@ -280,7 +304,8 @@ HexEditor::HexEditor(QWidget* parent) : QAbstractScrollArea(parent) {
     init();
 }
 
-void HexEditor::setFile(mc_file_t* file) {
+void HexEditor::setFile(mc_file_t* file)
+{
     this->cursor = 0;
     this->verticalScrollBar()->setValue(0);
     this->file = file;
@@ -291,14 +316,16 @@ void HexEditor::setFile(mc_file_t* file) {
 /**
  * Determines if point is inside widget.
  */
-bool HexEditorWidget::isMouseInside(const QPoint& point) {
+bool HexEditorWidget::isMouseInside(const QPoint& point)
+{
     return (point.x() >= start && point.y() <= start+width);
 }
 
 /**
  *
  */
-AddressView::AddressView(HexEditor* editor) {
+AddressView::AddressView(HexEditor* editor)
+{
     this->editor = editor;
     this->num_max = QString("deadbeef").size();
     this->width = ((num_max+1)*editor->font_cwidth) + (2*editor->widget_text_offset);
@@ -307,8 +334,8 @@ AddressView::AddressView(HexEditor* editor) {
 /**
  *
  */
-void AddressView::render(QPainter& painter) {
-
+void AddressView::render(QPainter& painter)
+{
     start = editor->widget_start;
 
     /* Draw bar part */
@@ -330,18 +357,21 @@ void AddressView::render(QPainter& painter) {
     editor->widget_start += width + editor->widget_gap;
 }
 
-void AddressView::mouseMoveEvent(QMouseEvent* event) {
+void AddressView::mouseMoveEvent(QMouseEvent* event)
+{
 
 }
 
-void AddressView::mousePressEvent(QMouseEvent* event) {
+void AddressView::mousePressEvent(QMouseEvent* event)
+{
 
 }
 
 /**
  *
  */
-HexView::HexView(HexEditor* editor) {
+HexView::HexView(HexEditor* editor)
+{
     this->editor = editor;
     this->byte_gap = 7;
     this->width = QMC_HEXEDIT_BYTESPERROW * (2*editor->font_cwidth)
@@ -349,22 +379,24 @@ HexView::HexView(HexEditor* editor) {
         + (2*editor->widget_text_offset);
 }
 
-int HexView::byteToPxStart(int byte) {
+int HexView::byteToPxStart(int byte)
+{
     int ret = start + editor->widget_text_offset;
     ret += byte * (editor->font_cwidth*2);
     ret += byte * byte_gap;
     return ret;
 }
 
-int HexView::byteToPxEnd(int byte) {
+int HexView::byteToPxEnd(int byte)
+{
     int ret = byteToPxStart(byte);
     ret += editor->font_cwidth*2;
     ret += 1;
     return ret;
 }
 
-bool HexView::getPos(const QPoint& point, int* byte, int* nybble) {
-
+bool HexView::getPos(const QPoint& point, int* byte, int* nybble)
+{
     int s = start + editor->widget_text_offset;
     int e = (start+width) - (editor->widget_text_offset*2);
     int x = point.x();
@@ -403,8 +435,8 @@ bool HexView::getPos(const QPoint& point, int* byte, int* nybble) {
 /**
  *
  */
-void HexView::renderHighlight(HighlightArea* area, QPainter& painter) {
-
+void HexView::renderHighlight(HighlightArea* area, QPainter& painter)
+{
     int selection_a = area->getA();
     int selection_b = area->getB();
 
@@ -473,8 +505,8 @@ void HexView::renderHighlight(HighlightArea* area, QPainter& painter) {
 /**
  *
  */
-void HexView::render(QPainter& painter) {
-
+void HexView::render(QPainter& painter)
+{
     start = editor->widget_start;
 
     /* Draw background part */
@@ -523,8 +555,8 @@ void HexView::render(QPainter& painter) {
     editor->widget_start += width + editor->widget_gap;
 }
 
-void HexView::mouseMoveEvent(QMouseEvent* event) {
-
+void HexView::mouseMoveEvent(QMouseEvent* event)
+{
     /* Some constants to shorten code */
     HighlightArea* s = editor->selector;
     const int a = s->getA();
@@ -554,7 +586,8 @@ void HexView::mouseMoveEvent(QMouseEvent* event) {
     }
 }
 
-void HexView::mousePressEvent(QMouseEvent* event) {
+void HexView::mousePressEvent(QMouseEvent* event)
+{
     int byte, nybble;
     if (getPos(event->pos(), &byte, &nybble)) {
         editor->selector->setA(byte);
@@ -568,7 +601,8 @@ void HexView::mousePressEvent(QMouseEvent* event) {
 /**
  * 
  */
-AsciiView::AsciiView(HexEditor* editor) {
+AsciiView::AsciiView(HexEditor* editor)
+{
     this->editor = editor;
     this->width = (QMC_HEXEDIT_BYTESPERROW*editor->font_cwidth)
         + (2*editor->widget_text_offset);
@@ -577,15 +611,15 @@ AsciiView::AsciiView(HexEditor* editor) {
 /**
  * 
  */
-void AsciiView::renderHighlight(HighlightArea* area, QPainter& painter) {
-
+void AsciiView::renderHighlight(HighlightArea* area, QPainter& painter)
+{
 }
 
 /**
  * 
  */
-void AsciiView::render(QPainter& painter) {
-
+void AsciiView::render(QPainter& painter)
+{
     start = editor->widget_start;
 
     /* Draw bar part */
@@ -634,11 +668,11 @@ void AsciiView::render(QPainter& painter) {
     editor->widget_start += width + editor->widget_gap;
 }
 
-void AsciiView::mouseMoveEvent(QMouseEvent* event) {
-
+void AsciiView::mouseMoveEvent(QMouseEvent* event)
+{
 }
 
-void AsciiView::mousePressEvent(QMouseEvent* event) {
-
+void AsciiView::mousePressEvent(QMouseEvent* event)
+{
 }
 

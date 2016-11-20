@@ -8,8 +8,8 @@
 
 class TemplateEditor;
 
-class TemplateModel : public QAbstractItemModel {
-
+class TemplateModel : public QAbstractItemModel
+{
     Q_OBJECT
 
     TemplateEditor* p;
