@@ -100,32 +100,6 @@ int init_bindings() {
     return rc;
 }
 
-/**
- * @brief Adds various locations to the python path for plugin purposes.
- * @return Returns 0 on success, negative value on error.
- * @internal
- */
-int init_path(mc_ctx_t* ctx) {
-    int rc = 0;
-    int i = 0;
-
-    const char* default_path[] = {
-        MYCROFT_LOCAL_PLUGINS,
-        MYCROFT_LOCAL_MODULES,
-        MYCROFT_PLUGINS,
-        MYCROFT_MODULES
-    };
-
-    for (i=0; i < 4; i++) {
-        rc = mc_plugin_addpath(ctx, default_path[i]);
-        if (rc < 0) {
-            return rc;
-        }
-    }
-
-    return 0;
-}
-
 int load_plugin(mc_ctx_t* ctx, const char* plugins_dir, const char* plugin_dir) {
     int rc = 0;
     char* initfile = NULL;
@@ -261,12 +235,6 @@ int mc_plugin_init(mc_ctx_t* ctx) {
     Py_Initialize();
 
     /* */
-    rc = init_path(ctx);
-    if (rc < 0) {
-        return rc;
-    }
-
-    /* */
     plugin_first = NULL;
     plugin_last  = NULL;
 
@@ -305,6 +273,8 @@ int mc_plugin_close(mc_ctx_t* ctx) {
  */
 int mc_plugin_addpath(mc_ctx_t* ctx, const char* path) {
     PyObject *pypath=NULL, *localname=NULL;
+
+    MC_DEBUG("Adding \"%s\" to plugin path.\n", path);
 
     pypath = PySys_GetObject("path");
     localname = PyUnicode_FromString(path);
