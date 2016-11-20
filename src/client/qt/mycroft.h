@@ -2,6 +2,7 @@
 #define MYCROFT_H
 
 #include <QMainWindow>
+#include <mycroft/context.h>
 
 namespace Ui {
 class Mycroft;
@@ -11,8 +12,10 @@ class Mycroft : public QMainWindow
 {
     Q_OBJECT
 
+    mc_ctx_t* ctx;
+
 public:
-    explicit Mycroft(QWidget *parent = 0);
+    explicit Mycroft(mc_ctx_t* ctx, QWidget *parent = 0);
     ~Mycroft();
 
 private:
