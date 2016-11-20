@@ -26,10 +26,10 @@ static mc_plugin_entry_t* plugin_last = NULL;
 int mc_plugin_entry_init(mc_plugin_entry_t** entry);
 int mc_plugin_entry_free(mc_plugin_entry_t* entry);
 
-#define PLUGIN_ENTRY_FUNC "entry"
-#define PLUGIN_NAME_FUNC  "name"
-#define PLUGIN_VER_FUNC   "version"
-#define PLUGIN_DEPS_FUNC  "depends"
+#define PLUGIN_ENTRY_FUNC "_mc_entry"
+#define PLUGIN_NAME_FUNC  "_mc_name"
+#define PLUGIN_VER_FUNC   "_mc_version"
+#define PLUGIN_DEPS_FUNC  "_mc_depends"
 
 #define PLUGIN_INIT_FILE  "__init__.py"
 
