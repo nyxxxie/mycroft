@@ -13,6 +13,7 @@
 #include <string.h>
 #include <libgen.h>
 #include <mycroft/file.h>
+#include <mycroft/error.h>
 #include "file.h"
 
 /**
@@ -77,33 +78,31 @@ mc_file_t* mc_file_open(const char* file_name) {
 
     /* Make sure we're passed a nonempty path */
     if (file_name == 0 || strlen(file_name) == 0) {
+        MC_ERROR("Filename is null or empty.");
         return NULL;
     }
 
     /* Create file */
     file = mc_file_create();
     if (file == NULL) {
+        MC_ERROR("Failed to alloc mc_file_t struct.");
         return NULL;
     }
 
     /* Fill the file name and path members of the mc_file_t struct */
-    file->path = (char*)malloc(strlen(file_name));
+    file->path = (char*)malloc(strlen(file_name)+1);
     if (file->path == NULL) {
+        MC_ERROR("Failed to copy file path to mc_file_t struct.");
         return NULL;
     }
     strcpy(file->path, file_name);
-    file->name = file->path;  //TODO: figure out how to get basename
+    file->name = basename(file->path);
 
     /* Try to open file */
     if ((file->fp = fopen(file->path, "rb+")) == NULL) {
+        MC_ERROR("Failed to fopen file \"%s\": %s [%i]\n", file->path, strerror(errno), errno);
         return NULL;
     }
-
-    /* Copy file name and path */
-    int nsize = strlen(file_name);
-    file->path = (char*)malloc(nsize + 1);
-    strcpy(file->path, file_name);
-    file->name = basename(file->path);
 
     /* Get file size */
     fseek(file->fp, 0, SEEK_END);
