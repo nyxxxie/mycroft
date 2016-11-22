@@ -40,6 +40,9 @@ int main(int argc, char *argv[])
         return 1;
     }
 
+    /* Create main gui window */
+    Mycroft w(ctx);
+
     /* Open project and add it to the ctx */
     QString project_path = args.value("project");
     if (project_path.size() > 0) {
@@ -89,7 +92,7 @@ int main(int argc, char *argv[])
             }
 
             /* Add file to project */
-            if (mc_project_add_file(project, file) != MC_OK) {
+            if (!w.addFile(project, file)) {
                 printf("Failed to add file \"%s\" to project, exiting....\n", path);
                 return 1;
             }
@@ -126,11 +129,9 @@ int main(int argc, char *argv[])
         return 1;
     }
 
-    /* */
-    Mycroft w(ctx);
-    w.show();
-
     /* Run all plugins in plugin directory */
 
+    /* Display main window and exec the application */
+    w.show();
     return a.exec();
 }
