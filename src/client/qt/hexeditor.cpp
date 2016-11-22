@@ -18,7 +18,6 @@ Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #include <QScrollBar>
 #include <QPainter>
 #include <QKeyEvent>
-#include <mycroft/error.h>
 #include <mycroft/file.h>
 #include <stdio.h>
 #include "hexeditor.h"
@@ -306,7 +305,6 @@ HexEditor::HexEditor(QWidget* parent) : QAbstractScrollArea(parent)
 
 void HexEditor::setFile(mc_file_t* file)
 {
-    MC_DEBUG("Setting hex editor file: \"%s\".\n", mc_file_name(file));
     this->cursor = 0;
     this->verticalScrollBar()->setValue(0);
     this->file = file;
