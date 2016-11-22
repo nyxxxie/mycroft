@@ -1,6 +1,8 @@
 #ifndef MYCROFT_ERROR_H
 #define MYCROFT_ERROR_H
 
+#include <errno.h>
+
 typedef enum {
     MC_ERR_INVALID = 0,
     MC_ERR, /** Generic error. */
