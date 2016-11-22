@@ -29,12 +29,17 @@ public slots:
     bool addFile(mc_project_t* proj, mc_file_t* file);
     bool removeFile(mc_file_t* file);
     bool removeFile(mc_project_t* proj, mc_file_t* file);
+    bool addProject(mc_project_t* proj);
+    bool removeProject(mc_project_t* proj);
 
 signals:
     void contextChanged(mc_ctx_t* ctx);
     void fileAdded(mc_project_t* proj, mc_file_t* file);
     void fileRemoved(mc_project_t* proj, mc_file_t* file);
     void fileFocused(mc_file_t* file);
+    void projectAdded(mc_project_t* proj);
+    void projectRemoved(mc_project_t* proj);
+    void projectFocused(mc_project_t* proj);
 };
 
 #endif // MYCROFT_H
