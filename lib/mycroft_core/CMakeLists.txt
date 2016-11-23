@@ -50,7 +50,7 @@ configure_file(
 )
 
 # Specify the library to be built
-add_library(${MYCROFT_CORE_NAME} STATIC ${MYCROFT_CORE_SRC})
+add_library(${MYCROFT_CORE_NAME} SHARED ${MYCROFT_CORE_SRC})
 
 # Link essential libraries
 target_link_libraries(${MYCROFT_CORE_NAME}
@@ -59,3 +59,6 @@ target_link_libraries(${MYCROFT_CORE_NAME}
     ${CAPSTONE_LIBRARIES}
     ${PYTHON_LIBRARIES}
 )
+
+# ASdf
+install(TARGETS ${MYCROFT_CORE_NAME} LIBRARY DESTINATION bin)
