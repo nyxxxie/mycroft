@@ -1,5 +1,5 @@
-#ifndef TEMPLATE_H
-#define TEMPLATE_H
+#ifndef MYCROFT_TEMPLATE_H
+#define MYCROFT_TEMPLATE_H
 
 #ifdef __cplusplus
 extern "C" {
@@ -125,4 +125,4 @@ int template_add_struct_def(template_t* t, struct_def_t* def);
 }
 #endif
 
-#endif // TEMPLATE_H
+#endif // MYCROFT_TEMPLATE_H

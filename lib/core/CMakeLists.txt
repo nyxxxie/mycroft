@@ -32,10 +32,10 @@ set(MYCROFT_CORE_SRC
     plugin.c
     database.c
     membuf.c
-    template.c
-    template_parser.c
     binds/context.c
     binds/file.c
+    template/template.c
+    template/template_parser.c
 )
 
 # Save me from manually including the files ;)
