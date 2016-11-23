@@ -20,7 +20,7 @@ To compile mycroft, execute the following sequence of commands:
 * `mkdir mycroft/build`
 * `cd mycroft/build`
 * `cmake ..`
-# `make`
+* `make`
 
 If nothing fails, mycroft should have been compiled and the client executable
 will be located in `build/src/client/qt`.  If you experience any problems when
