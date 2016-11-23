@@ -10,20 +10,19 @@ relational metadata storage, and other goodies.
 
 Please note that Windows is not officially supported but is planned.
 
-## Compiling (Linux)
-Mycroft uses the CMake build system.  To compile the project on linux, open a
-terminal in this directory and run this command:
+## Installation
+Install documents have been created for all platforms in which mycroft has been
+tested.  Please use the below documents to aid in installing for your specific
+platform.
 
-```mkdir build; cd build; cmake ..```
+* [Gentoo](doc/install/gentoo.md)
 
-This will create a Makefile with several targets:
+Worst case, if no document exists for your specific, the general form for an
+install consists of installing dependencies (openssl, sqlite, qt5, capstone),
+creating a build directory inside of the cloned project dir, generating a
+buildsystem file using cmake (on linux just running `cmake ..` inside the build
+directory) and then building the executable (on linux, `make`).  Install
+by copying the resultant executable to somewhere in your $PATH.  
 
-Command | Description
---- | ---
-make | Compile project. |
-make test | Run all unit tests.
-make docs | Make documentation.
-
-Generated documentation and binaries will be in their cooresponding locations
-in the project directory (EG a target defined in lib/core/ will put compiled
-files in build/lib/core)
+If you experience issues compiling on an untested platform, feel free to open
+an issue.
