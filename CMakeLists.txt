@@ -22,6 +22,9 @@ add_subdirectory(src)
 # Include the directory with all library code
 add_subdirectory(lib)
 
+# Include the directory with all resources
+add_subdirectory(res)
+
 # Add testing stuff
 add_subdirectory(tests)
 

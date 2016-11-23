@@ -41,3 +41,6 @@ target_link_libraries(${MYCROFT_CLIENT_QT_NAME} Qt5::Widgets ${MYCROFT_CORE_NAME
 
 # Enable some C++ features we need
 target_compile_features(${MYCROFT_CLIENT_QT_NAME} PRIVATE cxx_generalized_initializers)
+
+# Set up install location
+install(TARGETS ${MYCROFT_CLIENT_QT_NAME} RUNTIME DESTINATION bin)

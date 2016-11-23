@@ -1,6 +1,6 @@
 include_directories(
     ${MYCROFT_INCLUDE_DIRS}
-    ${CMAKE_SOURCE_DIR}/lib/${MYCROFT_CORE_NAME}
+    ${CMAKE_SOURCE_DIR}/lib/mycroft_core
 )
 
 add_subdirectory(test_file)
