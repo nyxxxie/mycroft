@@ -17,7 +17,7 @@ platform.
 
 * [Gentoo](doc/install/gentoo.md)
 
-Worst case, if no document exists for your specific, the general form for an
+Worst case, if no document exists for your platform, the general form for an
 install consists of installing dependencies (openssl, sqlite, qt5, capstone),
 creating a build directory inside of the cloned project dir, generating a
 buildsystem file using cmake (on linux just running `cmake ..` inside the build
