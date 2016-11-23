@@ -9,6 +9,7 @@ dev-libs/capstone |
 dev-libs/openssl  |
 dev-qt/qtcore     |
 dev-qt/qtwidgets  |
+dev-cpp/gtest     |
 
 GCC and GNU make are also required, but should (will) already be installed.
 

@@ -22,9 +22,6 @@ add_subdirectory(src)
 # Include the directory with all library code
 add_subdirectory(lib)
 
-# Include the third party code library
-add_subdirectory(third_party)
-
 # Add testing stuff
 add_subdirectory(tests)
 
