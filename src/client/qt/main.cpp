@@ -125,7 +125,7 @@ int main(int argc, char *argv[])
         }
     }
 
-    if (mc_plugin_load_plugins(ctx) < 0) {
+    if (mc_plugin_run_plugins(ctx) < 0) {
         return 1;
     }
 

@@ -173,7 +173,7 @@ int load_plugin_dir(mc_ctx_t* ctx, const char* plugins_dir) {
  * @return Returns 0 on success, negative value on error.
  * @internal
  */
-int mc_plugin_load_plugins(mc_ctx_t* ctx) {
+int mc_plugin_run_plugins(mc_ctx_t* ctx) {
     int i = 0;
     int rc = 0;
 
@@ -239,7 +239,7 @@ int mc_plugin_init(mc_ctx_t* ctx) {
     plugin_last  = NULL;
 
     /* */
-    rc = mc_plugin_load_plugins(ctx);
+    rc = mc_plugin_run_plugins(ctx);
     if (rc < 0) {
         return rc;
     }
@@ -282,46 +282,6 @@ int mc_plugin_addpath(mc_ctx_t* ctx, const char* path) {
     PyList_Append(pypath, localname);
 
     Py_DECREF(localname);
-
-    return 0;
-}
-
-/**
- *
- */
-int mc_plugin_runscript(mc_ctx_t* ctx, const char* script) {
-    int rc = 0;
-
-    /* Run script */
-    rc = PyRun_SimpleString(script);
-    if (rc < 0) {
-        return rc;
-    }
-
-    return 0;
-}
-
-/**
- *
- */
-int mc_plugin_runfile(mc_ctx_t* ctx, const char* script) {
-    int rc = 0;
-    FILE* file = NULL;;
-
-    /* Open file */
-    file = fopen(script, "r");
-    if (file == NULL) {
-        fprintf(stdout, "Failed to open file \"%s\": %s\n", script, strerror(errno));
-        return -1;
-    }
-
-    /* Run script */
-    rc = PyRun_SimpleFileEx(file, script, 1);
-    if (rc < 0) {
-        PyErr_Print();
-        fprintf(stdout, "Failed to run python script \"%s\".\n", script);
-        return rc;
-    }
 
     return 0;
 }

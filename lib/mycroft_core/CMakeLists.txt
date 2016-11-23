@@ -30,6 +30,7 @@ set(MYCROFT_CORE_SRC
     file.c
     hook.c
     plugin.c
+    script.c
     database.c
     membuf.c
     binds/context.c
