@@ -6,7 +6,7 @@ internet?  Mycroft's job is to make the process of exploring and working with
 file formats as easy and intuitive as possible, using an annotated hex editor
 interface and a c-like scripting language for defining a file's structure.
 Mycroft features extra goodies like cross-file xrefs, a plugin system,
-relational metadata storage, and other goodies.
+relational metadata storage, and more.
 
 Please note that Windows is not officially supported but is planned.
 
