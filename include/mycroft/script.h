@@ -13,6 +13,9 @@ typedef struct mc_interpreter_t mc_interpreter_t;
 mc_interpreter_t* mc_interpreter_create();
 void mc_interpreter_free(mc_interpreter_t* i);
 
+mc_error_t mc_interpreter_runinitscript(mc_interpreter_t* i);
+mc_error_t mc_interpreter_add_path(mc_interpreter_t* i, const char* directory);
+
 mc_error_t mc_script_runfile(mc_interpreter_t* i, const char* path);
 mc_error_t mc_script_runstring(mc_interpreter_t* i, const char* script);
 

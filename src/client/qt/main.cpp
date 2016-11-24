@@ -109,17 +109,13 @@ int main(int argc, char *argv[])
         return 1;
     }
 
-    /* Run init script */
-    std::string script_init;
-    script_init += MYCROFT_INSTALL_SCRIPT_PATH;
-    script_init += "/__init__.py";
-    if (mc_script_runfile(interpreter, script_init.c_str()) != MC_OK) {
-        MC_ERROR("Failed to run init script \"%s\".\n", script_init.c_str());
-        return 1;
-    }
-    MC_DEBUG("Ran init script \"%s\".\n", script_init.c_str());
+    /* Add to interpreter path */
+    mc_interpreter_add_path(interpreter, MYCROFT_INSTALL_SCRIPT_PATH);
 
-    /* Initialize plugin system */
+    /* Run init script */
+    mc_interpreter_runinitscript(interpreter);
+
+        /* Initialize plugin system */
     //if (mc_plugin_init(ctx) < 0) {
     //    printf("Failed to initialize plugin system, exiting...\n");
     //    return 1;

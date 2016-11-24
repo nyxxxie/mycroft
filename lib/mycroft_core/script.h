@@ -3,6 +3,8 @@
 
 #include <mycroft/script.h>
 
+#define INITSCRIPT "init.py"
+
 /**
  * Represents a script
  */
