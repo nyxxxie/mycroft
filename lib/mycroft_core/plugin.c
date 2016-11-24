@@ -7,7 +7,6 @@
 #include "binds/context.h"
 #include "file.h"
 #include "plugin.h"
-#include "config.h"
 
 /**
  * @brief Initialize an mc_plugin_entry_t
@@ -174,20 +173,20 @@ int load_plugin_dir(mc_ctx_t* ctx, const char* plugins_dir) {
  * @internal
  */
 int mc_plugin_run_plugins(mc_ctx_t* ctx) {
-    int i = 0;
-    int rc = 0;
+    //int i = 0;
+    //int rc = 0;
 
-    const char* plugin_path[] = {
-        MYCROFT_LOCAL_PLUGINS,
-        MYCROFT_PLUGINS
-    };
+    //const char* plugin_path[] = {
+    //    MYCROFT_LOCAL_PLUGINS,
+    //    MYCROFT_PLUGINS
+    //};
 
-    for (i=0; i < 2; i++) {
-        rc = load_plugin_dir(ctx, plugin_path[i]);
-        if (rc < 0) {
-            return rc;
-        }
-    }
+    //for (i=0; i < 2; i++) {
+    //    rc = load_plugin_dir(ctx, plugin_path[i]);
+    //    if (rc < 0) {
+    //        return rc;
+    //    }
+    //}
 
     return 0;
 }
