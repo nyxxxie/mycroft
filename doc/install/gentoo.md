@@ -1,15 +1,16 @@
 # Requirements
 Please install the following packages (ebuild TBA):
 
-Package           | USE flags
------------------ | ---------
-dev-util/cmake    |
-dev-db/sqlite     | static-libs
-dev-libs/capstone |
-dev-libs/openssl  |
-dev-qt/qtcore     |
-dev-qt/qtwidgets  |
-dev-cpp/gtest     |
+Package             | USE flags
+------------------- | ---------
+dev-util/cmake      |
+dev-db/sqlite       | static-libs
+dev-libs/capstone   |
+dev-lang/python:3.4 |
+dev-libs/openssl    |
+dev-qt/qtcore       |
+dev-qt/qtwidgets    |
+dev-cpp/gtest       |
 
 GCC and GNU make are also required, but should (will) already be installed.
 
