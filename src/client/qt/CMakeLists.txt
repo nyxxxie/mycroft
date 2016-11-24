@@ -26,6 +26,13 @@ set(MYCROFT_CLIENT_QT_UI
 # Save me from manually including the files ;)
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
+# configure a header file to pass some of the CMake settings
+# to the source code
+configure_file(
+    ${CMAKE_CURRENT_SOURCE_DIR}/config.h.in
+    ${CMAKE_CURRENT_SOURCE_DIR}/config.h
+)
+
 # QT5 stuff
 find_package(Qt5Widgets REQUIRED)
 qt5_wrap_ui(UI_HEADERS ${MYCROFT_CLIENT_QT_UI})

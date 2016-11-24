@@ -8,8 +8,13 @@ extern "C" {
 #include <mycroft/error.h>
 #include <mycroft/context.h>
 
-mc_error_t mc_script_runfile(mc_ctx_t* ctx, const char* path);
-mc_error_t mc_script_runstring(mc_ctx_t* ctx, const char* script);
+typedef struct mc_interpreter_t mc_interpreter_t;
+
+mc_interpreter_t* mc_interpreter_create();
+void mc_interpreter_free(mc_interpreter_t* i);
+
+mc_error_t mc_script_runfile(mc_interpreter_t* i, const char* path);
+mc_error_t mc_script_runstring(mc_interpreter_t* i, const char* script);
 
 #ifdef __cplusplus
 }

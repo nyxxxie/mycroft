@@ -1,9 +1,59 @@
 #include <stdio.h>
 #include <Python.h>
+#include "binds/file.h"
+#include "binds/context.h"
 #include "context.h"
 #include "script.h"
 
-mc_error_t mc_script_runfile(mc_ctx_t* ctx, const char* path)
+mc_error_t init_bindings()
+{
+    int rc = 0;
+
+    rc = init_binds_file();
+    if (rc < 0) {
+        return MC_ERR;
+    }
+
+    //rc = init_binds_core();
+    //if (rc < 0) {
+    //    return rc;
+    //}
+
+    return MC_OK;
+}
+
+mc_interpreter_t* mc_interpreter_create()
+{
+    mc_interpreter_t* ret = NULL;
+
+    /* Alloc the project */
+    ret = (mc_interpreter_t*)malloc(sizeof(*ret));
+    if (ret == NULL) {
+        MC_ERROR("Failed to allocate interpreter ctx.\n");
+        return NULL;
+    }
+    ret->bindings_initialized = 0;
+
+    /* */
+    if (init_bindings() != MC_OK) {
+        MC_ERROR("Failed to initialize bindings.\n");
+        free(ret);
+        return NULL;
+    }
+    ret->bindings_initialized = 1;
+
+    Py_Initialize();
+
+    return ret;
+}
+
+void mc_interpreter_free(mc_interpreter_t* i)
+{
+    Py_Finalize();
+    free(i);
+}
+
+mc_error_t mc_script_runfile(mc_interpreter_t* i, const char* path)
 {
     int rc = 0;
     FILE* file = NULL;;
@@ -26,7 +76,7 @@ mc_error_t mc_script_runfile(mc_ctx_t* ctx, const char* path)
     return MC_OK;
 }
 
-mc_error_t mc_script_runstring(mc_ctx_t* ctx, const char* script)
+mc_error_t mc_script_runstring(mc_interpreter_t* i, const char* script)
 {
     int rc = 0;
 

@@ -1,1 +1,1 @@
-# 
+print("Entry script test.")

@@ -8,12 +8,15 @@
 #include <QCommandLineParser>
 #include <mycroft/context.h>
 #include <mycroft/plugin.h>
+#include <mycroft/script.h>
 #include "mycroft.h"
+#include "config.h"
 
 int main(int argc, char *argv[])
 {
     mc_ctx_t* ctx = NULL;
     mc_project_t* project = NULL;
+    mc_interpreter_t* interpreter = NULL;
 
     /* Open qt application */
     QApplication a(argc, argv);
@@ -99,35 +102,52 @@ int main(int argc, char *argv[])
         }
     }
 
+    /* Create interpreter ctx */
+    interpreter = mc_interpreter_create();
+    if (interpreter == NULL) {
+        MC_ERROR("Failed to create interpreter.\n");
+        return 1;
+    }
+
+    /* Run init script */
+    std::string script_init;
+    script_init += MYCROFT_INSTALL_SCRIPT_PATH;
+    script_init += "/__init__.py";
+    if (mc_script_runfile(interpreter, script_init.c_str()) != MC_OK) {
+        MC_ERROR("Failed to run init script \"%s\".\n", script_init.c_str());
+        return 1;
+    }
+    MC_DEBUG("Ran init script \"%s\".\n", script_init.c_str());
+
     /* Initialize plugin system */
-    if (mc_plugin_init(ctx) < 0) {
-        printf("Failed to initialize plugin system, exiting...\n");
-        return 1;
-    }
-
-    #ifdef __linux__
-    MC_DEBUG("Loading plugins as Linux.\n");
-    const char* plugin_paths[] = { // TODO: use XDG vars directly
-        "~/.config/mycroft/plugins",
-        "/etc/xdg/mycroft/plugins"
-    };
-    //#elif _WIN32
+    //if (mc_plugin_init(ctx) < 0) {
+    //    printf("Failed to initialize plugin system, exiting...\n");
+    //    return 1;
+    //}
     //
-    #else
-    #error "Your OS is not supported."
-    #endif
+    //#ifdef __linux__
+    //MC_DEBUG("Loading plugins as Linux.\n");
+    //const char* plugin_paths[] = { // TODO: use XDG vars directly
+    //    "~/.config/mycroft/plugins",
+    //    "/etc/xdg/mycroft/plugins"
+    //};
+    ////#elif _WIN32
+    ////
+    //#else
+    //#error "Your OS is not supported."
+    //#endif
 
-    /* Add plugin locations to path */
-    for (int i = 0; i < 2; i++) {
-        struct stat st = {0};
-        if (stat(plugin_paths[i], &st) < 0) {
-            mc_plugin_addpath(ctx, plugin_paths[i]);
-        }
-    }
+    ///* Add plugin locations to path */
+    //for (int i = 0; i < 2; i++) {
+    //    struct stat st = {0};
+    //    if (stat(plugin_paths[i], &st) < 0) {
+    //        mc_plugin_addpath(ctx, plugin_paths[i]);
+    //    }
+    //}
 
-    if (mc_plugin_run_plugins(ctx) < 0) {
-        return 1;
-    }
+    //if (mc_plugin_run_plugins(ctx) < 0) {
+    //    return 1;
+    //}
 
     /* Run all plugins in plugin directory */
 

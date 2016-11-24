@@ -51,7 +51,7 @@ else ()
     set(MYCROFT_BIN_PATH ${CMAKE_INSTALL_PREFIX}/bin CACHE PATH "mycroft bin directory")
 endif ()
 
-# Set some local directories and files
+# Set global install directory locations
 set(MYCROFT_INSTALL_PLUGIN_PATH   ${MYCROFT_DATA_PATH}/plugins)
 set(MYCROFT_INSTALL_SCRIPT_PATH   ${MYCROFT_DATA_PATH}/scripts)
 set(MYCROFT_INSTALL_TEMPLATE_PATH ${MYCROFT_DATA_PATH}/templates)
