@@ -42,14 +42,6 @@ set(MYCROFT_CORE_SRC
 # Save me from manually including the files ;)
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
-# configure a header file to pass some of the CMake settings
-# to the source code
-
-configure_file(
-    ${CMAKE_CURRENT_SOURCE_DIR}/config.h.in
-    ${CMAKE_CURRENT_SOURCE_DIR}/config.h
-)
-
 # Specify the library to be built
 add_library(${MYCROFT_CORE_NAME} STATIC ${MYCROFT_CORE_SRC})
 
