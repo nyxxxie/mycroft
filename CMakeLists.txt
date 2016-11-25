@@ -1,5 +1,8 @@
 cmake_minimum_required(VERSION 2.8.11)
 
+# Include CPack (this will create `package` target)
+include(CPack)
+
 # Include settings
 include(MycroftConfig.cmake)
 
