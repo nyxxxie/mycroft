@@ -3,20 +3,17 @@
 #include <mycroft/mycroft.h>
 #include "templateeditor.h"
 
-/**
- * Starts up the template viewer with the default struct.
- */
-void TemplateEditor::init()
-{
-    this->t = NULL;
-    TemplateModel* model = new TemplateModel(this);
-    setModel(model);
-}
-
 TemplateEditor::TemplateEditor(QWidget* parent)
     : QTreeView(parent)
 {
-    init();
+    this->t = NULL;
+    this->model = new TemplateModel(this);
+    setModel(this->model);
+}
+
+TemplateEditor::~TemplateEditor()
+{
+    delete this->model;
 }
 
 void TemplateEditor::setFile(mc_file_t* file)

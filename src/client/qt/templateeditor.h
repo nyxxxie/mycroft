@@ -39,13 +39,13 @@ class TemplateEditor : public QTreeView
 
     Q_OBJECT
 
-    void init();
-
 protected:
     template_t* t;
+    TemplateModel* model;
 
 public:
     TemplateEditor(QWidget* parent);
+    ~TemplateEditor();
 
 public slots:
     void setFile(mc_file_t* file);
