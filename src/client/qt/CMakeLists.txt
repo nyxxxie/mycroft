@@ -14,7 +14,6 @@ set(MYCROFT_CLIENT_QT_SRC
     mainhexeditor.cpp
     hexeditor.cpp
     templateeditor.cpp
-    templatemodel.cpp
 )
 
 # UI files
