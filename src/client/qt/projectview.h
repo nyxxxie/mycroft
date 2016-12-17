@@ -1,26 +1,34 @@
-#ifndef TEMPLATEEDITOR_H
-#define TEMPLATEEDITOR_H
+#ifndef PROJECTVIEW_H
+#define PROJECTVIEW_H
 
 #include <QVariant>
 #include <QTreeView>
 #include <QModelIndex>
 #include <QAbstractItemModel>
-#include <mycroft/template.h>
+#include <mycroft/context.h>
 
-class TemplateEditor;
+class ProjectView;
 
-class TemplateModel : public QAbstractItemModel
+class ProjectModel : public QAbstractItemModel
 {
     Q_OBJECT
 
-    TemplateEditor* treeview;
+private:
+    ProjectView* treeview;
+
     bool shouldRender() const;
-    ast_struct_t* getParent(const QModelIndex& parent) const;
-    template_t* getTemplate() const;
+    void* getParent(const QModelIndex& parent) const;
+    mc_ctx_t* getContext() const;
+
+    bool isContext(const QModelIndex& index) const;
+    bool isProject(const QModelIndex& index) const;
+    bool isFile(const QModelIndex& index) const;
+
+    // const is a great keyword
 
 public:
-    explicit TemplateModel(TemplateEditor* parent);
-    ~TemplateModel();
+    explicit ProjectModel(ProjectView* parent);
+    ~ProjectModel();
 
     QVariant data(const QModelIndex& index, int role) const Q_DECL_OVERRIDE;
     Qt::ItemFlags flags(const QModelIndex& index) const Q_DECL_OVERRIDE;
@@ -33,22 +41,21 @@ public:
     int columnCount(const QModelIndex& parent = QModelIndex()) const Q_DECL_OVERRIDE;
 };
 
-class TemplateEditor : public QTreeView
+class ProjectView : public QTreeView
 {
-    friend class TemplateModel;
-
+    friend class ProjectModel;
     Q_OBJECT
 
 protected:
-    template_t* t;
-    TemplateModel* model;
+    mc_ctx_t* ctx;
+    ProjectModel* model;
 
 public:
-    TemplateEditor(QWidget* parent);
-    ~TemplateEditor();
+    ProjectView(QWidget* parent);
+    ~ProjectView();
 
 public slots:
-    void setFile(mc_file_t* file);
+    void setContext(mc_ctx_t* ctx);
 };
 
-#endif // TEMPLATEEDITOR_H
+#endif // PROJECTVIEW_H

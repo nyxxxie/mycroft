@@ -28,7 +28,7 @@ void TemplateEditor::setFile(mc_file_t* file)
 
 bool TemplateModel::shouldRender() const
 {
-    return (p->t != NULL);
+    return (getTemplate() != NULL);
 }
 
 ast_struct_t* TemplateModel::getParent(const QModelIndex& parent) const
@@ -36,16 +36,22 @@ ast_struct_t* TemplateModel::getParent(const QModelIndex& parent) const
     ast_struct_t* ret = NULL;
 
     if (!parent.isValid())
-        ret = p->t->root->entry;
+        ret = getTemplate()->root->entry;
     else
         ret = (ast_struct_t*)(parent.internalPointer());
 
     return ret;
 }
 
-TemplateModel::TemplateModel(TemplateEditor* parent)
+template_t* TemplateModel::getTemplate() const
 {
-    p = parent;
+    return ((TemplateEditor*)treeview)->t;
+}
+
+TemplateModel::TemplateModel(TemplateEditor* parent)
+    : QAbstractItemModel(parent)
+{
+    treeview = parent;
 }
 
 TemplateModel::~TemplateModel()
@@ -173,7 +179,7 @@ QModelIndex TemplateModel::parent(const QModelIndex& index) const
     ast_var_t* child = (ast_var_t*)(index.internalPointer());
     ast_struct_t* parent = (ast_struct_t*)child->parent;
 
-    if (((void*)parent) == ((void*)p->t->root)) {
+    if (((void*)parent) == ((void*)getTemplate()->root)) {
         return QModelIndex();
     }
 
