@@ -1,16 +1,17 @@
 # Requirements
-Please install the following packages (ebuild TBA):
+Please install the following packages (pkgbuild TBA):
 
-Package             | USE flags
-------------------- | ---------
-dev-util/cmake      |
-dev-db/sqlite       | static-libs
-dev-libs/capstone   |
-dev-lang/python:3.4 |
-dev-libs/openssl    |
-dev-qt/qtcore       |
-dev-qt/qtwidgets    |
-dev-cpp/gtest       |
+Package   | Notes
+--------- | ------------------------------------------------
+cmake     |
+sqlite    |
+capstone  |
+python    | This must be python3, should be by default
+openssl   |
+qt5-base  |
+gtest     |
+doxygen   |
+graphviz  | Optional, only *slightly* useful for development
 
 GCC and GNU make are also required, but should (will) already be installed.
 

@@ -16,6 +16,7 @@ tested.  Please use the below documents to aid in installing for your specific
 platform.
 
 * [Gentoo](doc/install/gentoo.md)
+* [Arch Linux](doc/install/archlinux.md)
 
 Worst case, if no document exists for your platform, the general form for an
 install consists of installing dependencies (openssl, sqlite, qt5, capstone),
