@@ -33,6 +33,7 @@ int main(int argc, char *argv[])
         // NAME             DESCRIPTION                                    VALUE NAME    DEFAULT_VALUE
         {{"p", "project"},  "Mycroft project to open.",                    "project",    ""},
         {"plugdir",         "Additional directory to search for plugins.", "directory",  ""},
+        {"testprojects",    "Create test projects for testing."},
     });
     args.process(a);
 
@@ -65,6 +66,29 @@ int main(int argc, char *argv[])
     if (mc_ctx_add_project(ctx, project) != MC_OK) {
         printf("Failed to add project to context, exiting...\n");
         return 1;
+    }
+
+    /* Create test projects (this should be deleted later) */
+    if (args.isSet("testprojects")) {
+        mc_project_t* projects[] = {
+            mc_project_create("project 1"),
+            mc_project_create("project 2"),
+            mc_project_create("project 3"),
+        };
+
+        const char* files[] = {
+            "CMakeCache.txt",
+            "cmake_install.cmake",
+            "Makefile",
+        };
+
+        for (mc_project_t* project : projects) {
+            for (const char* file : files) {
+                mc_project_add_file(project, mc_file_open(file));
+            }
+
+            mc_ctx_add_project(ctx, project);
+        }
     }
 
     /* Add file given in options to project, if one was specified */
@@ -115,7 +139,7 @@ int main(int argc, char *argv[])
     /* Run init script */
     mc_interpreter_runinitscript(interpreter);
 
-        /* Initialize plugin system */
+    /* Initialize plugin system */
     //if (mc_plugin_init(ctx) < 0) {
     //    printf("Failed to initialize plugin system, exiting...\n");
     //    return 1;

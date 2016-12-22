@@ -2,15 +2,6 @@
 #include <mycroft/project.h>
 #include "projectview.h"
 
-
-//TODO: use this along with QModelIndex::column to determine what kind of thing a column is
-
-
-enum {
-    COLTYPE_PROJECT = 0,
-    COLTYPE_FILE = 1
-};
-
 ProjectView::ProjectView(QWidget* parent)
     : QTreeView(parent)
 {
@@ -25,16 +16,14 @@ ProjectView::~ProjectView()
 
 void ProjectView::setContext(mc_ctx_t* ctx)
 {
+    MC_DEBUG("Called setContext.\n");
+    MC_DEBUG("\tSet context. [ctx=0x%p]\n", ctx);
     this->ctx = ctx;
 }
 
 bool ProjectModel::shouldRender() const
 {
     return (getContext() != NULL);
-}
-
-void* ProjectModel::getParent(const QModelIndex& parent) const
-{
 }
 
 mc_ctx_t* ProjectModel::getContext() const
@@ -44,17 +33,17 @@ mc_ctx_t* ProjectModel::getContext() const
 
 bool ProjectModel::isContext(const QModelIndex& index) const
 {
-    return (!index.parent().isValid() && index.internalPointer() == getContext());
+    return (!index.parent().isValid());
 }
 
 bool ProjectModel::isProject(const QModelIndex& index) const
 {
-    return (index.parent().isValid() && index.parent().internalPointer() == getContext());
+    return (index.parent().isValid() && !index.parent().parent().isValid());
 }
 
 bool ProjectModel::isFile(const QModelIndex& index) const
 {
-    return (index.parent().isValid() && isProject(index.parent()));
+    return (index.parent().isValid() && index.parent().parent().isValid());
 }
 
 ProjectModel::ProjectModel(ProjectView* parent)
@@ -69,51 +58,62 @@ ProjectModel::~ProjectModel()
 
 int ProjectModel::columnCount(const QModelIndex& parent) const
 {
-    if (isContext(parent)) {
-        return mc_ctx_get_project_amount((mc_ctx_t*)parent.internalPointer());
-    }
-    else if (isProject(parent)) {
-        return mc_project_get_file_amount((mc_project_t*)parent.internalPointer());
-    }
-    else if (isFile(parent)) {
-        return 0;
-    }
-    else {
-        return 0;
-    }
+    MC_DEBUG("Called columnCount.\n");
+
+    /* */
+    return 1;
 }
 
 QVariant ProjectModel::data(const QModelIndex& index, int role) const
 {
+    MC_DEBUG("Called data.\n");
     if (!shouldRender()) {
         return QVariant();
     }
 
-    if (!index.isValid())
+    if (!index.isValid()) {
         return QVariant();
+    }
 
     if (role == Qt::DisplayRole) {
-
-        /* */
         if (isContext(index)) {
-            return "ASDF";
+            MC_DEBUG("\tIs project.\n");
+
+            /* */
+            return "CONTEXT";
         }
         else if (isProject(index)) {
-            return "project";
+            MC_ERROR("\tIs project.\n");
+
+            /* */
+            mc_project_t* project = (mc_project_t*)index.internalPointer();
+
+            /* */
+            return mc_project_get_name(project);
         }
         else if (isFile(index)) {
-            return mc_file_name((mc_file_t*)index.internalPointer());
+            MC_ERROR("Parent is a file, which is a lie.\n");
+
+            /* */
+            mc_file_t* file = (mc_file_t*)index.internalPointer();
+
+            /* */
+            return mc_file_name(file);
         }
         else {
-            return 0;
+            MC_ERROR("No idea what the parent is.\n");
+            return QModelIndex();
         }
     }
+
+    return QVariant();
 }
 
 Qt::ItemFlags ProjectModel::flags(const QModelIndex& index) const
 {
-    if (!index.isValid())
+    if (!index.isValid()) {
         return 0;
+    }
 
     return QAbstractItemModel::flags(index);
 }
@@ -132,32 +132,52 @@ QVariant ProjectModel::headerData(int section, Qt::Orientation orientation, int 
 
 QModelIndex ProjectModel::index(int row, int column, const QModelIndex& parent) const
 {
+    MC_DEBUG("Called index [r=%i, c=%i].\n", row, column);
     if (!shouldRender()) {
         return QModelIndex();
     }
 
     if (!parent.isValid()) {
-        return QModelIndex();
+        MC_DEBUG("\tIs root.\n");
+
+        /* */
+        mc_ctx_t* ctx = getContext();
+
+        /* */
+        return createIndex(row, column, ctx);
     }
 
-    void* tmp = (void*)parent.internalPointer();
-    if (tmp == NULL) {
+    if (isContext(parent)) {
+        MC_DEBUG("\tIs project.\n");
+
+        /* */
+        mc_ctx_t* ctx = (mc_ctx_t*)parent.internalPointer();
+
+        /* */
+        return createIndex(row, column, mc_ctx_get_project(ctx, row));
+    }
+    else if (isProject(parent)) {
+        MC_ERROR("\tIs project.\n");
+
+        /* */
+        mc_project_t* project = (mc_project_t*)parent.internalPointer();
+
+        /* */
+        return createIndex(row, column, mc_project_get_file(project, row));
+    }
+    else if (isFile(parent)) {
+        MC_ERROR("Parent is a file, which is a lie.\n");
         return QModelIndex();
     }
-
-    /* */
-    switch (column) {
-    case 0:
-        return createIndex(row, column, mc_ctx_get_project((mc_ctx_t*)tmp, row));
-    case 1:
-        return createIndex(row, column, mc_project_get_file((mc_project_t*)tmp, row));
-    default:
+    else {
+        MC_ERROR("No idea what the parent is.\n");
         return QModelIndex();
     }
 }
 
 QModelIndex ProjectModel::parent(const QModelIndex& index) const
 {
+    MC_DEBUG("Called parent.\n");
     if (!shouldRender()) {
         return QModelIndex();
     }
@@ -166,38 +186,39 @@ QModelIndex ProjectModel::parent(const QModelIndex& index) const
         return QModelIndex();
     }
 
-    if (isContext(index)) {
+    if (index.internalPointer() == getContext()) {
         return QModelIndex();
     }
+    else {
+        for (int i=0; i < mc_ctx_get_project_amount(getContext()); i++) {
 
-    if (isProject(index)) {
-        return QModelIndex();
-    }
-
-    /* Index points to a file, find the project it belongs to.  Hacky and
-       inefficient I know, spare me your wrath. */
-    for (int i=0; i < mc_ctx_get_project_amount(getContext()); i++) {
-
-        /* Get project for this iteration */
-        mc_project_t* project = mc_ctx_get_project(getContext(), i);
-        if (project == NULL) {
-            MC_ERROR("Encountered NULL project [i=%i]\n", i);
-            return QModelIndex();
-        }
-
-        /* Loop through each file in the project */
-        for (int j=0; j < mc_project_get_file_amount(project); j++) {
-
-            /* Get file for this iteration */
-            mc_file_t* file = mc_project_get_file(project, i);
-            if (file == NULL) {
-                MC_ERROR("Encountered NULL file in project [i=%i, j=%i]\n", i, j);
+            /* Get project for this iteration */
+            mc_project_t* project = mc_ctx_get_project(getContext(), i);
+            if (project == NULL) {
+                MC_ERROR("Encountered NULL project [i=%i]\n", i);
                 return QModelIndex();
             }
 
             /*  */
-            if (index.internalPointer() == file) {
-                return createIndex(i, COLTYPE_PROJECT, file);
+            if (index.internalPointer() == project) {
+                MC_DEBUG("\tCreating index for row %i.\n", i);
+                return createIndex(i, 0, getContext());
+            }
+
+            /* Loop through each file in the project */
+            for (int j=0; j < mc_project_get_file_amount(project); j++) {
+
+                /* Get file for this iteration */
+                mc_file_t* file = mc_project_get_file(project, j);
+                if (file == NULL) {
+                    MC_ERROR("Encountered NULL file in project [i=%i, j=%i]\n", i, j);
+                    return QModelIndex();
+                }
+
+                /*  */
+                if (index.internalPointer() == file) {
+                    return createIndex(j, 0, project);
+                }
             }
         }
     }
@@ -207,9 +228,49 @@ QModelIndex ProjectModel::parent(const QModelIndex& index) const
 
 int ProjectModel::rowCount(const QModelIndex& parent) const
 {
+    MC_DEBUG("Called rowCount.\n");
     if (!shouldRender()) {
         return 0;
     }
 
-    return 0;
+    if (parent.column() > 0) {
+        return 0;
+    }
+
+    if (!parent.isValid()) {
+        MC_DEBUG("parent appears to be invalid...\n");
+
+        /* */
+        mc_ctx_t* ctx = (mc_ctx_t*)getContext();
+
+        /* */
+        return 1;
+    }
+
+    if (isContext(parent)) {
+        MC_DEBUG("parent appears to be context...\n");
+
+        /* */
+        mc_ctx_t* ctx = (mc_ctx_t*)parent.internalPointer();
+
+        /* */
+        return mc_ctx_get_project_amount(ctx);
+    }
+    else if (isProject(parent)) {
+        MC_DEBUG("parent appears to be project...\n");
+
+        /* */
+        mc_project_t* project = (mc_project_t*)parent.internalPointer();
+
+        /* */
+        return mc_project_get_file_amount(project);
+    }
+    else if (isFile(parent)) {
+        MC_ERROR("Parent is a file, which is a lie.\n");
+        return 0;
+    }
+    else {
+        MC_ERROR("No idea what the parent is.\n");
+        return 0;
+    }
 }

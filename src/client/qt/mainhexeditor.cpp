@@ -13,6 +13,8 @@ MainHexEditor::MainHexEditor(QWidget* parent) :
             ui->hexeditor, SLOT(setFile(mc_file_t*)));
     connect(parent, SIGNAL(fileFocused(mc_file_t*)),
             ui->templateeditor, SLOT(setFile(mc_file_t*)));
+    connect(parent, SIGNAL(contextChanged(mc_ctx_t*)),
+            ui->projectview, SLOT(setContext(mc_ctx_t*)));
 
     // TODO: manually create hexxeitor and templateeditor here and add them to ui splitters?
 

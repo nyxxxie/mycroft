@@ -24,8 +24,6 @@ private:
     bool isProject(const QModelIndex& index) const;
     bool isFile(const QModelIndex& index) const;
 
-    // const is a great keyword
-
 public:
     explicit ProjectModel(ProjectView* parent);
     ~ProjectModel();

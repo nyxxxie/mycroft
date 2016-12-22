@@ -45,7 +45,7 @@ ast_struct_t* TemplateModel::getParent(const QModelIndex& parent) const
 
 template_t* TemplateModel::getTemplate() const
 {
-    return ((TemplateEditor*)treeview)->t;
+    return treeview->t;
 }
 
 TemplateModel::TemplateModel(TemplateEditor* parent)
@@ -92,6 +92,7 @@ QVariant TemplateModel::data(const QModelIndex& index, int role) const
         return QVariant();
 
     if (role == Qt::DisplayRole) {
+
         /* Get node */
         ast_node_t* node = (ast_node_t*)(index.internalPointer());
         if (node == NULL) {
@@ -142,6 +143,10 @@ QVariant TemplateModel::headerData(int section, Qt::Orientation orientation, int
 
     return QVariant();
 }
+
+//aaaa
+//    bbbbb
+//        cccc
 
 QModelIndex TemplateModel::index(int row, int column, const QModelIndex& parent) const
 {
