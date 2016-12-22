@@ -23,6 +23,10 @@ public:
     explicit Mycroft(mc_ctx_t* ctx, QWidget* parent = 0);
     ~Mycroft();
 
+private slots:
+    void on_action_file_open();
+    void on_action_file_exit();
+
 public slots:
     void setContext(mc_ctx_t* ctx);
     bool addFile(mc_file_t* file);

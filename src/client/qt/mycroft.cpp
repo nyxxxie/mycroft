@@ -9,6 +9,9 @@ Mycroft::Mycroft(mc_ctx_t* ctx, QWidget* parent) :
 {
     ui->setupUi(this);
 
+    connect(ui->action_file_open, SIGNAL(triggered()), this, SLOT(on_action_file_open()));
+    connect(ui->action_file_exit, SIGNAL(triggered()), this, SLOT(on_action_file_exit()));
+
     editor = new MainHexEditor(this);
     ui->windowlayout->addWidget(editor);
 
@@ -18,6 +21,16 @@ Mycroft::Mycroft(mc_ctx_t* ctx, QWidget* parent) :
 Mycroft::~Mycroft()
 {
     delete ui;
+}
+
+void Mycroft::on_action_file_open()
+{
+    MC_DEBUG("OPEN\n");
+}
+
+void Mycroft::on_action_file_exit()
+{
+    MC_DEBUG("EXIT\n");
 }
 
 void Mycroft::setContext(mc_ctx_t* ctx)
