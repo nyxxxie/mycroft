@@ -77,7 +77,6 @@ mc_error_t create_default_tables(sqlite3* db) {
 mc_project_t* mc_project_create(const char* name) {
     mc_project_t* project = NULL;
     int rc = 0;
-    int name_len = 0;
 
     /* Alloc the project */
     project = (mc_project_t*)malloc(sizeof(mc_project_t));
@@ -92,23 +91,10 @@ mc_project_t* mc_project_create(const char* name) {
     project->name = NULL;
     project->db = NULL;
 
-    /* Check if name is null or an empty string */
-    if (name != NULL) {
-        name_len = strlen(name); // Saving this so we can use it below
-        if (name_len == 0) {
-            return NULL;
-        }
-    }
-    else {
+    /* Set file name */
+    if (mc_project_set_name(project, name) == MC_ERR) {
         return NULL;
     }
-
-    /* Copy name argument into name field */
-    project->name = (char*)malloc(name_len + 1);
-    if (project->name == NULL) {
-        return NULL;
-    }
-    strncpy(project->name, name, name_len);
 
     /* Create in-memory sqlite database */
     rc = sqlite3_open_v2(":memory:", &project->db,
@@ -219,6 +205,46 @@ void mc_project_free(mc_project_t* project) {
 
         free(project);
     }
+}
+
+
+mc_error_t mc_project_set_name(mc_project_t* project, const char* name) {
+    int name_len = 0;
+
+    /* Check if name is null or an empty string */
+    if (name != NULL) {
+        name_len = strlen(name); // Saving this so we can use it below
+        if (name_len == 0) {
+            return MC_ERR;
+        }
+    }
+    else {
+        return MC_ERR;
+    }
+
+    /* Copy name argument into name field */
+    project->name = (char*)malloc(name_len + 1);
+    if (project->name == NULL) {
+        return MC_ERR;
+    }
+    memset(project->name, 0, name_len + 1);
+    strncpy(project->name, name, name_len);
+
+    return MC_OK;
+}
+
+/**
+ * Gets project name, or returns (unnamed) if it is unnamed.
+ *
+ * @return Returns project name associated with this project.
+ * @internal
+ */
+char* mc_project_get_name(mc_project_t* project) {
+    if (project->name == NULL) {
+        return "(unnamed)";
+    }
+
+    return project->name;
 }
 
 /**
