@@ -5,8 +5,13 @@
 ProjectView::ProjectView(QWidget* parent)
     : QTreeView(parent)
 {
+    MC_DEBUG("asfd: 0x%p\n", parent);
+
     this->model = new ProjectModel(this);
     setModel(this->model);
+
+    connect(this, SIGNAL(doubleClicked(const QModelIndex&)),
+            this, SLOT(indexDoubleClicked(const QModelIndex&)));
 }
 
 ProjectView::~ProjectView()
@@ -16,9 +21,20 @@ ProjectView::~ProjectView()
 
 void ProjectView::setContext(mc_ctx_t* ctx)
 {
-    MC_DEBUG("Called setContext.\n");
-    MC_DEBUG("\tSet context. [ctx=0x%p]\n", ctx);
     this->ctx = ctx;
+}
+
+void ProjectView::indexDoubleClicked(const QModelIndex& index)
+{
+    if (model->isProject(index)) {
+        emit focusProject(ctx, (mc_project_t*)index.internalPointer());
+    }
+    else if (model->isFile(index)) {
+        emit focusFile((mc_project_t*)index.parent().internalPointer(), (mc_file_t*)index.internalPointer());
+        emit focusProject(ctx, (mc_project_t*)index.parent().internalPointer());
+    }
+
+    viewport()->update();
 }
 
 bool ProjectModel::shouldRender() const
@@ -58,15 +74,11 @@ ProjectModel::~ProjectModel()
 
 int ProjectModel::columnCount(const QModelIndex& parent) const
 {
-    MC_DEBUG("Called columnCount.\n");
-
-    /* */
-    return 1;
+    return 1; // There's always going to be one column, so we always return 1
 }
 
 QVariant ProjectModel::data(const QModelIndex& index, int role) const
 {
-    MC_DEBUG("Called data.\n");
     if (!shouldRender()) {
         return QVariant();
     }
@@ -77,22 +89,25 @@ QVariant ProjectModel::data(const QModelIndex& index, int role) const
 
     if (role == Qt::DisplayRole) {
         if (isContext(index)) {
-            MC_DEBUG("\tIs project.\n");
 
             /* */
             return "CONTEXT";
         }
         else if (isProject(index)) {
-            MC_ERROR("\tIs project.\n");
 
             /* */
             mc_project_t* project = (mc_project_t*)index.internalPointer();
 
             /* */
-            return mc_project_get_name(project);
+            QString ret = mc_project_get_name(project);
+            if (project == mc_ctx_get_focused_project(getContext())) {
+                ret += " (focused)";
+            }
+
+            /* */
+            return ret;
         }
         else if (isFile(index)) {
-            MC_ERROR("Parent is a file, which is a lie.\n");
 
             /* */
             mc_file_t* file = (mc_file_t*)index.internalPointer();
@@ -132,13 +147,11 @@ QVariant ProjectModel::headerData(int section, Qt::Orientation orientation, int 
 
 QModelIndex ProjectModel::index(int row, int column, const QModelIndex& parent) const
 {
-    MC_DEBUG("Called index [r=%i, c=%i].\n", row, column);
     if (!shouldRender()) {
         return QModelIndex();
     }
 
     if (!parent.isValid()) {
-        MC_DEBUG("\tIs root.\n");
 
         /* */
         mc_ctx_t* ctx = getContext();
@@ -148,7 +161,6 @@ QModelIndex ProjectModel::index(int row, int column, const QModelIndex& parent) 
     }
 
     if (isContext(parent)) {
-        MC_DEBUG("\tIs project.\n");
 
         /* */
         mc_ctx_t* ctx = (mc_ctx_t*)parent.internalPointer();
@@ -157,7 +169,6 @@ QModelIndex ProjectModel::index(int row, int column, const QModelIndex& parent) 
         return createIndex(row, column, mc_ctx_get_project(ctx, row));
     }
     else if (isProject(parent)) {
-        MC_ERROR("\tIs project.\n");
 
         /* */
         mc_project_t* project = (mc_project_t*)parent.internalPointer();
@@ -177,7 +188,6 @@ QModelIndex ProjectModel::index(int row, int column, const QModelIndex& parent) 
 
 QModelIndex ProjectModel::parent(const QModelIndex& index) const
 {
-    MC_DEBUG("Called parent.\n");
     if (!shouldRender()) {
         return QModelIndex();
     }
@@ -190,6 +200,11 @@ QModelIndex ProjectModel::parent(const QModelIndex& index) const
         return QModelIndex();
     }
     else {
+        /* From this point on, the index is either a project, file, or there
+           is a bug.  Since we don't have a good way of indicating what an
+           index actually contains nor what row that index belongs to on its
+           parent, we search for it here.  There is probably a better way to do
+           this, and I'll change it when I figure out that way. */
         for (int i=0; i < mc_ctx_get_project_amount(getContext()); i++) {
 
             /* Get project for this iteration */
@@ -199,9 +214,8 @@ QModelIndex ProjectModel::parent(const QModelIndex& index) const
                 return QModelIndex();
             }
 
-            /*  */
+            /* Check to see if current project is what the index points to */
             if (index.internalPointer() == project) {
-                MC_DEBUG("\tCreating index for row %i.\n", i);
                 return createIndex(i, 0, getContext());
             }
 
@@ -215,7 +229,7 @@ QModelIndex ProjectModel::parent(const QModelIndex& index) const
                     return QModelIndex();
                 }
 
-                /*  */
+                /* Check to see if current file is what the index points to */
                 if (index.internalPointer() == file) {
                     return createIndex(j, 0, project);
                 }
@@ -228,7 +242,6 @@ QModelIndex ProjectModel::parent(const QModelIndex& index) const
 
 int ProjectModel::rowCount(const QModelIndex& parent) const
 {
-    MC_DEBUG("Called rowCount.\n");
     if (!shouldRender()) {
         return 0;
     }
@@ -238,7 +251,6 @@ int ProjectModel::rowCount(const QModelIndex& parent) const
     }
 
     if (!parent.isValid()) {
-        MC_DEBUG("parent appears to be invalid...\n");
 
         /* */
         mc_ctx_t* ctx = (mc_ctx_t*)getContext();
@@ -248,7 +260,6 @@ int ProjectModel::rowCount(const QModelIndex& parent) const
     }
 
     if (isContext(parent)) {
-        MC_DEBUG("parent appears to be context...\n");
 
         /* */
         mc_ctx_t* ctx = (mc_ctx_t*)parent.internalPointer();
@@ -257,7 +268,6 @@ int ProjectModel::rowCount(const QModelIndex& parent) const
         return mc_ctx_get_project_amount(ctx);
     }
     else if (isProject(parent)) {
-        MC_DEBUG("parent appears to be project...\n");
 
         /* */
         mc_project_t* project = (mc_project_t*)parent.internalPointer();
@@ -266,7 +276,6 @@ int ProjectModel::rowCount(const QModelIndex& parent) const
         return mc_project_get_file_amount(project);
     }
     else if (isFile(parent)) {
-        MC_ERROR("Parent is a file, which is a lie.\n");
         return 0;
     }
     else {

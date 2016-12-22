@@ -52,9 +52,10 @@ bool Mycroft::addFile(mc_project_t* proj, mc_file_t* file)
     }
     emit fileAdded(proj, file);
 
-    /* Set the file we just added to be focused and notfiy others */
-    mc_project_set_focused_file(proj, file);
-    emit fileFocused(file);
+    /* Focus the file */
+    if (!setFocusedFile(proj, file)) {
+        return false;
+    }
 
     return true;
 }
@@ -93,7 +94,25 @@ bool Mycroft::removeFile(mc_project_t* proj, mc_file_t* file)
     return true;
 }
 
-bool Mycroft::addProject(mc_project_t* proj)
+bool Mycroft::setFocusedFile(mc_project_t* proj, mc_file_t* file)
+{
+    mc_project_set_focused_file(proj, file);
+    emit fileFocused(file);
+    return true;
+}
+
+bool Mycroft::addProject(mc_project_t* project)
+{
+    /* Check to make sure we have a usable ctx */
+    if (ctx == NULL) {
+        MC_ERROR("Main window has a bad ctx.\n");
+        return false;
+    }
+
+    return addProject(ctx, project);
+}
+
+bool Mycroft::addProject(mc_ctx_t* ctx, mc_project_t* proj)
 {
     /* Make sure ctx is good */
     if (ctx == NULL) {
@@ -108,14 +127,26 @@ bool Mycroft::addProject(mc_project_t* proj)
     }
     emit projectAdded(proj);
 
-    /* Set the project we just added to be focused and notfiy others */
-    mc_ctx_set_focused_project(ctx, proj);
-    emit projectFocused(proj);
+    /* Focus the project */
+    if (!setFocusedProject(ctx, proj)) {
+        return false;
+    }
 
     return true;
 }
 
-bool Mycroft::removeProject(mc_project_t* proj)
+bool Mycroft::removeProject(mc_project_t* project)
+{
+    /* Check to make sure we have a usable ctx */
+    if (ctx == NULL) {
+        MC_ERROR("Main window has a bad ctx.\n");
+        return false;
+    }
+
+    return removeProject(ctx, project);
+}
+
+bool Mycroft::removeProject(mc_ctx_t* ctx, mc_project_t* proj)
 {
     /* Make sure ctx is good */
     if (ctx == NULL) {
@@ -135,5 +166,13 @@ bool Mycroft::removeProject(mc_project_t* proj)
     //}
     //emit fileRemoved(proj, file);
 
+    return true;
+}
+
+bool Mycroft::setFocusedProject(mc_ctx_t* ctx, mc_project_t* proj)
+{
+    MC_DEBUG("setFocusedProject [c: 0x%p, p: 0x%p]\n", ctx, proj);
+    mc_ctx_set_focused_project(ctx, proj);
+    emit projectFocused(proj);
     return true;
 }

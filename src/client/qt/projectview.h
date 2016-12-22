@@ -20,10 +20,6 @@ private:
     void* getParent(const QModelIndex& parent) const;
     mc_ctx_t* getContext() const;
 
-    bool isContext(const QModelIndex& index) const;
-    bool isProject(const QModelIndex& index) const;
-    bool isFile(const QModelIndex& index) const;
-
 public:
     explicit ProjectModel(ProjectView* parent);
     ~ProjectModel();
@@ -37,6 +33,11 @@ public:
     QModelIndex parent(const QModelIndex& index) const Q_DECL_OVERRIDE;
     int rowCount(const QModelIndex& parent = QModelIndex()) const Q_DECL_OVERRIDE;
     int columnCount(const QModelIndex& parent = QModelIndex()) const Q_DECL_OVERRIDE;
+
+    /* Utility functions */
+    bool isContext(const QModelIndex& index) const;
+    bool isProject(const QModelIndex& index) const;
+    bool isFile(const QModelIndex& index) const;
 };
 
 class ProjectView : public QTreeView
@@ -51,6 +52,13 @@ protected:
 public:
     ProjectView(QWidget* parent);
     ~ProjectView();
+
+signals:
+    void focusFile(mc_project_t* project, mc_file_t* file);
+    void focusProject(mc_ctx_t* ctx, mc_project_t* project);
+
+private slots:
+    void indexDoubleClicked(const QModelIndex& index);
 
 public slots:
     void setContext(mc_ctx_t* ctx);
