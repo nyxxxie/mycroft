@@ -7,9 +7,12 @@ ProjectView::ProjectView(QWidget* parent)
 {
     MC_DEBUG("asfd: 0x%p\n", parent);
 
+    this->setContextMenuPolicy(Qt::CustomContextMenu);
     this->model = new ProjectModel(this);
     setModel(this->model);
 
+    connect(this, SIGNAL(customContextMenuRequested(const QPoint&)),
+            this, SLOT(onContextMenuRequested(const QPoint&)));
     connect(this, SIGNAL(doubleClicked(const QModelIndex&)),
             this, SLOT(indexDoubleClicked(const QModelIndex&)));
 }
@@ -35,6 +38,19 @@ void ProjectView::indexDoubleClicked(const QModelIndex& index)
     }
 
     viewport()->update();
+}
+
+void ProjectView::onContextMenuRequested(const QPoint& point)
+{
+    MC_DEBUG("right click menuu\n");
+    QModelIndex index = indexAt(point);
+    if (index.isValid()) {
+        if (model->isProject(index)) {
+            QMenu menu;
+            menu.addMenu("Add");
+            menu.exec(mapToGlobal(point));
+        }
+    }
 }
 
 bool ProjectModel::shouldRender() const

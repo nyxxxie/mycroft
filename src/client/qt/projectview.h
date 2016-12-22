@@ -4,6 +4,7 @@
 #include <QVariant>
 #include <QTreeView>
 #include <QModelIndex>
+#include <QMenu>
 #include <QAbstractItemModel>
 #include <mycroft/context.h>
 
@@ -59,6 +60,7 @@ signals:
 
 private slots:
     void indexDoubleClicked(const QModelIndex& index);
+    void onContextMenuRequested(const QPoint& point);
 
 public slots:
     void setContext(mc_ctx_t* ctx);
