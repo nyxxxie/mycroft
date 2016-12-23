@@ -4,7 +4,6 @@
 #include "context.h"
 #include "project.h"
 #include "plugin.h"
-#include "database.h"
 
 mc_ctx_t* mc_ctx_create() {
     mc_ctx_t* ctx = NULL;
