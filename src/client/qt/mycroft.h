@@ -26,6 +26,17 @@ public:
 private slots:
     void on_action_file_open();
     void on_action_file_exit();
+    void on_action_undo();
+    void on_action_redo();
+    void on_action_cut();
+    void on_action_copy();
+    void on_action_paste();
+    void on_action_delete();
+    void on_action_selectall();
+    void on_action_script_run_file();
+    void on_action_project_new();
+    void on_action_project_open();
+    void on_action_template_open();
 
 public slots:
     void setContext(mc_ctx_t* ctx);

@@ -61,19 +61,18 @@
     <addaction name="separator"/>
     <addaction name="action_selectall"/>
    </widget>
-   <widget class="QMenu" name="menu_template">
+   <widget class="QMenu" name="menu_project">
     <property name="title">
      <string>Project</string>
     </property>
-    <addaction name="action_open"/>
-    <addaction name="actionOpen_2"/>
+    <addaction name="action_project_new"/>
+    <addaction name="action_project_open"/>
    </widget>
-   <widget class="QMenu" name="menu_tools">
+   <widget class="QMenu" name="menu_template">
     <property name="title">
      <string>Template</string>
     </property>
-    <addaction name="separator"/>
-    <addaction name="action_find"/>
+    <addaction name="action_template_open"/>
    </widget>
    <widget class="QMenu" name="menu_window">
     <property name="title">
@@ -88,10 +87,17 @@
     <addaction name="separator"/>
     <addaction name="action_file_exit"/>
    </widget>
+   <widget class="QMenu" name="menuScript">
+    <property name="title">
+     <string>Script</string>
+    </property>
+    <addaction name="action_script_run_file"/>
+   </widget>
    <addaction name="menu_file"/>
    <addaction name="menu_edit"/>
+   <addaction name="menu_project"/>
+   <addaction name="menuScript"/>
    <addaction name="menu_template"/>
-   <addaction name="menu_tools"/>
    <addaction name="menu_window"/>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
@@ -135,17 +141,17 @@
     <string>Select All</string>
    </property>
   </action>
-  <action name="action_open">
+  <action name="action_project_new">
    <property name="text">
     <string>New</string>
    </property>
   </action>
-  <action name="action_find">
+  <action name="action_template_open">
    <property name="text">
     <string>Open...</string>
    </property>
   </action>
-  <action name="actionOpen_2">
+  <action name="action_project_open">
    <property name="text">
     <string>Open...</string>
    </property>
@@ -153,6 +159,11 @@
   <action name="action_file_exit">
    <property name="text">
     <string>Exit</string>
+   </property>
+  </action>
+  <action name="action_script_run_file">
+   <property name="text">
+    <string>Run File...</string>
    </property>
   </action>
  </widget>
