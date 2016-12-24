@@ -36,6 +36,10 @@ set(MYCROFT_CORE_SRC
     binds/file.c
     template/template.c
     template/template_parser.c
+    template/type.c
+    template/typesystem.c
+    template/types/byte.c
+    template/types/char.c
 )
 
 # Save me from manually including the files ;)
