@@ -10,3 +10,4 @@ set(TEST_BUILD_TARGET build_and_test)
 add_custom_target(${TEST_BUILD_TARGET} ${CMAKE_CTEST_COMMAND} -V)
 
 add_subdirectory(core)
+add_subdirectory(template)
