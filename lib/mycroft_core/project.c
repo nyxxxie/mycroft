@@ -325,7 +325,7 @@ mc_error_t mc_project_add_file(mc_project_t* project, mc_file_t* file) {
     project->file_amt++;
 
     /* Create more space in the file array */
-    project->files = realloc(project->files, project->file_amt);
+    project->files = realloc(project->files, sizeof(*project->files) * project->file_amt);
     if (project->files == NULL) {
         MC_ERROR("Failed to (re)alloc file array.\n");
         return rc;
