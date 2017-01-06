@@ -11,7 +11,6 @@ int main(int argc, char *argv[])
 {
     mc_ctx_t* ctx = NULL;
     mc_project_t* project = NULL;
-    mc_interpreter_t* interpreter = NULL;
 
     /* Open qt application */
     QApplication a(argc, argv);
@@ -121,20 +120,20 @@ int main(int argc, char *argv[])
         }
     }
 
-    /* Create interpreter ctx */
-    interpreter = mc_interpreter_create();
-    if (interpreter == NULL) {
-        MC_ERROR("Failed to create interpreter.\n");
-        return 1;
-    }
+    ///* Create interpreter ctx */
+    //interpreter = mc_interpreter_create();
+    //if (interpreter == NULL) {
+    //    MC_ERROR("Failed to create interpreter.\n");
+    //    return 1;
+    //}
 
-    /* Add to interpreter path */
-    mc_interpreter_add_path(interpreter, MYCROFT_INSTALL_SCRIPT_PATH);
+    ///* Add to interpreter path */
+    //mc_interpreter_add_path(interpreter, MYCROFT_INSTALL_SCRIPT_PATH);
 
-    /* Run init script */
-    mc_interpreter_runinitscript(interpreter);
+    ///* Run init script */
+    //mc_interpreter_runinitscript(interpreter);
 
-    /* Initialize plugin system */
+    ///* Initialize plugin system */
     //if (mc_plugin_init(ctx) < 0) {
     //    printf("Failed to initialize plugin system, exiting...\n");
     //    return 1;
