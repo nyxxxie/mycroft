@@ -19,6 +19,7 @@ macro(CREATE_TEST TARGET_NAME)
     add_test(${TEST_TARGET} ${TEST_TARGET})
 endmacro()
 
+set(MYCROFT_TOOL_PYTESBENCH_BIN ${CMAKE_BINARY_DIR}/src/tools/${MYCROFT_TOOL_PYTESBENCH_NAME}/${MYCROFT_TOOL_PYTESBENCH_NAME})
 macro(CREATE_TEST_PY TARGET_NAME)
     set(options COPYFILES)
     set(oneval SRC)
@@ -27,16 +28,12 @@ macro(CREATE_TEST_PY TARGET_NAME)
 
     set(TEST_TARGET test_${TARGET_NAME}_py)
 
-    # TODO: I'm probably going to need to write some sort of script runner thing so python scripts have the libs they need
-
-    if (PYTHONINTERP_FOUND)
-        if (${CMAKE_MAJOR_VERSION}.${CMAKE_MINOR_VERSION} GREATER 3.1)
-            add_test(
-                NAME ${TEST_TARGET}
-                COMMAND ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_LIST_DIR}/${ARG_SRC})
-        else ()
-            add_test(${TEST_TARGET}
-                ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/${ARG_SRC})
-        endif ()
+    if (${CMAKE_MAJOR_VERSION}.${CMAKE_MINOR_VERSION} GREATER 3.1)
+        add_test(
+            NAME ${TEST_TARGET}
+            COMMAND ${MYCROFT_TOOL_PYTESBENCH_BIN} ${CMAKE_CURRENT_LIST_DIR}/${ARG_SRC})
+    else ()
+        add_test(${TEST_TARGET}
+            ${MYCROFT_TOOL_PYTESBENCH_BIN} ${CMAKE_CURRENT_SOURCE_DIR}/${ARG_SRC})
     endif ()
 endmacro()
