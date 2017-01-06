@@ -2,10 +2,13 @@
 #include <string.h>
 #include <unistd.h>
 #include "context.h"
+#include "interpreter.h"
 #include "project.h"
 #include "plugin.h"
 
 mc_ctx_t* mc_ctx_create() {
+    MC_INTERPRETER_START;
+
     mc_ctx_t* ctx = NULL;
 
     /* Allocate space for the ctx */
