@@ -116,12 +116,14 @@ PyObject* create_mcore_ctx(mc_ctx_t* c) {
     /* Create object */
     ret = PyObject_New(mcore_ctx_t, &mcore_ctx_type);
     if (ret == NULL) {
+        MC_ERROR("Failed to allocate PyObject.\n");
         return NULL;
     }
 
     /* Initialize object */
     ret = PyObject_Init(ret, &mcore_ctx_type);
     if (ret == NULL) {
+        MC_ERROR("Failed to initialize PyObject.\n");
         return NULL;
     }
 
