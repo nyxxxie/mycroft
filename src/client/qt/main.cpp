@@ -1,8 +1,3 @@
-#ifdef __linux__
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <unistd.h>
-#endif
 #include <stdlib.h>
 #include <QApplication>
 #include <QCommandLineParser>
