@@ -14,7 +14,6 @@ find_package(OpenSSL REQUIRED)
 find_package(Capstone REQUIRED)
 find_package(SQLite3 REQUIRED)
 find_package(PythonLibs 3.4 REQUIRED)
-find_package(PythonInterp REQUIRED)
 
 # Version
 set(MYCROFT_PACKAGE_MAJOR_VERSION 0)

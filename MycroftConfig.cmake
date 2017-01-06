@@ -2,18 +2,17 @@
 set(MYCROFT_NAME mycroft)
 
 # CPack variables
-set(CPACK_PACKAGE_VENDOR "Nyxxie et al.")
+set(CPACK_PACKAGE_VENDOR "Nyxxie")
 set(CPACK_PACKAGE_DESCRIPTION_FILE "README.md")
 set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "File format reverse engineering and rapid prototyping tool")
 
 # Define target names.  THESE MUST MATCH UP WITH DIRECTORIES.
 set(MYCROFT_CLIENT_QT_NAME q${MYCROFT_NAME})
 set(MYCROFT_CORE_NAME ${MYCROFT_NAME}_core)
+set(MYCROFT_TOOL_PYTESBENCH_NAME pytestbench)
 
-# Define finished binary file names
-set(MYCROFT_CLIENT_BIN ${MYCROFT_CLIENT_NAME})
-set(MYCROFT_CLI_BIN ${MYCROFT_CLI_NAME})
-set(MYCROFT_CORE_BIN ${MYCROFT_NAME}${MYCROFT_CORE_NAME})
+# Binary paths
+set(MYCROFT_TOOL_PYTESBENCH_BIN ${CMAKE_BINARY_DIR}/src/tools/${MYCROFT_TOOL_PYTESBENCH_NAME}/${MYCROFT_TOOL_PYTESBENCH_NAME})
 
 # Define common project include directories
 set(MYCROFT_INCLUDE_DIRS ${CMAKE_SOURCE_DIR}/include)
