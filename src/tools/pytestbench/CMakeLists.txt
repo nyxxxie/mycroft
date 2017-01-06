@@ -12,3 +12,4 @@ configure_file(
 
 add_executable(${MYCROFT_TOOL_PYTESBENCH_NAME} main.c)
 add_dependencies(${MYCROFT_TOOL_PYTESBENCH_NAME} ${MYCROFT_CORE_NAME})
+target_link_libraries(${MYCROFT_TOOL_PYTESBENCH_NAME} ${MYCROFT_CORE_NAME})
