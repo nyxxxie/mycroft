@@ -11,7 +11,6 @@
 mc_ctx_t* _ctx = NULL;
 
 mc_error_t mc_init() {
-    MC_INTERPRETER_START;
 
     /* Allocate space for the ctx */
     _ctx = (mc_ctx_t*)malloc(sizeof(mc_ctx_t));
@@ -23,6 +22,14 @@ mc_error_t mc_init() {
     _ctx->projects = NULL;
     _ctx->project_amt = 0;
     _ctx->project_focused = NULL;
+    _ctx->interpreter = NULL;
+
+    /* */
+    _ctx->interpreter = mc_interpreter_create();
+    if (_ctx->interpreter == NULL) {
+        MC_ERROR("Failed to create interpreter.\n");
+        return MC_ERR;
+    }
 
     return MC_OK;
 }
@@ -39,6 +46,9 @@ void mc_destroy() {
 
             free(_ctx->projects);
         }
+        if (_ctx->interpreter) {
+            free(_ctx->interpreter);
+        }
 
         free(_ctx);
     }
@@ -51,7 +61,7 @@ mc_error_t mc_add_project(mc_project_t* project) {
 
     /* Ensure that file isn't null */
     if (project == NULL) {
-        MC_ERROR("Project input is null.");
+        MC_ERROR("Project input is null.\n");
         return rc;
     }
 

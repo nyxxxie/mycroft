@@ -11,15 +11,17 @@ mc_error_t init_bindings()
 {
     int rc = 0;
 
-    rc = init_binds_file();
+    rc = init_binds_core();
     if (rc < 0) {
+        MC_ERROR("Failed to initialize core bindings.\n");
         return MC_ERR;
     }
 
-    //rc = init_binds_core();
-    //if (rc < 0) {
-    //    return rc;
-    //}
+    rc = init_binds_file();
+    if (rc < 0) {
+        MC_ERROR("Failed to initialize file bindings.\n");
+        return MC_ERR;
+    }
 
     return MC_OK;
 }

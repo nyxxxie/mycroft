@@ -20,6 +20,7 @@ struct mc_plugin_entry_t {
     mc_plugin_entry_t* prev;
 };
 
+// TODO: remove these and place them in mc_ctx_t or something
 static mc_plugin_entry_t* plugin_first = NULL;
 static mc_plugin_entry_t* plugin_last = NULL;
 

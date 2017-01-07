@@ -8,72 +8,23 @@
 
 mc_error_t mc_script_runfile(const char* path)
 {
-//    int rc = 0;
-//    FILE* fp = NULL;
-//    PyObject* v = NULL;
-//    PyObject* vars = NULL;
-//    PyObject* pyctx = NULL;
-//    PyObject* module = NULL;
-//
-//    /* Run module */
-//    fp = fopen(path, "r");
-//    if (fp == NULL) {
-//        MC_ERROR("Failed to open file \"%s\": %s\n", path, strerror(errno));
-//        return MC_ERR;
-//    }
-//
-//    /* Create module to run */
-//    module = PyImport_AddModule("__main__");
-//    if (module == NULL) {
-//        PyErr_Print();
-//        MC_ERROR("Couldn't create dict.\n");
-//        fclose(fp);
-//        return MC_ERR;
-//    }
-//    Py_INCREF(module);
-//
-//    /* Create ctx object */
-//    pyctx = create_mcore_ctx(_ctx);
-//    if (pyctx == NULL) {
-//        MC_ERROR("Failed to create a python ctx object.\n");
-//        fclose(fp);
-//        Py_DECREF(module);
-//        return MC_ERR;
-//    }
-//
-//    /* Create dict */
-//    vars = PyModule_GetDict(module);
-//    if (vars == NULL) {
-//        PyErr_Print();
-//        MC_ERROR("Couldn't create dict.\n");
-//        fclose(fp);
-//        Py_DECREF(module);
-//        Py_DECREF(pyctx);
-//        return MC_ERR;
-//    }
-//
-//    /* Add vars to module var dict */
-//    if (PyDict_SetItemString(vars, "ctx", pyctx) < 0) {
-//        PyErr_Print();
-//        MC_ERROR("Failed to set ctx item in var dict.\n");
-//        fclose(fp);
-//        Py_DECREF(module);
-//        Py_DECREF(pyctx);
-//        return MC_ERR;
-//    }
-//
-//    /* Run script and handle any exceptions */
-//    v = PyRun_FileExFlags(fp, path, Py_file_input, vars, vars, 1, NULL);
-//    if (v == NULL) {
-//        PyErr_Print();
-//        MC_ERROR("Caught unhandled exception in python file.\n");
-//        fclose(fp);
-//        Py_DECREF(module);
-//        Py_DECREF(pyctx);
-//        return MC_ERR;
-//    }
-//
-//    Py_DECREF(module);
+    int rc = 0;
+    FILE* file = NULL;;
+
+    /* Open file */
+    file = fopen(path, "r");
+    if (file == NULL) {
+        MC_ERROR("Failed to open file \"%s\": %s\n", path, strerror(errno));
+        return MC_ERR;
+    }
+
+    /* Run script */
+    rc = PyRun_SimpleFileEx(file, path, 1);
+    if (rc < 0) {
+        PyErr_Print();
+        MC_ERROR("Failed to run python script \"%s\".\n", path);
+        return MC_ERR;
+    }
 
     return MC_OK;
 }

@@ -33,7 +33,9 @@ set(MYCROFT_CORE_SRC
     script.c
     interpreter.c
     membuf.c
+    binds/core.c
     binds/file.c
+    binds/project.c
     template/template.c
     template/template_parser.c
     template/typedef.c

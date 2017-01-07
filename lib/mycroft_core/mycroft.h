@@ -7,12 +7,14 @@ extern "C" {
 
 #include <mycroft/mycroft.h>
 #include <mycroft/project.h>
+#include "interpreter.h"
 
 /** @internal Contains global data for mycroft.  Meant to be accessed using mc functions, don't access this yourself. */
 typedef struct {
     mc_project_t** projects;
     uint32_t       project_amt;
     mc_project_t*  project_focused;
+    mc_interpreter_t* interpreter;
 } mc_ctx_t;
 
 /** @internal Global internal ctx instance.  Don't use this directly outside of mycroft.c! */
