@@ -144,7 +144,7 @@ mc_error_t mc_set_focused_project(mc_project_t* project) {
     uint32_t i = 0;
 
     /* Ensure we added the file */
-    for (i=0; i < project->file_amt; i++) {
+    for (i=0; i < _ctx->project_amt; i++) {
         if (project == _ctx->projects[i]) {
             /* We've found the file, focus it and return */
             _ctx->project_focused = project;
@@ -152,7 +152,8 @@ mc_error_t mc_set_focused_project(mc_project_t* project) {
         }
     }
 
-    /* We didn't find the file */
+    /* We didn't find the project */
+    MC_ERROR("Failed to find project in internal list, did you add it with mc_add_project()?\n");
     return MC_ERR;
 }
 
