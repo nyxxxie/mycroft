@@ -4,7 +4,7 @@
 #include <mycroft/template.h>
 #include "template_parser.h"
 
-datatype_t* datatype_create(char* name) {
+datatype_t* datatype_create(const char* name) {
 
     datatype_t* datatype = NULL;
 
@@ -357,7 +357,7 @@ int construct_ast(template_t* t) {
         return -1;
     }
 
-    entry->parent = root;
+    entry->parent = (ast_struct_t*)root;
     entry->index = 0;
     root->entry = entry;
 

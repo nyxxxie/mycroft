@@ -12,7 +12,7 @@ typedef struct {
     char* name;
 } datatype_t;
 
-datatype_t* datatype_create(char* name);
+datatype_t* datatype_create(const char* name);
 void datatype_free(datatype_t* type);
 
 ///////////////////////////////////////////////////////////////////////////////
