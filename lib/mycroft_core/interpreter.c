@@ -3,6 +3,8 @@
 #include <Python.h>
 #include "interpreter.h"
 #include "script.h"
+#include "binds/core.h"
+#include "binds/project.h"
 #include "binds/file.h"
 
 mc_interpreter_t* _interpreter = NULL;
@@ -14,6 +16,12 @@ mc_error_t init_bindings()
     rc = init_binds_core();
     if (rc < 0) {
         MC_ERROR("Failed to initialize core bindings.\n");
+        return MC_ERR;
+    }
+
+    rc = init_binds_project();
+    if (rc < 0) {
+        MC_ERROR("Failed to initialize file bindings.\n");
         return MC_ERR;
     }
 
