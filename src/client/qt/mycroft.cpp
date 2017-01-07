@@ -1,10 +1,11 @@
 #include <QFileDialog>
-#include <mycroft/context.h>
-#include "mainhexeditor.h"
+#include <mycroft/mycroft.h>
+#include <mycroft/error.h>
 #include "mycroft.h"
+#include "mainhexeditor.h"
 #include "ui_mycroft.h"
 
-Mycroft::Mycroft(mc_ctx_t* ctx, QWidget* parent) :
+Mycroft::Mycroft(QWidget* parent) :
     QMainWindow(parent),
     ui(new Ui::Mycroft)
 {
@@ -26,8 +27,6 @@ Mycroft::Mycroft(mc_ctx_t* ctx, QWidget* parent) :
 
     editor = new MainHexEditor(this);
     ui->windowlayout->addWidget(editor);
-
-    setContext(ctx);
 }
 
 Mycroft::~Mycroft()
@@ -161,21 +160,9 @@ void Mycroft::on_action_template_open()
     //}
 }
 
-void Mycroft::setContext(mc_ctx_t* ctx)
-{
-    this->ctx = ctx;
-    emit contextChanged(ctx);
-}
-
 bool Mycroft::addFile(mc_file_t* file)
 {
-    /* Check to make sure we have a usable ctx */
-    if (ctx == NULL) {
-        MC_ERROR("Main window has a bad ctx.\n");
-        return false;
-    }
-
-    mc_project_t* proj = mc_ctx_get_focused_project(ctx);
+    mc_project_t* proj = mc_get_focused_project();
     if (proj == NULL) {
         MC_ERROR("No focused project; where do we add this file??\n");
         return false;
@@ -203,13 +190,7 @@ bool Mycroft::addFile(mc_project_t* proj, mc_file_t* file)
 
 bool Mycroft::removeFile(mc_file_t* file)
 {
-    /* Check to make sure we have a usable ctx */
-    if (ctx == NULL) {
-        MC_ERROR("Main window has a bad ctx.\n");
-        return false;
-    }
-
-    mc_project_t* proj = mc_ctx_get_focused_project(ctx);
+    mc_project_t* proj = mc_get_focused_project();
     if (proj == NULL) {
         MC_ERROR("No focused project; where do we add this file??\n");
         return false;
@@ -242,62 +223,28 @@ bool Mycroft::setFocusedFile(mc_project_t* proj, mc_file_t* file)
     return true;
 }
 
-bool Mycroft::addProject(mc_project_t* project)
+bool Mycroft::addProject(mc_project_t* proj)
 {
-    /* Check to make sure we have a usable ctx */
-    if (ctx == NULL) {
-        MC_ERROR("Main window has a bad ctx.\n");
-        return false;
-    }
-
-    return addProject(ctx, project);
-}
-
-bool Mycroft::addProject(mc_ctx_t* ctx, mc_project_t* proj)
-{
-    /* Make sure ctx is good */
-    if (ctx == NULL) {
-        MC_ERROR("Main window has a bad ctx.\n");
-        return false;
-    }
-
-    /* Add project to ctx and notify others */
-    if (mc_ctx_add_project(ctx, proj) != MC_OK) {
-        MC_ERROR("Failed to add project to mc_ctx_t.\n");
+    /* Add project to mycroft and notify others */
+    if (mc_add_project(proj) != MC_OK) {
+        MC_ERROR("Failed to add project to mycroft.\n");
         return false;
     }
     emit projectAdded(proj);
 
     /* Focus the project */
-    if (!setFocusedProject(ctx, proj)) {
+    if (!setFocusedProject(proj)) {
         return false;
     }
 
     return true;
 }
 
-bool Mycroft::removeProject(mc_project_t* project)
+bool Mycroft::removeProject(mc_project_t* proj)
 {
-    /* Check to make sure we have a usable ctx */
-    if (ctx == NULL) {
-        MC_ERROR("Main window has a bad ctx.\n");
-        return false;
-    }
-
-    return removeProject(ctx, project);
-}
-
-bool Mycroft::removeProject(mc_ctx_t* ctx, mc_project_t* proj)
-{
-    /* Make sure ctx is good */
-    if (ctx == NULL) {
-        MC_ERROR("Main window has a bad ctx.\n");
-        return false;
-    }
-
     /* If we currently have the given project focused, let everyone know we
        unfocused it */
-    if (proj == mc_ctx_get_focused_project(ctx)) {
+    if (proj == mc_get_focused_project()) {
         emit fileFocused(NULL);
     }
 
@@ -310,10 +257,9 @@ bool Mycroft::removeProject(mc_ctx_t* ctx, mc_project_t* proj)
     return true;
 }
 
-bool Mycroft::setFocusedProject(mc_ctx_t* ctx, mc_project_t* proj)
+bool Mycroft::setFocusedProject(mc_project_t* proj)
 {
-    MC_DEBUG("setFocusedProject [c: 0x%p, p: 0x%p]\n", ctx, proj);
-    mc_ctx_set_focused_project(ctx, proj);
+    mc_set_focused_project(proj);
     emit projectFocused(proj);
     return true;
 }

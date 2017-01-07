@@ -1,8 +1,9 @@
-#ifndef MYCROFT_H
-#define MYCROFT_H
+#ifndef MYCROFT_QT_H
+#define MYCROFT_QT_H
 
 #include <QMainWindow>
-#include <mycroft/context.h>
+#include <mycroft/project.h>
+#include <mycroft/file.h>
 
 class MainHexEditor;
 
@@ -15,12 +16,11 @@ class Mycroft : public QMainWindow
     Q_OBJECT
 
     Ui::Mycroft* ui;
-    mc_ctx_t* ctx;
 
     MainHexEditor* editor;
 
 public:
-    explicit Mycroft(mc_ctx_t* ctx, QWidget* parent = 0);
+    explicit Mycroft(QWidget* parent = 0);
     ~Mycroft();
 
 private slots:
@@ -39,20 +39,17 @@ private slots:
     void on_action_template_open();
 
 public slots:
-    void setContext(mc_ctx_t* ctx);
     bool addFile(mc_file_t* file);
     bool addFile(mc_project_t* proj, mc_file_t* file);
     bool removeFile(mc_file_t* file);
     bool removeFile(mc_project_t* proj, mc_file_t* file);
     bool setFocusedFile(mc_project_t* proj, mc_file_t* file);
     bool addProject(mc_project_t* proj);
-    bool addProject(mc_ctx_t* ctx, mc_project_t* proj);
     bool removeProject(mc_project_t* proj);
-    bool removeProject(mc_ctx_t* ctx, mc_project_t* proj);
-    bool setFocusedProject(mc_ctx_t* ctx, mc_project_t* proj);
+    bool setFocusedProject(mc_project_t* proj);
 
 signals:
-    void contextChanged(mc_ctx_t* ctx);
+    void contextChanged();
     void fileAdded(mc_project_t* proj, mc_file_t* file);
     void fileRemoved(mc_project_t* proj, mc_file_t* file);
     void fileFocused(mc_file_t* file);
@@ -61,4 +58,4 @@ signals:
     void projectFocused(mc_project_t* proj);
 };
 
-#endif // MYCROFT_H
+#endif // MYCROFT_QT_H

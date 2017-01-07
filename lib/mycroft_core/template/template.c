@@ -2,7 +2,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include <mycroft/template.h>
-#include <mycroft/context.h>
 #include "template_parser.h"
 
 datatype_t* datatype_create(char* name) {

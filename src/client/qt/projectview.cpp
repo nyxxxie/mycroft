@@ -1,5 +1,6 @@
-#include <mycroft/context.h>
+#include <mycroft/mycroft.h>
 #include <mycroft/project.h>
+#include <mycroft/file.h>
 #include "projectview.h"
 
 ProjectView::ProjectView(QWidget* parent)
@@ -22,19 +23,14 @@ ProjectView::~ProjectView()
     delete this->model;
 }
 
-void ProjectView::setContext(mc_ctx_t* ctx)
-{
-    this->ctx = ctx;
-}
-
 void ProjectView::indexDoubleClicked(const QModelIndex& index)
 {
     if (model->isProject(index)) {
-        emit focusProject(ctx, (mc_project_t*)index.internalPointer());
+        emit focusProject((mc_project_t*)index.internalPointer());
     }
     else if (model->isFile(index)) {
         emit focusFile((mc_project_t*)index.parent().internalPointer(), (mc_file_t*)index.internalPointer());
-        emit focusProject(ctx, (mc_project_t*)index.parent().internalPointer());
+        emit focusProject((mc_project_t*)index.parent().internalPointer());
     }
 
     viewport()->update();
@@ -55,12 +51,7 @@ void ProjectView::onContextMenuRequested(const QPoint& point)
 
 bool ProjectModel::shouldRender() const
 {
-    return (getContext() != NULL);
-}
-
-mc_ctx_t* ProjectModel::getContext() const
-{
-    return treeview->ctx;
+    return true;
 }
 
 bool ProjectModel::isContext(const QModelIndex& index) const
@@ -105,9 +96,7 @@ QVariant ProjectModel::data(const QModelIndex& index, int role) const
 
     if (role == Qt::DisplayRole) {
         if (isContext(index)) {
-
-            /* */
-            return "CONTEXT";
+            return QVariant();
         }
         else if (isProject(index)) {
 
@@ -116,7 +105,7 @@ QVariant ProjectModel::data(const QModelIndex& index, int role) const
 
             /* */
             QString ret = mc_project_get_name(project);
-            if (project == mc_ctx_get_focused_project(getContext())) {
+            if (project == mc_get_focused_project()) {
                 ret += " (focused)";
             }
 
@@ -168,21 +157,11 @@ QModelIndex ProjectModel::index(int row, int column, const QModelIndex& parent) 
     }
 
     if (!parent.isValid()) {
-
-        /* */
-        mc_ctx_t* ctx = getContext();
-
-        /* */
-        return createIndex(row, column, ctx);
+        return QModelIndex();
     }
 
     if (isContext(parent)) {
-
-        /* */
-        mc_ctx_t* ctx = (mc_ctx_t*)parent.internalPointer();
-
-        /* */
-        return createIndex(row, column, mc_ctx_get_project(ctx, row));
+        return QModelIndex();
     }
     else if (isProject(parent)) {
 
@@ -212,43 +191,38 @@ QModelIndex ProjectModel::parent(const QModelIndex& index) const
         return QModelIndex();
     }
 
-    if (index.internalPointer() == getContext()) {
-        return QModelIndex();
-    }
-    else {
-        /* From this point on, the index is either a project, file, or there
-           is a bug.  Since we don't have a good way of indicating what an
-           index actually contains nor what row that index belongs to on its
-           parent, we search for it here.  There is probably a better way to do
-           this, and I'll change it when I figure out that way. */
-        for (int i=0; i < mc_ctx_get_project_amount(getContext()); i++) {
+    /* From this point on, the index is either a project, file, or there
+       is a bug.  Since we don't have a good way of indicating what an
+       index actually contains nor what row that index belongs to on its
+       parent, we search for it here.  There is probably a better way to do
+       this, and I'll change it when I figure out that way. */
+    for (int i=0; i < mc_get_project_amount(); i++) {
 
-            /* Get project for this iteration */
-            mc_project_t* project = mc_ctx_get_project(getContext(), i);
-            if (project == NULL) {
-                MC_ERROR("Encountered NULL project [i=%i]\n", i);
+        /* Get project for this iteration */
+        mc_project_t* project = mc_get_project(i);
+        if (project == NULL) {
+            MC_ERROR("Encountered NULL project [i=%i]\n", i);
+            return QModelIndex();
+        }
+
+        /* Check to see if current project is what the index points to */
+        if (index.internalPointer() == project) {
+            return QModelIndex();
+        }
+
+        /* Loop through each file in the project */
+        for (int j=0; j < mc_project_get_file_amount(project); j++) {
+
+            /* Get file for this iteration */
+            mc_file_t* file = mc_project_get_file(project, j);
+            if (file == NULL) {
+                MC_ERROR("Encountered NULL file in project [i=%i, j=%i]\n", i, j);
                 return QModelIndex();
             }
 
-            /* Check to see if current project is what the index points to */
-            if (index.internalPointer() == project) {
-                return createIndex(i, 0, getContext());
-            }
-
-            /* Loop through each file in the project */
-            for (int j=0; j < mc_project_get_file_amount(project); j++) {
-
-                /* Get file for this iteration */
-                mc_file_t* file = mc_project_get_file(project, j);
-                if (file == NULL) {
-                    MC_ERROR("Encountered NULL file in project [i=%i, j=%i]\n", i, j);
-                    return QModelIndex();
-                }
-
-                /* Check to see if current file is what the index points to */
-                if (index.internalPointer() == file) {
-                    return createIndex(j, 0, project);
-                }
+            /* Check to see if current file is what the index points to */
+            if (index.internalPointer() == file) {
+                return createIndex(j, 0, project);
             }
         }
     }
@@ -267,21 +241,11 @@ int ProjectModel::rowCount(const QModelIndex& parent) const
     }
 
     if (!parent.isValid()) {
-
-        /* */
-        mc_ctx_t* ctx = (mc_ctx_t*)getContext();
-
-        /* */
-        return 1;
+        return 0;
     }
 
     if (isContext(parent)) {
-
-        /* */
-        mc_ctx_t* ctx = (mc_ctx_t*)parent.internalPointer();
-
-        /* */
-        return mc_ctx_get_project_amount(ctx);
+        return mc_get_project_amount();
     }
     else if (isProject(parent)) {
 

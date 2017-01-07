@@ -6,7 +6,6 @@
 #include <QModelIndex>
 #include <QMenu>
 #include <QAbstractItemModel>
-#include <mycroft/context.h>
 
 class ProjectView;
 
@@ -19,7 +18,6 @@ private:
 
     bool shouldRender() const;
     void* getParent(const QModelIndex& parent) const;
-    mc_ctx_t* getContext() const;
 
 public:
     explicit ProjectModel(ProjectView* parent);
@@ -47,7 +45,6 @@ class ProjectView : public QTreeView
     Q_OBJECT
 
 protected:
-    mc_ctx_t* ctx;
     ProjectModel* model;
 
 public:
@@ -56,14 +53,11 @@ public:
 
 signals:
     void focusFile(mc_project_t* project, mc_file_t* file);
-    void focusProject(mc_ctx_t* ctx, mc_project_t* project);
+    void focusProject(mc_project_t* project);
 
 private slots:
     void indexDoubleClicked(const QModelIndex& index);
     void onContextMenuRequested(const QPoint& point);
-
-public slots:
-    void setContext(mc_ctx_t* ctx);
 };
 
 #endif // PROJECTVIEW_H

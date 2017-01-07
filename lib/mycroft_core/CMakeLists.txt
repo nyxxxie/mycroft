@@ -25,7 +25,7 @@ include_directories(
 
 # Source files
 set(MYCROFT_CORE_SRC
-    context.c
+    mycroft.c
     project.c
     file.c
     hook.c
@@ -33,7 +33,6 @@ set(MYCROFT_CORE_SRC
     script.c
     interpreter.c
     membuf.c
-    binds/context.c
     binds/file.c
     template/template.c
     template/template_parser.c

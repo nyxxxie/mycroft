@@ -6,20 +6,18 @@
  * test works!
  */
 TEST(ctx_new, create_and_free_ctx) {
-    mc_ctx_t* ctx = mc_ctx_create();
-    ASSERT_TRUE(ctx != NULL);
-    mc_ctx_free(ctx);
+    ASSERT_TRUE(mc_init() == MC_OK);
+    mc_destroy();
 }
 
 /**
  * Make sure that internal values are set properly.
  */
 TEST(ctx_new, verify_default_values) {
-    mc_ctx_t* ctx = mc_ctx_create();
-    ASSERT_TRUE(ctx != NULL);
-    ASSERT_TRUE(mc_ctx_get_focused_project(ctx) == NULL);
-    ASSERT_TRUE(mc_ctx_get_project_amount(ctx) == 0);
-    mc_ctx_free(ctx);
+    ASSERT_TRUE(mc_init() == MC_OK);
+    ASSERT_TRUE(mc_get_focused_project() == NULL);
+    ASSERT_TRUE(mc_get_project_amount() == 0);
+    mc_destroy();
 }
 
 /**
@@ -27,33 +25,29 @@ TEST(ctx_new, verify_default_values) {
  * sure we actually record the number of ctxs!
  */
 TEST(ctx_new, add_project) {
-    mc_ctx_t* ctx = mc_ctx_create();
-    ASSERT_TRUE(ctx != NULL);
+    ASSERT_TRUE(mc_init() == MC_OK);
 
     mc_project_t* projects[3] = {NULL};
     ASSERT_TRUE((projects[0] = mc_project_create("project1")) != NULL);
     ASSERT_TRUE((projects[1] = mc_project_create("project2")) != NULL);
     ASSERT_TRUE((projects[2] = mc_project_create("project3")) != NULL);
 
-    ASSERT_TRUE(mc_ctx_add_project(ctx, projects[0]) == MC_OK);
-    ASSERT_TRUE(mc_ctx_add_project(ctx, projects[1]) == MC_OK);
-    ASSERT_TRUE(mc_ctx_add_project(ctx, projects[2]) == MC_OK);
+    ASSERT_TRUE(mc_add_project(projects[0]) == MC_OK);
+    ASSERT_TRUE(mc_add_project(projects[1]) == MC_OK);
+    ASSERT_TRUE(mc_add_project(projects[2]) == MC_OK);
 
-    ASSERT_TRUE(mc_ctx_get_project_amount(ctx) == 3);
+    ASSERT_TRUE(mc_get_project_amount() == 3);
 
-    mc_ctx_free(ctx);
+    mc_destroy();
 }
 
 /**
  * Test to make adding a NULL project fails.
  */
 TEST(ctx_new, add_null_project) {
-    mc_ctx_t* ctx = mc_ctx_create();
-    ASSERT_TRUE(ctx != NULL);
-
-    ASSERT_TRUE(mc_ctx_add_project(ctx, NULL) != MC_OK);
-
-    mc_ctx_free(ctx);
+    ASSERT_TRUE(mc_init() == MC_OK);
+    ASSERT_TRUE(mc_add_project(NULL) != MC_OK);
+    mc_destroy();
 }
 
 
@@ -61,128 +55,122 @@ TEST(ctx_new, add_null_project) {
  * Check to make sure we can retrieve projects we add to the ctx.
  */
 TEST(ctx_new, get_project) {
-    mc_ctx_t* ctx = mc_ctx_create();
-    ASSERT_TRUE(ctx != NULL);
+    ASSERT_TRUE(mc_init() == MC_OK);
 
     mc_project_t* projects[3] = {NULL};
     ASSERT_TRUE((projects[0] = mc_project_create("project1")) != NULL);
     ASSERT_TRUE((projects[1] = mc_project_create("project2")) != NULL);
     ASSERT_TRUE((projects[2] = mc_project_create("project3")) != NULL);
 
-    ASSERT_TRUE(mc_ctx_add_project(ctx, projects[0]) == MC_OK);
-    ASSERT_TRUE(mc_ctx_add_project(ctx, projects[1]) == MC_OK);
-    ASSERT_TRUE(mc_ctx_add_project(ctx, projects[2]) == MC_OK);
+    ASSERT_TRUE(mc_add_project(projects[0]) == MC_OK);
+    ASSERT_TRUE(mc_add_project(projects[1]) == MC_OK);
+    ASSERT_TRUE(mc_add_project(projects[2]) == MC_OK);
 
-    ASSERT_TRUE(projects[0] == mc_ctx_get_project(ctx, 0));
-    ASSERT_TRUE(projects[1] == mc_ctx_get_project(ctx, 1));
-    ASSERT_TRUE(projects[2] == mc_ctx_get_project(ctx, 2));
+    ASSERT_TRUE(projects[0] == mc_get_project(0));
+    ASSERT_TRUE(projects[1] == mc_get_project(1));
+    ASSERT_TRUE(projects[2] == mc_get_project(2));
 
-    mc_ctx_free(ctx);
+    mc_destroy();
 }
 
 /**
  * Check to make sure we can't retrieve projects we didn't add to the project.
  */
 TEST(project_new, get_null_project) {
-    mc_ctx_t* ctx = mc_ctx_create();
-    ASSERT_TRUE(ctx != NULL);
-    ASSERT_TRUE(mc_ctx_get_project(ctx, 0) == NULL);
-    ASSERT_TRUE(mc_ctx_get_project(ctx, 1) == NULL);
-    ASSERT_TRUE(mc_ctx_get_project(ctx, 123) == NULL);
-    mc_ctx_free(ctx);
+    ASSERT_TRUE(mc_init() == MC_OK);
+    ASSERT_TRUE(mc_get_project(0) == NULL);
+    ASSERT_TRUE(mc_get_project(1) == NULL);
+    ASSERT_TRUE(mc_get_project(123) == NULL);
+    mc_destroy();
 }
 
 /**
  * Check to make sure we can remove files we add to the project.
  */
 TEST(project_new, remove_project) {
-    mc_ctx_t* ctx = mc_ctx_create();
-    ASSERT_TRUE(ctx != NULL);
+    ASSERT_TRUE(mc_init() == MC_OK);
 
     mc_project_t* projects[3] = {NULL};
     ASSERT_TRUE((projects[0] = mc_project_create("project1")) != NULL);
     ASSERT_TRUE((projects[1] = mc_project_create("project2")) != NULL);
     ASSERT_TRUE((projects[2] = mc_project_create("project3")) != NULL);
 
-    ASSERT_TRUE(mc_ctx_add_project(ctx, projects[0]) == MC_OK);
-    ASSERT_TRUE(mc_ctx_add_project(ctx, projects[1]) == MC_OK);
-    ASSERT_TRUE(mc_ctx_add_project(ctx, projects[2]) == MC_OK);
+    ASSERT_TRUE(mc_add_project(projects[0]) == MC_OK);
+    ASSERT_TRUE(mc_add_project(projects[1]) == MC_OK);
+    ASSERT_TRUE(mc_add_project(projects[2]) == MC_OK);
 
-    ASSERT_TRUE(mc_ctx_remove_project(ctx, 2) == MC_OK);
-    ASSERT_TRUE(mc_ctx_remove_project(ctx, 1) == MC_OK);
-    ASSERT_TRUE(mc_ctx_remove_project(ctx, 0) == MC_OK);
+    ASSERT_TRUE(mc_remove_project(2) == MC_OK);
+    ASSERT_TRUE(mc_remove_project(1) == MC_OK);
+    ASSERT_TRUE(mc_remove_project(0) == MC_OK);
 
-    ASSERT_TRUE(mc_ctx_get_project_amount(ctx) == 0);
+    ASSERT_TRUE(mc_get_project_amount() == 0);
 
-    mc_ctx_free(ctx);
+    mc_destroy();
 }
 
 /**
  * Check in a different way if we can remove files we add to the project.
  */
 TEST(project_new, remove_file_2) {
-    mc_ctx_t* ctx = mc_ctx_create();
-    ASSERT_TRUE(ctx != NULL);
+    ASSERT_TRUE(mc_init() == MC_OK);
 
     mc_project_t* projects[3] = {NULL};
     ASSERT_TRUE((projects[0] = mc_project_create("project1")) != NULL);
     ASSERT_TRUE((projects[1] = mc_project_create("project2")) != NULL);
     ASSERT_TRUE((projects[2] = mc_project_create("project3")) != NULL);
 
-    ASSERT_TRUE(mc_ctx_add_project(ctx, projects[0]) == MC_OK);
-    ASSERT_TRUE(mc_ctx_add_project(ctx, projects[1]) == MC_OK);
-    ASSERT_TRUE(mc_ctx_add_project(ctx, projects[2]) == MC_OK);
+    ASSERT_TRUE(mc_add_project(projects[0]) == MC_OK);
+    ASSERT_TRUE(mc_add_project(projects[1]) == MC_OK);
+    ASSERT_TRUE(mc_add_project(projects[2]) == MC_OK);
 
-    ASSERT_TRUE(mc_ctx_remove_project(ctx, 0) == MC_OK);
-    ASSERT_TRUE(mc_ctx_remove_project(ctx, 0) == MC_OK);
-    ASSERT_TRUE(mc_ctx_remove_project(ctx, 0) == MC_OK);
+    ASSERT_TRUE(mc_remove_project(0) == MC_OK);
+    ASSERT_TRUE(mc_remove_project(0) == MC_OK);
+    ASSERT_TRUE(mc_remove_project(0) == MC_OK);
 
-    ASSERT_TRUE(mc_ctx_get_project_amount(ctx) == 0);
+    ASSERT_TRUE(mc_get_project_amount() == 0);
 
-    mc_ctx_free(ctx);
+    mc_destroy();
 }
 
 /**
  * Check to make sure that the remove function shifts over elements
  */
 TEST(project_new, remove_shiftover) {
-    mc_ctx_t* ctx = mc_ctx_create();
-    ASSERT_TRUE(ctx != NULL);
+    ASSERT_TRUE(mc_init() == MC_OK);
 
     mc_project_t* projects[3] = {NULL};
     ASSERT_TRUE((projects[0] = mc_project_create("project1")) != NULL);
     ASSERT_TRUE((projects[1] = mc_project_create("project2")) != NULL);
     ASSERT_TRUE((projects[2] = mc_project_create("project3")) != NULL);
 
-    ASSERT_TRUE(mc_ctx_add_project(ctx, projects[0]) == MC_OK);
-    ASSERT_TRUE(mc_ctx_add_project(ctx, projects[1]) == MC_OK);
-    ASSERT_TRUE(mc_ctx_add_project(ctx, projects[2]) == MC_OK);
+    ASSERT_TRUE(mc_add_project(projects[0]) == MC_OK);
+    ASSERT_TRUE(mc_add_project(projects[1]) == MC_OK);
+    ASSERT_TRUE(mc_add_project(projects[2]) == MC_OK);
 
-    ASSERT_TRUE(projects[1] == mc_ctx_get_project(ctx, 1));
-    ASSERT_TRUE(mc_ctx_remove_project(ctx, 1) == MC_OK);
-    ASSERT_TRUE(projects[2] == mc_ctx_get_project(ctx, 1));
+    ASSERT_TRUE(projects[1] == mc_get_project(1));
+    ASSERT_TRUE(mc_remove_project(1) == MC_OK);
+    ASSERT_TRUE(projects[2] == mc_get_project(1));
 
-    mc_ctx_free(ctx);
+    mc_destroy();
 }
 
 /**
  * Test focused project functionality.
  */
 TEST(ctx_new, focused_project) {
-    mc_ctx_t* ctx = mc_ctx_create();
-    ASSERT_TRUE(ctx != NULL);
+    ASSERT_TRUE(mc_init() == MC_OK);
 
     mc_project_t* project = NULL;
     ASSERT_TRUE((project = mc_project_create("project1")) != NULL);
 
-    ASSERT_TRUE(mc_ctx_add_project(ctx, project) == MC_OK);
+    ASSERT_TRUE(mc_add_project(project) == MC_OK);
 
-    mc_ctx_set_focused_project(ctx, project);
-    ASSERT_TRUE(project == mc_ctx_get_focused_project(ctx));
+    mc_set_focused_project(project);
+    ASSERT_TRUE(project == mc_get_focused_project());
 
-    ASSERT_TRUE(mc_ctx_remove_project(ctx, 0) == MC_OK);
+    ASSERT_TRUE(mc_remove_project(0) == MC_OK);
 
-    mc_ctx_free(ctx);
+    mc_destroy();
 }
 
 // TODO: add project load tests

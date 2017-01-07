@@ -3,10 +3,10 @@
 #include <dirent.h>
 #include <Python.h>
 #include <mycroft/plugin.h>
-#include "binds/file.h"
-#include "binds/context.h"
-#include "file.h"
 #include "plugin.h"
+#include "mycroft.h"
+#include "file.h"
+#include "binds/file.h"
 
 /**
  * @brief Initialize an mc_plugin_entry_t
@@ -99,7 +99,7 @@ int init_bindings() {
     return rc;
 }
 
-int load_plugin(mc_ctx_t* ctx, const char* plugins_dir, const char* plugin_dir) {
+int load_plugin(const char* plugins_dir, const char* plugin_dir) {
     int rc = 0;
     char* initfile = NULL;
 
@@ -125,7 +125,7 @@ int load_plugin(mc_ctx_t* ctx, const char* plugins_dir, const char* plugin_dir) 
     }
 
     /* Load the plugin */
-    rc = mc_plugin_load(ctx, plugin_dir);
+    rc = mc_plugin_load(plugin_dir);
     if (rc < 0) {
         return rc;
     }
@@ -133,7 +133,7 @@ int load_plugin(mc_ctx_t* ctx, const char* plugins_dir, const char* plugin_dir) 
     return 0;
 }
 
-int load_plugin_dir(mc_ctx_t* ctx, const char* plugins_dir) {
+int load_plugin_dir(const char* plugins_dir) {
     DIR* dir;
     struct dirent* dent;
 
@@ -154,7 +154,7 @@ int load_plugin_dir(mc_ctx_t* ctx, const char* plugins_dir) {
                 }
 
                 if (good != 0) {
-                    load_plugin(ctx, plugins_dir, dent->d_name);
+                    load_plugin(plugins_dir, dent->d_name);
                 }
             }
         }
@@ -172,7 +172,7 @@ int load_plugin_dir(mc_ctx_t* ctx, const char* plugins_dir) {
  * @return Returns 0 on success, negative value on error.
  * @internal
  */
-int mc_plugin_run_plugins(mc_ctx_t* ctx) {
+int mc_plugin_run_plugins() {
     //int i = 0;
     //int rc = 0;
 
@@ -222,11 +222,11 @@ int unload_plugins() {
  *
  * @return Returns 0 on success, negative value on error.
  */
-int mc_plugin_init(mc_ctx_t* ctx) {
+int mc_plugin_init() {
     int rc = 0;
 
     /* */
-    rc = init_bindings(ctx);
+    rc = init_bindings();
     if (rc < 0) {
         return rc;
     }
@@ -238,7 +238,7 @@ int mc_plugin_init(mc_ctx_t* ctx) {
     plugin_last  = NULL;
 
     /* */
-    rc = mc_plugin_run_plugins(ctx);
+    rc = mc_plugin_run_plugins();
     if (rc < 0) {
         return rc;
     }
@@ -251,10 +251,10 @@ int mc_plugin_init(mc_ctx_t* ctx) {
  *
  * @return Returns 0 on success, negative value on error.
  */
-int mc_plugin_close(mc_ctx_t* ctx) {
+int mc_plugin_close() {
     int rc = 0;
 
-    rc = unload_plugins(ctx);
+    rc = unload_plugins();
     if (rc < 0) {
         return rc;
     }
@@ -270,7 +270,7 @@ int mc_plugin_close(mc_ctx_t* ctx) {
  * @param path Path to add.
  * @return Returns 0 on success, negative value on error.
  */
-int mc_plugin_addpath(mc_ctx_t* ctx, const char* path) {
+int mc_plugin_addpath(const char* path) {
     PyObject *pypath=NULL, *localname=NULL;
 
     MC_DEBUG("Adding \"%s\" to plugin path.\n", path);
@@ -440,7 +440,7 @@ int get_plugin_entry(PyObject* module, mc_plugin_entry_t* entry, const char* pat
  * @param path Plugin file or directory.
  * @return Returns 0 on success, negative value on error.
  */
-int mc_plugin_load(mc_ctx_t* ctx, const char* path) {
+int mc_plugin_load(const char* path) {
     int rc = 0;
     mc_plugin_entry_t* entry = NULL;
     PyObject* name = NULL;
@@ -524,7 +524,7 @@ int mc_plugin_load(mc_ctx_t* ctx, const char* path) {
  * @param path Plugin file or directory.
  * @return Returns 0 on success, negative value on error.
  */
-int mc_plugin_unload(mc_ctx_t* ctx, const char* name) {
+int mc_plugin_unload(const char* name) {
     int rc = 0;
     mc_plugin_entry_t* entry=NULL, *next=NULL, *prev=NULL;
 

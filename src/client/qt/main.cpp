@@ -1,7 +1,7 @@
 #include <stdlib.h>
 #include <QApplication>
 #include <QCommandLineParser>
-#include <mycroft/context.h>
+#include <mycroft/mycroft.h>
 #include <mycroft/plugin.h>
 #include <mycroft/script.h>
 #include "mycroft.h"
@@ -9,11 +9,9 @@
 
 int main(int argc, char *argv[])
 {
-    mc_ctx_t* ctx = NULL;
     mc_project_t* project = NULL;
-
-    /* Open qt application */
     QApplication a(argc, argv);
+    Mycroft w;
 
     /* Create command line parser */
     QCommandLineParser args;
@@ -32,14 +30,12 @@ int main(int argc, char *argv[])
     args.process(a);
 
     /* Create mycroft context */
-    ctx = mc_ctx_create();
-    if (ctx == NULL) {
-        fprintf(stderr, "Failed to create mycroft ctx, exiting...\n");
+    if (mc_init() != MC_OK) {
+        fprintf(stderr, "Failed to initialize mycroft...\n");
         return 1;
     }
 
     /* Create main gui window */
-    Mycroft w(ctx);
 
     /* Open project and add it to the ctx */
     QString project_path = args.value("project");
@@ -57,7 +53,7 @@ int main(int argc, char *argv[])
         return 1;
     }
 
-    if (mc_ctx_add_project(ctx, project) != MC_OK) {
+    if (mc_add_project(project) != MC_OK) {
         printf("Failed to add project to context, exiting...\n");
         return 1;
     }
@@ -81,7 +77,7 @@ int main(int argc, char *argv[])
                 mc_project_add_file(project, mc_file_open(file));
             }
 
-            mc_ctx_add_project(ctx, project);
+            mc_add_project(project);
         }
     }
 

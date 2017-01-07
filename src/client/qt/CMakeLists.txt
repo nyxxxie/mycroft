@@ -13,8 +13,8 @@ set(MYCROFT_CLIENT_QT_SRC
     mycroft.cpp
     mainhexeditor.cpp
     hexeditor.cpp
-    templateeditor.cpp
     projectview.cpp
+    templateeditor.cpp
 )
 
 # UI files

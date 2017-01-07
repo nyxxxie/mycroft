@@ -4,7 +4,6 @@
 #include "interpreter.h"
 #include "script.h"
 #include "binds/file.h"
-#include "binds/context.h"
 
 mc_interpreter_t* _interpreter = NULL;
 
