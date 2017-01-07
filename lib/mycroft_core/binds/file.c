@@ -11,21 +11,6 @@
 //    return PyUnicode_FromString(mc_file_name(self->file));
 //}
 
-static PyObject* mfile_create(mfile_data_t* self, PyObject* dontuse)
-{
-    Py_RETURN_FALSE;
-}
-
-static PyObject* mfile_open(mfile_data_t* self, PyObject* dontuse)
-{
-    Py_RETURN_FALSE;
-}
-
-static PyObject* mfile_close(mfile_data_t* self, PyObject* dontuse)
-{
-    Py_RETURN_FALSE;
-}
-
 static PyObject* mfile_reload(mfile_data_t* self, PyObject* dontuse)
 {
     Py_RETURN_FALSE;
@@ -122,9 +107,6 @@ static PyObject* mfile_read_editor_area(mfile_data_t* self, PyObject* dontuse)
 }
 
 static PyMethodDef mfile_methods[] = {
-    {"create", (PyCFunction)mfile_create, METH_NOARGS, ""},
-    {"open", (PyCFunction)mfile_open, METH_NOARGS, ""},
-    {"close", (PyCFunction)mfile_close, METH_NOARGS, ""},
     {"reload", (PyCFunction)mfile_reload, METH_NOARGS, ""},
     {"get_template", (PyCFunction)mfile_get_template, METH_NOARGS, ""},
     {"set_template", (PyCFunction)mfile_set_template, METH_NOARGS, ""},

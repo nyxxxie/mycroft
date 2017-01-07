@@ -14,22 +14,7 @@ static PyObject* mproject_name(mproject_data_t* self, PyObject* dontuse)
     return PyUnicode_FromString("asdfasfd");
 }
 
-static PyObject* mproject_create(mproject_data_t* self, PyObject* dontuse)
-{
-    Py_RETURN_FALSE;
-}
-
-static PyObject* mproject_load(mproject_data_t* self, PyObject* dontuse)
-{
-    Py_RETURN_FALSE;
-}
-
 static PyObject* mproject_save(mproject_data_t* self, PyObject* dontuse)
-{
-    Py_RETURN_FALSE;
-}
-
-static PyObject* mproject_free(mproject_data_t* self, PyObject* dontuse)
 {
     Py_RETURN_FALSE;
 }
@@ -75,10 +60,7 @@ static PyObject* mproject_get_focused_file(mproject_data_t* self, PyObject* dont
 }
 
 static PyMethodDef mproject_methods[] = {
-    {"create", (PyCFunction)mproject_create, METH_NOARGS, ""},
-    {"load", (PyCFunction)mproject_load, METH_NOARGS, ""},
     {"save", (PyCFunction)mproject_save, METH_NOARGS, ""},
-    {"free", (PyCFunction)mproject_free, METH_NOARGS, ""},
     {"set_name", (PyCFunction)mproject_set_name, METH_NOARGS, ""},
     {"get_name", (PyCFunction)mproject_get_name, METH_NOARGS, ""},
     {"add_file", (PyCFunction)mproject_add_file, METH_NOARGS, ""},
@@ -160,15 +142,25 @@ static PyTypeObject mproject_type = {
     mproject_new,              /* tp_new */
 };
 
-static PyObject* mcore_project_what(PyObject* self, PyObject* args)
+static PyObject* mcore_project_create(mproject_data_t* self, PyObject* dontuse)
 {
-    printf("RAN A THING OHHMMEEEHGGEEEEEE");
+    Py_RETURN_FALSE;
+}
 
-    Py_RETURN_TRUE;
+static PyObject* mcore_project_load(mproject_data_t* self, PyObject* dontuse)
+{
+    Py_RETURN_FALSE;
+}
+
+static PyObject* mcore_project_close(mproject_data_t* self, PyObject* dontuse)
+{
+    Py_RETURN_FALSE;
 }
 
 static PyMethodDef mcore_project_methods[] = {
-    {"what",  (PyCFunction)mcore_project_what,  METH_VARARGS, ""},
+    {"create",  (PyCFunction)mcore_project_create,  METH_VARARGS, ""},
+    {"load",  (PyCFunction)mcore_project_load,  METH_VARARGS, ""},
+    {"close",  (PyCFunction)mcore_project_close,  METH_VARARGS, ""},
     {NULL, NULL, 0, NULL}
 };
 
