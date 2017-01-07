@@ -28,13 +28,13 @@ int main(int argc, char* argv[])
         return 1;
     }
 
+    printf("+-------------: Ran script \"%s\"\n", argv[1]);
     if (mc_script_runfile(argv[1]) != MC_OK) {
         fprintf(stderr, "Failed to run script \"%s\".\n", argv[1]);
         mc_destroy();
         return 1;
     }
-
-    printf("Ran script: \"%s\"\n", argv[1]);
+    printf("+-------------\n");
 
     mc_destroy();
 
