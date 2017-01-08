@@ -7,6 +7,12 @@ extern "C" {
 
 #include <mycroft/project.h>
 
+/** Expected file extension for a mycroft template file */
+#define MYCROFT_TEMPLATE_EXTENSION "mtf"
+
+/** Expected file extension for a mycroft project file */
+#define MYCROFT_PROJECT_EXTENSION "mpf"
+
 /* Create/free */
 mc_error_t mc_init();
 void mc_destroy();
