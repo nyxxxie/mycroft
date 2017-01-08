@@ -1,10 +1,6 @@
 # Define project name
 set(MYCROFT_NAME mycroft)
-
-# CPack variables
-set(CPACK_PACKAGE_VENDOR "Nyxxie")
-set(CPACK_PACKAGE_DESCRIPTION_FILE "README.md")
-set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "File format reverse engineering and rapid prototyping tool")
+set(MYCROFT_VERSION "0.1")
 
 # Define target names.  THESE MUST MATCH UP WITH DIRECTORIES.
 set(MYCROFT_CLIENT_QT_NAME q${MYCROFT_NAME})

@@ -1,13 +1,14 @@
 cmake_minimum_required(VERSION 2.8.11)
 
 # Include CPack (this will create `package` target)
+include(cmake/packaging.cmake)
 include(CPack)
 
 # Include settings
 include(MycroftConfig.cmake)
 
 # Include testing utils
-include(cmake/utils/testing.cmake)
+include(cmake/testing.cmake)
 
 # Find requried libs
 find_package(OpenSSL REQUIRED)
