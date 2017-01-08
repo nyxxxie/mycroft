@@ -19,6 +19,11 @@ class Mycroft : public QMainWindow
 
     MainHexEditor* editor;
 
+private:
+    bool openFile(QString filename);
+    bool openProject(QString projectname);
+    bool openTemplate(QString templatename);
+
 public:
     explicit Mycroft(QWidget* parent = 0);
     ~Mycroft();

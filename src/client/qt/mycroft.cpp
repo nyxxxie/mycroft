@@ -1,9 +1,67 @@
 #include <QFileDialog>
 #include <mycroft/mycroft.h>
+#include <mycroft/file.h>
+#include <mycroft/script.h>
 #include <mycroft/error.h>
 #include "mycroft.h"
 #include "mainhexeditor.h"
 #include "ui_mycroft.h"
+
+bool Mycroft::openFile(QString filename)
+{
+    mc_file_t* file = NULL;
+    mc_project_t* project = NULL;
+
+    /* Use focused project or make a new one */
+    project = mc_get_focused_project();
+    if (project == NULL) {
+
+        /* Create project */
+        project = mc_project_create(filename.toStdString().c_str());
+        if (project == NULL) {
+            MC_ERROR("Failed to allocate new project.\n");
+            return false;
+        }
+
+        /* Try adding it */
+        if (!addProject(project)) {
+            MC_ERROR("Failed to add new project.\n");
+            return false;
+        }
+    }
+
+    /* */
+    file = mc_file_open(filename.toStdString().c_str());
+    if (file == NULL) {
+        MC_ERROR("Failed to open file.\n");
+        return false;
+    }
+
+    emit addFile(project, file);
+
+    return true;
+}
+
+bool Mycroft::openProject(QString projectname)
+{
+    mc_project_t* project = NULL;
+
+    /* Create project */
+    project = mc_project_create(projectname.toStdString().c_str());
+    if (project == NULL) {
+        MC_ERROR("Failed to allocate new project.\n");
+        return false;
+    }
+
+    emit addProject(project);
+
+    return true;
+}
+
+bool Mycroft::openTemplate(QString file)
+{
+    return false;
+}
 
 Mycroft::Mycroft(QWidget* parent) :
     QMainWindow(parent),
@@ -37,22 +95,26 @@ Mycroft::~Mycroft()
 
 void Mycroft::on_action_file_open()
 {
-    QString filters("Mycroft Template File (*.mtf);;All files (*.*)");
-    QString defaultFilter("Mycroft Template File (*.mtf)");
+    QString filters("Mycroft Project File (*.mpf);;All files (*.*)");
+    QString defaultFilter("All files (*.*)");
 
-    /* Static method approach */
     QString file = QFileDialog::getOpenFileName(
         NULL,
-        "Open Script File",
+        "Open File",
         QDir::currentPath(),
         filters,
         &defaultFilter);
+    QFileInfo fi(file);
 
-    printf("Opening template: \"%s\"\n", file.toStdString().c_str());
-    //int rc = mc_plugin_runfile(file.toStdString().c_str());
-    //if (rc < 0) {
-    //    printf("Failed to run script!\n");
-    //}
+    if (fi.completeSuffix() == MYCROFT_TEMPLATE_EXTENSION) {
+        openTemplate(file);
+    }
+    else if (fi.completeSuffix() == MYCROFT_PROJECT_EXTENSION) {
+        openProject(file);
+    }
+    else {
+        openFile(file);
+    }
 }
 
 void Mycroft::on_action_file_exit()
@@ -108,11 +170,11 @@ void Mycroft::on_action_script_run_file()
         filters,
         &defaultFilter);
 
-    printf("Running script: \"%s\"\n", file.toStdString().c_str());
-    //int rc = mc_plugin_runfile(file.toStdString().c_str());
-    //if (rc < 0) {
-    //    printf("Failed to run script!\n");
-    //}
+    MC_DEBUG("Running script: \"%s\"\n", file.toStdString().c_str());
+
+    if (mc_script_runfile(file.toStdString().c_str()) != MC_OK) {
+        MC_ERROR("Failed to run script.\n");
+    }
 }
 
 void Mycroft::on_action_project_new()
