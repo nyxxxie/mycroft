@@ -32,11 +32,6 @@ public:
     QModelIndex parent(const QModelIndex& index) const Q_DECL_OVERRIDE;
     int rowCount(const QModelIndex& parent = QModelIndex()) const Q_DECL_OVERRIDE;
     int columnCount(const QModelIndex& parent = QModelIndex()) const Q_DECL_OVERRIDE;
-
-    /* Utility functions */
-    bool isContext(const QModelIndex& index) const;
-    bool isProject(const QModelIndex& index) const;
-    bool isFile(const QModelIndex& index) const;
 };
 
 class ProjectView : public QTreeView

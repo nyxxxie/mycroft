@@ -41,12 +41,15 @@ void ProjectView::onContextMenuRequested(const QPoint& point)
 {
     MC_DEBUG("right click menuu\n");
     QModelIndex index = indexAt(point);
-    if (index.isValid()) {
-        if (model->isProject(index)) {
-            QMenu menu;
-            menu.addMenu("Add");
-            menu.exec(mapToGlobal(point));
-        }
+    if (!index.parent().isValid()) {
+        QMenu menu;
+        menu.addMenu("Add");
+        menu.exec(mapToGlobal(point));
+    }
+    else {
+        QMenu menu;
+        menu.addMenu("Open");
+        menu.exec(mapToGlobal(point));
     }
 }
 
@@ -67,21 +70,6 @@ void ProjectView::projectAdded(mc_project_t* proj)
 bool ProjectModel::shouldRender() const
 {
     return true;
-}
-
-bool ProjectModel::isContext(const QModelIndex& index) const
-{
-    return (!index.parent().isValid());
-}
-
-bool ProjectModel::isProject(const QModelIndex& index) const
-{
-    return (index.parent().isValid() && !index.parent().parent().isValid());
-}
-
-bool ProjectModel::isFile(const QModelIndex& index) const
-{
-    return (index.parent().isValid() && index.parent().parent().isValid());
 }
 
 ProjectModel::ProjectModel(ProjectView* parent)
