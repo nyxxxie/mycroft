@@ -4,4 +4,4 @@ include_directories(
 )
 
 add_subdirectory(typesystem)
-
+add_subdirectory(template)
