@@ -15,14 +15,18 @@ replaces=()
 backup=()
 source=("git+https://github.com/nyxxxie/mycroft.git")
 sha256sums=('SKIP')
+prepare() {
+    mkdir -p build
+}
+
 build() {
-    cd "$srcdir/$pkgname"
-    mkdir build || rm -rf build && mkdir build
     cd build
-    cmake -DCMAKE_INSTALL_PREFIX="$srcdir/$pkgname" ..
-    make || return 1
+    cmake ../$pkgname \
+        -DCMAKE_BUILD_TYPE=Release \
+        -DCMAKE_INSTALL_PREFIX=/usr
+    make
 }
 package() {
-    cd "$srcdir/$pkgname/build"
-    make install
+    cd build
+    make DESTDIR="$pkgdir" install
 }
