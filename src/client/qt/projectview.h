@@ -58,6 +58,8 @@ signals:
 private slots:
     void indexDoubleClicked(const QModelIndex& index);
     void onContextMenuRequested(const QPoint& point);
+    void fileAdded(mc_project_t* proj, mc_file_t* file);
+    void projectAdded(mc_project_t* proj);
 };
 
 #endif // PROJECTVIEW_H

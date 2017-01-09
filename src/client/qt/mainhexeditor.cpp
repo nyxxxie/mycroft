@@ -16,6 +16,10 @@ MainHexEditor::MainHexEditor(QWidget* parent) :
             parent, SLOT(setFocusedProject(mc_project_t*)));
     connect(ui->projectview, SIGNAL(focusFile(mc_project_t*, mc_file_t*)),
             parent, SLOT(setFocusedFile(mc_project_t*, mc_file_t*)));
+    connect(parent, SIGNAL(fileAdded(mc_project_t*, mc_file_t*)),
+            ui->projectview, SLOT(fileAdded(mc_project_t*, mc_file_t*)));
+    connect(parent, SIGNAL(projectAdded(mc_project_t*)),
+            ui->projectview, SLOT(projectAdded(mc_project_t*)));
 
     // TODO: manually create hexxeitor and templateeditor here and add them to ui splitters?
 

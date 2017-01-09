@@ -50,6 +50,20 @@ void ProjectView::onContextMenuRequested(const QPoint& point)
     }
 }
 
+void ProjectView::fileAdded(mc_project_t* proj, mc_file_t* file)
+{
+    /* When a new file is added, we should show that immediately in the view */
+    MC_DEBUG("File added, updating projectview...\n");
+    viewport()->update();
+}
+
+void ProjectView::projectAdded(mc_project_t* proj)
+{
+    /* When a new project is added, we should show that immediately in the view */
+    MC_DEBUG("Project added, updating projectview...\n");
+    viewport()->update();
+}
+
 bool ProjectModel::shouldRender() const
 {
     return true;
