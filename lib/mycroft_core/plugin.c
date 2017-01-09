@@ -14,7 +14,8 @@
  * @return Returns 0 on success, negative value on error.
  * @internal
  */
-int mc_plugin_entry_init(mc_plugin_entry_t** entry) {
+int mc_plugin_entry_init(mc_plugin_entry_t** entry)
+{
     mc_plugin_entry_t* tmp = NULL;
 
     /* Allocate space for the entry */
@@ -43,7 +44,8 @@ int mc_plugin_entry_init(mc_plugin_entry_t** entry) {
  * @return Returns 0 on success, negative value on error.
  * @internal
  */
-int mc_plugin_entry_free(mc_plugin_entry_t* entry) {
+int mc_plugin_entry_free(mc_plugin_entry_t* entry)
+{
     mc_plugin_entry_t* next = NULL;
     mc_plugin_entry_t* prev = NULL;
 
@@ -83,7 +85,8 @@ int mc_plugin_entry_free(mc_plugin_entry_t* entry) {
  * @return Returns 0 on success, negative value on error.
  * @internal
  */
-int init_bindings() {
+int init_bindings()
+{
     int rc = 0;
 
     rc = init_binds_file();
@@ -99,7 +102,8 @@ int init_bindings() {
     return rc;
 }
 
-int load_plugin(const char* plugins_dir, const char* plugin_dir) {
+int load_plugin(const char* plugins_dir, const char* plugin_dir)
+{
     int rc = 0;
     char* initfile = NULL;
 
@@ -133,7 +137,8 @@ int load_plugin(const char* plugins_dir, const char* plugin_dir) {
     return 0;
 }
 
-int load_plugin_dir(const char* plugins_dir) {
+int load_plugin_dir(const char* plugins_dir)
+{
     DIR* dir;
     struct dirent* dent;
 
@@ -172,7 +177,8 @@ int load_plugin_dir(const char* plugins_dir) {
  * @return Returns 0 on success, negative value on error.
  * @internal
  */
-int mc_plugin_run_plugins() {
+int mc_plugin_run_plugins()
+{
     //int i = 0;
     //int rc = 0;
 
@@ -197,7 +203,8 @@ int mc_plugin_run_plugins() {
  * @return Returns 0 on success, negative value on error.
  * @internal
  */
-int unload_plugins() {
+int unload_plugins()
+{
     int rc = 0;
     mc_plugin_entry_t* entry = NULL;
 
@@ -222,7 +229,8 @@ int unload_plugins() {
  *
  * @return Returns 0 on success, negative value on error.
  */
-int mc_plugin_init() {
+int mc_plugin_init()
+{
     int rc = 0;
 
     /* */
@@ -251,7 +259,8 @@ int mc_plugin_init() {
  *
  * @return Returns 0 on success, negative value on error.
  */
-int mc_plugin_close() {
+int mc_plugin_close()
+{
     int rc = 0;
 
     rc = unload_plugins();
@@ -270,7 +279,8 @@ int mc_plugin_close() {
  * @param path Path to add.
  * @return Returns 0 on success, negative value on error.
  */
-int mc_plugin_addpath(const char* path) {
+int mc_plugin_addpath(const char* path)
+{
     PyObject *pypath=NULL, *localname=NULL;
 
     MC_DEBUG("Adding \"%s\" to plugin path.\n", path);
@@ -294,7 +304,8 @@ int mc_plugin_addpath(const char* path) {
  * @return Returns the return object of the specified func (or NULL!)
  * @internal
  */
-PyObject* call_plugin_infofunc(PyObject* module, const char* funcname) {
+PyObject* call_plugin_infofunc(PyObject* module, const char* funcname)
+{
     PyObject* func=NULL, *value=NULL;
 
     /* Find the function */
@@ -323,7 +334,8 @@ PyObject* call_plugin_infofunc(PyObject* module, const char* funcname) {
  * @return Returns 0 on success, negative value on error.
  * @internal
  */
-int get_plugin_name(PyObject* module, mc_plugin_entry_t* entry, const char* path) {
+int get_plugin_name(PyObject* module, mc_plugin_entry_t* entry, const char* path)
+{
     PyObject* value=NULL;
     char* str=NULL;
 
@@ -355,7 +367,8 @@ int get_plugin_name(PyObject* module, mc_plugin_entry_t* entry, const char* path
  * @return Returns 0 on success, negative value on error.
  * @internal
  */
-int get_plugin_version(PyObject* module, mc_plugin_entry_t* entry, const char* path) {
+int get_plugin_version(PyObject* module, mc_plugin_entry_t* entry, const char* path)
+{
     PyObject* value=NULL;
     char* str=NULL;
 
@@ -387,7 +400,8 @@ int get_plugin_version(PyObject* module, mc_plugin_entry_t* entry, const char* p
  * @return Returns 0 on success, negative value on error.
  * @internal
  */
-int get_plugin_depends(PyObject* module, mc_plugin_entry_t* entry, const char* path) {
+int get_plugin_depends(PyObject* module, mc_plugin_entry_t* entry, const char* path)
+{
     PyObject* value=NULL;
     char* str=NULL;
 
@@ -411,7 +425,8 @@ int get_plugin_depends(PyObject* module, mc_plugin_entry_t* entry, const char* p
  * @return Returns 0 on success, negative value on error.
  * @internal
  */
-int get_plugin_entry(PyObject* module, mc_plugin_entry_t* entry, const char* path) {
+int get_plugin_entry(PyObject* module, mc_plugin_entry_t* entry, const char* path)
+{
     PyObject* value=NULL;
     char* str=NULL;
 
@@ -440,7 +455,8 @@ int get_plugin_entry(PyObject* module, mc_plugin_entry_t* entry, const char* pat
  * @param path Plugin file or directory.
  * @return Returns 0 on success, negative value on error.
  */
-int mc_plugin_load(const char* path) {
+int mc_plugin_load(const char* path)
+{
     int rc = 0;
     mc_plugin_entry_t* entry = NULL;
     PyObject* name = NULL;
@@ -524,7 +540,8 @@ int mc_plugin_load(const char* path) {
  * @param path Plugin file or directory.
  * @return Returns 0 on success, negative value on error.
  */
-int mc_plugin_unload(const char* name) {
+int mc_plugin_unload(const char* name)
+{
     int rc = 0;
     mc_plugin_entry_t* entry=NULL, *next=NULL, *prev=NULL;
 

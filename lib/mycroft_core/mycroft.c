@@ -34,7 +34,8 @@ mc_error_t mc_init() {
     return MC_OK;
 }
 
-void mc_destroy() {
+void mc_destroy()
+{
     if (_ctx != NULL) {
         if (_ctx->projects != NULL) {
             mc_project_t* project = NULL;
@@ -54,7 +55,8 @@ void mc_destroy() {
     }
 }
 
-mc_error_t mc_add_project(mc_project_t* project) {
+mc_error_t mc_add_project(mc_project_t* project)
+{
     mc_error_t rc = MC_ERR;
     uint32_t cur_index = 0;
     uint32_t i = 0;
@@ -95,8 +97,8 @@ mc_error_t mc_add_project(mc_project_t* project) {
     return MC_OK;
 }
 
-mc_error_t mc_remove_project(uint32_t project_index) {
-
+mc_error_t mc_remove_project(uint32_t project_index)
+{
     /* Ensure that the index is valid */
     if (project_index >= _ctx->project_amt) {
         return MC_ERR;
@@ -127,7 +129,8 @@ mc_error_t mc_remove_project(uint32_t project_index) {
     return MC_OK;
 }
 
-mc_project_t* mc_get_project(uint32_t project_index) {
+mc_project_t* mc_get_project(uint32_t project_index)
+{
     if (_ctx->projects == NULL ||
         project_index >= _ctx->project_amt) {
         return NULL;
@@ -136,11 +139,13 @@ mc_project_t* mc_get_project(uint32_t project_index) {
     return _ctx->projects[project_index];
 }
 
-uint32_t mc_get_project_amount() {
+uint32_t mc_get_project_amount()
+{
     return _ctx->project_amt;
 }
 
-mc_error_t mc_set_focused_project(mc_project_t* project) {
+mc_error_t mc_set_focused_project(mc_project_t* project)
+{
     uint32_t i = 0;
 
     /* Ensure we added the file */
@@ -157,6 +162,7 @@ mc_error_t mc_set_focused_project(mc_project_t* project) {
     return MC_ERR;
 }
 
-mc_project_t* mc_get_focused_project() {
+mc_project_t* mc_get_focused_project()
+{
     return _ctx->project_focused;
 }

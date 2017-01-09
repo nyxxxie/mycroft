@@ -14,7 +14,8 @@
  * @return mc_error_t code indicating success or failure.
  * @internal
  */
-mc_error_t create_default_tables(sqlite3* db) {
+mc_error_t create_default_tables(sqlite3* db)
+{
     const char* create_queries[QUERYNO] = {
         /* This table stores project information like name, date created, date
            last modified, etc... */
@@ -74,7 +75,8 @@ mc_error_t create_default_tables(sqlite3* db) {
  * @param name Name for new project
  * @return Pointer to mc_project_t that was just created.
  */
-mc_project_t* mc_project_create(const char* name) {
+mc_project_t* mc_project_create(const char* name)
+{
     mc_project_t* project = NULL;
     int rc = 0;
 
@@ -117,7 +119,8 @@ mc_project_t* mc_project_create(const char* name) {
  * @param mdb_file Path to mdb file to load.
  * @return Pointer to mc_project_t that was loaded.
  */
-mc_project_t* mc_project_load(const char* mdb_file) {
+mc_project_t* mc_project_load(const char* mdb_file)
+{
     mc_project_t* project = NULL;
 
     /* Make sure our target database exists */
@@ -143,7 +146,8 @@ mc_project_t* mc_project_load(const char* mdb_file) {
  * @param mdb_file File to save to.  Can be a file that exists or doesn't.
  * @return mc_error_t indicating success or failure.
  */
-mc_error_t mc_project_save(mc_project_t* project, const char* mdb_file) {
+mc_error_t mc_project_save(mc_project_t* project, const char* mdb_file)
+{
     int rc = 0;
     sqlite3* savefile = NULL;
     sqlite3_backup* backup = NULL;
@@ -179,7 +183,8 @@ mc_error_t mc_project_save(mc_project_t* project, const char* mdb_file) {
  *
  * @param project mc_project_t to free.
  */
-void mc_project_free(mc_project_t* project) {
+void mc_project_free(mc_project_t* project)
+{
     if (project != NULL) {
         /* Free file name */
         if (project->name != NULL) {
@@ -208,7 +213,8 @@ void mc_project_free(mc_project_t* project) {
 }
 
 
-mc_error_t mc_project_set_name(mc_project_t* project, const char* name) {
+mc_error_t mc_project_set_name(mc_project_t* project, const char* name)
+{
     int name_len = 0;
 
     /* Check if name is null or an empty string */
@@ -239,7 +245,8 @@ mc_error_t mc_project_set_name(mc_project_t* project, const char* name) {
  * @return Returns project name associated with this project.
  * @internal
  */
-char* mc_project_get_name(mc_project_t* project) {
+char* mc_project_get_name(mc_project_t* project)
+{
     if (project->name == NULL) {
         return "(unnamed)";
     }
@@ -255,7 +262,8 @@ char* mc_project_get_name(mc_project_t* project) {
  * @return mc_error_t indicating success or failure.
  * @internal
  */
-mc_error_t db_add_file(sqlite3* db, mc_file_t* file) {
+mc_error_t db_add_file(sqlite3* db, mc_file_t* file)
+{
     int rc = 0;
     sqlite3_stmt* stmt = NULL;
     const char* query = "insert into files values (?, ?);";
@@ -298,7 +306,8 @@ mc_error_t db_add_file(sqlite3* db, mc_file_t* file) {
  * @param file mc_file_t to add to project.
  * @return mc_error_t indicating success or failure.
  */
-mc_error_t mc_project_add_file(mc_project_t* project, mc_file_t* file) {
+mc_error_t mc_project_add_file(mc_project_t* project, mc_file_t* file)
+{
     mc_error_t rc = MC_ERR;
     uint32_t cur_index = 0;
     uint32_t i = 0;
@@ -354,8 +363,8 @@ mc_error_t mc_project_add_file(mc_project_t* project, mc_file_t* file) {
  * @param file_index index of file to remove.
  * @return mc_error_t indicating success or failure.
  */
-mc_error_t mc_project_remove_file(mc_project_t* project, uint32_t file_index) {
-
+mc_error_t mc_project_remove_file(mc_project_t* project, uint32_t file_index)
+{
     /* Ensure that the index is valid */
     if (file_index >= project->file_amt) {
         return MC_ERR;
@@ -397,8 +406,8 @@ mc_error_t mc_project_remove_file(mc_project_t* project, uint32_t file_index) {
  * @param file_index index of file in project.
  * @return Pointer to mc_file_t that cooresponds with file_index (or NULL).
  */
-mc_file_t* mc_project_get_file(mc_project_t* project, uint32_t file_index) {
-
+mc_file_t* mc_project_get_file(mc_project_t* project, uint32_t file_index)
+{
     if (project->files == NULL ||
         file_index >= project->file_amt) {
         return NULL;
@@ -413,7 +422,8 @@ mc_file_t* mc_project_get_file(mc_project_t* project, uint32_t file_index) {
  * @param project mc_project_t to get file amount from.
  * @return Amount of files in project.
  */
-uint32_t mc_project_get_file_amount(mc_project_t* project) {
+uint32_t mc_project_get_file_amount(mc_project_t* project)
+{
     return project->file_amt;
 }
 
@@ -424,7 +434,8 @@ uint32_t mc_project_get_file_amount(mc_project_t* project) {
  * @param file mc_file_t to set as focused.  Must be added to the project.
  * @return mc_error_t indicating success or failure.
  */
-mc_error_t mc_project_set_focused_file(mc_project_t* project, mc_file_t* file) {
+mc_error_t mc_project_set_focused_file(mc_project_t* project, mc_file_t* file)
+{
     uint32_t i = 0;
 
     /* Ensure we added the file */
@@ -446,6 +457,7 @@ mc_error_t mc_project_set_focused_file(mc_project_t* project, mc_file_t* file) {
  * @param project mc_project_t to get focused file from.
  * @return Pointer to mc_file_t that is focused.
  */
-mc_file_t* mc_project_get_focused_file(mc_project_t* project) {
+mc_file_t* mc_project_get_focused_file(mc_project_t* project)
+{
     return project->file_focused;
 }

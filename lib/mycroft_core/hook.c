@@ -2,7 +2,8 @@
 #include <stdlib.h>
 #include "hook.h"
 
-int hook_init() {
+int hook_init()
+{
     int rc = 0;
 
     mc_hooks = NULL; // Indicate that there are no entries.
@@ -17,7 +18,8 @@ int hook_init() {
     return 0;
 }
 
-int hook_free() {
+int hook_free()
+{
     int rc = 0;
     mc_hook_t* cur = NULL;
 
@@ -49,20 +51,23 @@ int hook_free() {
     return rc;
 }
 
-int hook_event_create(mc_hook_id_t hook_id) {
+int hook_event_create(mc_hook_id_t hook_id)
+{
     int rc = 0;
 
     /* Search for hook_id and error if it exists */
 
 }
 
-int hook_event_remove(mc_hook_id_t hook_id) {
+int hook_event_remove(mc_hook_id_t hook_id)
+{
     int rc = 0;
 
     /* Search for hook_id and delete it if it exists */
 }
 
-int hook_add(mc_hook_id_t hook_id, const char* hook_name, mc_hook_cb_t* callback) {
+int hook_add(mc_hook_id_t hook_id, const char* hook_name, mc_hook_cb_t* callback)
+{
     int rc = 0;
 
     /* Find hook id */
@@ -72,7 +77,8 @@ int hook_add(mc_hook_id_t hook_id, const char* hook_name, mc_hook_cb_t* callback
     /* Insert hook into chain */
 }
 
-int hook_remove(mc_hook_id_t hook_id, const char* hook_name) {
+int hook_remove(mc_hook_id_t hook_id, const char* hook_name)
+{
     int rc = 0;
 
     /* Find hook id */
@@ -81,7 +87,8 @@ int hook_remove(mc_hook_id_t hook_id, const char* hook_name) {
 
 }
 
-int hook_dispatch(mc_hook_id_t hook_id, mc_hook_data_t* args) {
+int hook_dispatch(mc_hook_id_t hook_id, mc_hook_data_t* args)
+{
     int rc = 0;
 
     /* Find hook */

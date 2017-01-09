@@ -25,8 +25,8 @@
  *
  * @return Returns 0 on success, negative value on error.
  */
-int file_exists(const char* file_name) {
-
+int file_exists(const char* file_name)
+{
     FILE* fp;
     if ((fp = fopen(file_name, "r")) != NULL) {
         fclose(fp);
@@ -44,7 +44,8 @@ int file_exists(const char* file_name) {
  *
  * @return Returns the created mc_file_t, NULL otherwise.
  */
-mc_file_t* mc_file_create() {
+mc_file_t* mc_file_create()
+{
     mc_file_t* file = NULL;
 
     /* Alloc the project */
@@ -73,7 +74,8 @@ mc_file_t* mc_file_create() {
  *
  * @return Returns the created mc_file_t, NULL otherwise.
  */
-mc_file_t* mc_file_open(const char* file_name) {
+mc_file_t* mc_file_open(const char* file_name)
+{
     mc_file_t* file = NULL;
 
     /* Make sure we're passed a nonempty path */
@@ -120,7 +122,8 @@ mc_file_t* mc_file_open(const char* file_name) {
  *
  * @return Returns 0 on success, negative value on error.
  */
-int mc_file_close(mc_file_t* file) {
+int mc_file_close(mc_file_t* file)
+{
     if (file->fp != NULL) {
         fclose(file->fp);
     }
@@ -139,7 +142,8 @@ int mc_file_close(mc_file_t* file) {
  *
  * @return Returns the template or NULL if it's not set.
  */
-template_t* mc_file_get_template(mc_file_t* file) {
+template_t* mc_file_get_template(mc_file_t* file)
+{
     return file->t;
 }
 
@@ -150,7 +154,8 @@ template_t* mc_file_get_template(mc_file_t* file) {
  *
  * @return Returns 0 on success, negative value on error.
  */
-int mc_file_set_template(mc_file_t* file, template_t* t) {
+int mc_file_set_template(mc_file_t* file, template_t* t)
+{
     file->t = t;
     return 0;
 }
@@ -163,7 +168,8 @@ int mc_file_set_template(mc_file_t* file, template_t* t) {
  *
  * @return Returns 0 on success, negative value on error.
  */
-int mc_file_get_cursor(mc_file_t* file) {
+int mc_file_get_cursor(mc_file_t* file)
+{
     //file->cursor = ftell(file->fp);
     return file->cursor;
 }
@@ -177,8 +183,8 @@ int mc_file_get_cursor(mc_file_t* file) {
  *
  * @return Returns 0 on success, negative value on error.
  */
-int mc_file_set_cursor(mc_file_t* file, int cursor) {
-
+int mc_file_set_cursor(mc_file_t* file, int cursor)
+{
     if (cursor > file->size) {
         fprintf(stderr, "Tried to set cursor past the end of the file.");
         return -1;
@@ -202,7 +208,8 @@ int mc_file_set_cursor(mc_file_t* file, int cursor) {
  *
  * @return Returns the file size.
  */
-fsize_t mc_file_size(mc_file_t* file) {
+fsize_t mc_file_size(mc_file_t* file)
+{
     return file->size;
 }
 
@@ -213,7 +220,8 @@ fsize_t mc_file_size(mc_file_t* file) {
  *
  * @return Returns the file name.
  */
-char* mc_file_name(mc_file_t* file) {
+char* mc_file_name(mc_file_t* file)
+{
     return file->name;
 }
 
@@ -224,7 +232,8 @@ char* mc_file_name(mc_file_t* file) {
  *
  * @return Returns the file path.
  */
-char* mc_file_path(mc_file_t* file) {
+char* mc_file_path(mc_file_t* file)
+{
     return file->path;
 }
 
@@ -240,8 +249,8 @@ char* mc_file_path(mc_file_t* file) {
  *
  * @return Returns 0 on success, negative value on error.
  */
-int mc_file_cache_init(mc_file_t* file, int size) {
-
+int mc_file_cache_init(mc_file_t* file, int size)
+{
     /* Create cache struct */
     file->cache = (file_cache_t*)malloc(sizeof(file_cache_t));
     if (file->cache == NULL) {
@@ -274,7 +283,8 @@ int mc_file_cache_init(mc_file_t* file, int size) {
  *
  * @return Returns 0 on success, negative value on error.
  */
-int mc_file_cache_loadzone(mc_file_t* file, int cursor) {
+int mc_file_cache_loadzone(mc_file_t* file, int cursor)
+{
     file->cache->base = cursor;
     return mc_file_cache_reload(file); // Why duplicate efforts?
 }
@@ -286,8 +296,8 @@ int mc_file_cache_loadzone(mc_file_t* file, int cursor) {
  *
  * @return Returns 0 on success, negative value on error.
  */
-int mc_file_cache_reload(mc_file_t* file) {
-
+int mc_file_cache_reload(mc_file_t* file)
+{
     int diff = 0;
     int rc = 0;
 
@@ -315,8 +325,8 @@ int mc_file_cache_reload(mc_file_t* file) {
  *
  * @return Returns 0 on success, negative value on error.
  */
-int mc_file_read(mc_file_t* file, fsize_t amount, uint8_t* outbuf) {
-
+int mc_file_read(mc_file_t* file, fsize_t amount, uint8_t* outbuf)
+{
     /* Read desired content */
     long int res = fread(outbuf, 1, amount, file->fp);
     if (res != amount) {
@@ -339,8 +349,8 @@ int mc_file_read(mc_file_t* file, fsize_t amount, uint8_t* outbuf) {
  *
  * @return Returns 0 on success, negative value on error.
  */
-int mc_file_read_raw(mc_file_t* file, fsize_t amount, uint8_t* outbuf) {
-
+int mc_file_read_raw(mc_file_t* file, fsize_t amount, uint8_t* outbuf)
+{
     /* Read desired content */
     long int res = fread(outbuf, 1, amount, file->fp);
     if (res != amount) {
@@ -366,8 +376,8 @@ int mc_file_read_raw(mc_file_t* file, fsize_t amount, uint8_t* outbuf) {
  *
  * @return Returns 0 on success, negative value on error.
  */
-int mc_file_read_value(mc_file_t* file, fsize_t offset, fsize_t amount, uint8_t* outbuf) {
-
+int mc_file_read_value(mc_file_t* file, fsize_t offset, fsize_t amount, uint8_t* outbuf)
+{
     /* Make sure that we don't read off the end of the file */
     if ((offset + amount) >= file->size) {
         fprintf(stderr, "Tried to read off the end of the file.\n");
@@ -419,8 +429,8 @@ int mc_file_read_value(mc_file_t* file, fsize_t offset, fsize_t amount, uint8_t*
  *
  * @return Returns 0 on success, negative value on error.
  */
-int mc_file_write(mc_file_t* file, fsize_t amount, uint8_t* outbuf) {
-
+int mc_file_write(mc_file_t* file, fsize_t amount, uint8_t* outbuf)
+{
     /* Read desired content */
     long int res = fwrite(outbuf, 1, amount, file->fp);
     if (res != amount) {
@@ -447,8 +457,8 @@ int mc_file_write(mc_file_t* file, fsize_t amount, uint8_t* outbuf) {
  *
  * @return Returns 0 on success, negative value on error.
  */
-int mc_file_write_value(mc_file_t* file, fsize_t offset, fsize_t amount, uint8_t* outbuf) {
-
+int mc_file_write_value(mc_file_t* file, fsize_t offset, fsize_t amount, uint8_t* outbuf)
+{
     /* Make sure that we don't write past file contents */
     if ((offset + amount) >= file->size) {
         fprintf(stderr, "Tried to write off the end of the file.\n");
@@ -502,8 +512,8 @@ int mc_file_write_value(mc_file_t* file, fsize_t offset, fsize_t amount, uint8_t
  *
  * @return Returns 0 on success, negative value on error.
  */
-int mc_file_read_cache(mc_file_t* file, fsize_t offset, fsize_t amount, uint8_t* outbuf) {
-
+int mc_file_read_cache(mc_file_t* file, fsize_t offset, fsize_t amount, uint8_t* outbuf)
+{
     int rc = mc_file_cache_loadzone(file, offset);
     if (rc < 0) {
         return rc;
