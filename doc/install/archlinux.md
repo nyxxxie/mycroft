@@ -1,3 +1,8 @@
+# AUR
+Mycroft is now [in the AUR!](https://aur.archlinux.org/packages/mycroft/)  Instead of using the manual instructions listed
+below, you may now simply install it directly from the AUR, which handles all
+of these steps for you.
+
 # Requirements
 Please install the following packages (pkgbuild TBA):
 
