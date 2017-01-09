@@ -32,7 +32,6 @@ set(MYCROFT_CORE_SRC
     plugin.c
     script.c
     interpreter.c
-    membuf.c
     binds/core.c
     binds/file.c
     binds/project.c
