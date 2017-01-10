@@ -2,11 +2,12 @@
 #include <string.h>
 #include <unistd.h>
 #include <mycroft/mycroft.h>
+#include <mycroft/script.h>
 #include "mycroft.h"
+#include "config.h"
 #include "interpreter.h"
 #include "project.h"
 #include "plugin.h"
-
 
 mc_ctx_t* _ctx = NULL;
 
@@ -29,6 +30,43 @@ mc_error_t mc_init() {
     if (_ctx->interpreter == NULL) {
         MC_ERROR("Failed to create interpreter.\n");
         return MC_ERR;
+    }
+
+    return MC_OK;
+}
+
+mc_error_t mc_init_scripting(const char* path[], size_t amount)
+{
+    size_t i;
+    mc_error_t rc = MC_OK;
+    const char* default_path[] = {
+        MYCROFT_INSTALL_PLUGIN_PATH,
+        MYCROFT_INSTALL_SCRIPT_PATH,
+    };
+
+    /* Add default stuff to path */
+    for (i = 0; i < 2; i++) {
+        rc = mc_interpreter_add_path(_ctx->interpreter, default_path[i]);
+        if (rc != MC_OK) {
+            MC_ERROR("Failed to add path \"%s\".\n", default_path[i]);
+            return rc;
+        }
+    }
+
+    /* Add user specified stuff to path */
+    for (i = 0; i < amount; i++) {
+        rc = mc_interpreter_add_path(_ctx->interpreter, path[i]);
+        if (rc != MC_OK) {
+            MC_ERROR("Failed to add path \"%s\".\n", path[i]);
+            return rc;
+        }
+    }
+
+    /* Run init script */
+    rc = mc_interpreter_run_init_scripts(_ctx->interpreter);
+    if (rc != MC_OK) {
+        MC_ERROR("Failed run init scripts.\n");
+        return rc;
     }
 
     return MC_OK;

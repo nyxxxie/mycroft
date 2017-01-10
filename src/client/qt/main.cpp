@@ -9,6 +9,9 @@
 
 int main(int argc, char *argv[])
 {
+    const char* python_path[] = {
+        "~/.config/mycroft/plugins",
+    };
     mc_project_t* project = NULL;
     QApplication a(argc, argv);
     Mycroft w;
@@ -31,6 +34,12 @@ int main(int argc, char *argv[])
 
     /* Create mycroft context */
     if (mc_init() != MC_OK) {
+        fprintf(stderr, "Failed to initialize mycroft...\n");
+        return 1;
+    }
+
+    /* Initialize scripting and plugins */
+    if (mc_init_scripting(python_path, 1) != MC_OK) {
         fprintf(stderr, "Failed to initialize mycroft...\n");
         return 1;
     }
