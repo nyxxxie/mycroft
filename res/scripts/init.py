@@ -1,8 +1,4 @@
 import sys
-import importtest
+import testing
 
-print("Entry script test:")
-for p in sys.path:
-    print("\tpathentry - %s" % (p))
 
-importtest.hi()
