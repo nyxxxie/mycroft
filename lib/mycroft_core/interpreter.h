@@ -14,6 +14,7 @@ mc_interpreter_t* mc_interpreter_create();
 void mc_interpreter_free(mc_interpreter_t* i);
 
 mc_error_t mc_interpreter_add_path(mc_interpreter_t* i, const char* directory);
+mc_error_t mc_interpreter_run_init_scripts(mc_interpreter_t* i);
 
 /** Global interpreter instance.  This is global because there can only be one python intepreter instance. */
 extern mc_interpreter_t* _interpreter;
