@@ -1,4 +1,4 @@
 import sys
-import testing
+from testing import run_test
 
-
+run_test()
