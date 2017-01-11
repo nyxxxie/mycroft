@@ -4,6 +4,10 @@
 #include <QMainWindow>
 #include <mycroft/project.h>
 #include <mycroft/file.h>
+#include "maineditor.h"
+#include "templateeditor.h"
+#include "hexeditor.h"
+#include "projectview.h"
 
 class MainHexEditor;
 
@@ -17,9 +21,15 @@ class Mycroft : public QMainWindow
 
     Ui::Mycroft* ui;
 
-    MainHexEditor* editor;
-
 private:
+    bool connectMenuActions();
+    bool createMainEditor();
+    bool createTemplateEditor();
+    bool createProjectView();
+    bool destroyMainEditor();
+    bool destroyTemplateEditor();
+    bool destroyProjectView();
+
     bool openFile(QString filename);
     bool openProject(QString projectname);
     bool openTemplate(QString templatename);
@@ -27,6 +37,13 @@ private:
 public:
     explicit Mycroft(QWidget* parent = 0);
     ~Mycroft();
+
+private:
+    MainEditor* editor;
+    HexEditor* hexeditor; // TODO: delete me and place this in maineditor
+    TemplateEditor* templateeditor;
+    HexEditor* hexedit;
+    ProjectView* projectview;
 
 private slots:
     void on_action_file_open();

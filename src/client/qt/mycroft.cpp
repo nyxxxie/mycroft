@@ -1,12 +1,112 @@
 #include <QFileDialog>
+#include <QDockWidget>
 #include <mycroft/mycroft.h>
 #include <mycroft/file.h>
 #include <mycroft/script.h>
 #include <mycroft/error.h>
 #include "mycroft.h"
-#include "mainhexeditor.h"
 #include "ui_mycroft.h"
 
+Mycroft::Mycroft(QWidget* parent) :
+    QMainWindow(parent),
+    ui(new Ui::Mycroft)
+{
+    ui->setupUi(this);
+    connectMenuActions();
+    createMainEditor();
+    createProjectView();
+    createTemplateEditor();
+}
+
+Mycroft::~Mycroft()
+{
+    delete ui;
+    delete editor;
+}
+
+bool Mycroft::connectMenuActions()
+{
+    connect(ui->action_file_open, SIGNAL(triggered()), this, SLOT(on_action_file_open()));
+    connect(ui->action_file_exit, SIGNAL(triggered()), this, SLOT(on_action_file_exit()));
+    connect(ui->action_undo, SIGNAL(triggered()), this, SLOT(on_action_undo()));
+    connect(ui->action_redo, SIGNAL(triggered()), this, SLOT(on_action_redo()));
+    connect(ui->action_cut, SIGNAL(triggered()), this, SLOT(on_action_cut()));
+    connect(ui->action_copy, SIGNAL(triggered()), this, SLOT(on_action_copy()));
+    connect(ui->action_paste, SIGNAL(triggered()), this, SLOT(on_action_paste()));
+    connect(ui->action_delete, SIGNAL(triggered()), this, SLOT(on_action_delete()));
+    connect(ui->action_selectall, SIGNAL(triggered()), this, SLOT(on_action_selectall()));
+    connect(ui->action_script_run_file, SIGNAL(triggered()), this, SLOT(on_action_script_run_file()));
+    connect(ui->action_project_new, SIGNAL(triggered()), this, SLOT(on_action_project_new()));
+    connect(ui->action_project_open, SIGNAL(triggered()), this, SLOT(on_action_project_open()));
+    connect(ui->action_template_open, SIGNAL(triggered()), this, SLOT(on_action_template_open()));
+}
+
+bool Mycroft::createMainEditor()
+{
+    //editor = new MainEditor(this);
+    //ui->windowlayout->addWidget(editor);
+    hexeditor = new HexEditor(this);
+    connect(this, SIGNAL(fileFocused(mc_file_t*)),
+            hexeditor, SLOT(setFile(mc_file_t*)));
+    ui->windowlayout->addWidget(hexeditor);
+}
+
+bool Mycroft::createTemplateEditor()
+{
+    /* Create dock */
+    QDockWidget* dock = new QDockWidget("Template", this);
+    dock->setAllowedAreas(Qt::LeftDockWidgetArea|Qt::RightDockWidgetArea|Qt::BottomDockWidgetArea);
+
+    /* Create project view and add to dock */
+    templateeditor = new TemplateEditor(this);
+    dock->setWidget(templateeditor);
+
+    /* Connect templateeditor and the main window */
+    connect(this, SIGNAL(fileFocused(mc_file_t*)),
+            templateeditor, SLOT(setFile(mc_file_t*)));
+
+    /* Add dock to window */
+    addDockWidget(Qt::BottomDockWidgetArea, dock);
+}
+
+bool Mycroft::createProjectView()
+{
+    /* Create dock */
+    QDockWidget* dock = new QDockWidget("Projects", this);
+    dock->setAllowedAreas(Qt::LeftDockWidgetArea | Qt::RightDockWidgetArea);
+
+    /* Connect projectview and the main window */
+    projectview = new ProjectView(this);
+    dock->setWidget(projectview);
+
+    /* Connect projectview signals with our slots */
+    connect(projectview, SIGNAL(focusProject(mc_project_t*)),
+            this, SLOT(setFocusedProject(mc_project_t*)));
+    connect(projectview, SIGNAL(focusFile(mc_project_t*, mc_file_t*)),
+            this, SLOT(setFocusedFile(mc_project_t*, mc_file_t*)));
+    connect(this, SIGNAL(fileAdded(mc_project_t*, mc_file_t*)),
+            projectview, SLOT(fileAdded(mc_project_t*, mc_file_t*)));
+    connect(this, SIGNAL(projectAdded(mc_project_t*)),
+            projectview, SLOT(projectAdded(mc_project_t*)));
+
+    /* Add dock to window */
+    addDockWidget(Qt::LeftDockWidgetArea, dock);
+}
+
+bool Mycroft::destroyMainEditor()
+{
+
+}
+
+bool Mycroft::destroyTemplateEditor()
+{
+
+}
+
+bool Mycroft::destroyProjectView()
+{
+
+}
 bool Mycroft::openFile(QString filename)
 {
     mc_file_t* file = NULL;
@@ -61,36 +161,6 @@ bool Mycroft::openProject(QString projectname)
 bool Mycroft::openTemplate(QString file)
 {
     return false;
-}
-
-Mycroft::Mycroft(QWidget* parent) :
-    QMainWindow(parent),
-    ui(new Ui::Mycroft)
-{
-    ui->setupUi(this);
-
-    connect(ui->action_file_open, SIGNAL(triggered()), this, SLOT(on_action_file_open()));
-    connect(ui->action_file_exit, SIGNAL(triggered()), this, SLOT(on_action_file_exit()));
-    connect(ui->action_undo, SIGNAL(triggered()), this, SLOT(on_action_undo()));
-    connect(ui->action_redo, SIGNAL(triggered()), this, SLOT(on_action_redo()));
-    connect(ui->action_cut, SIGNAL(triggered()), this, SLOT(on_action_cut()));
-    connect(ui->action_copy, SIGNAL(triggered()), this, SLOT(on_action_copy()));
-    connect(ui->action_paste, SIGNAL(triggered()), this, SLOT(on_action_paste()));
-    connect(ui->action_delete, SIGNAL(triggered()), this, SLOT(on_action_delete()));
-    connect(ui->action_selectall, SIGNAL(triggered()), this, SLOT(on_action_selectall()));
-    connect(ui->action_script_run_file, SIGNAL(triggered()), this, SLOT(on_action_script_run_file()));
-    connect(ui->action_project_new, SIGNAL(triggered()), this, SLOT(on_action_project_new()));
-    connect(ui->action_project_open, SIGNAL(triggered()), this, SLOT(on_action_project_open()));
-    connect(ui->action_template_open, SIGNAL(triggered()), this, SLOT(on_action_template_open()));
-
-    editor = new MainHexEditor(this);
-    ui->windowlayout->addWidget(editor);
-}
-
-Mycroft::~Mycroft()
-{
-    delete ui;
-    delete editor;
 }
 
 void Mycroft::on_action_file_open()
