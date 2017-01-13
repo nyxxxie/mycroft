@@ -11,12 +11,26 @@ Mycroft::Mycroft(QWidget* parent) :
     QMainWindow(parent),
     ui(new Ui::Mycroft)
 {
+    editor = NULL;
+    hexeditor = NULL;
+    menu_dockable_widgets = NULL;
+    projectview = NULL;
+    dock_projectview = NULL;
+    templateeditor = NULL;
+    dock_templateeditor = NULL;
+    pyterm = NULL;
+    dock_pyterm = NULL;
+
     ui->setupUi(this);
+
     createMainEditor();
     createProjectView();
+    createPythonTerminal();
     createTemplateEditor();
     connectMenuActions();
     createWindowToggleMenu();
+
+    tabifyDockWidget(dock_pyterm, dock_templateeditor);
 }
 
 Mycroft::~Mycroft()
@@ -68,6 +82,7 @@ bool Mycroft::createTemplateEditor()
 
     /* Add dock to window */
     addDockWidget(Qt::BottomDockWidgetArea, dock_templateeditor);
+
 }
 
 bool Mycroft::createProjectView()
@@ -94,6 +109,24 @@ bool Mycroft::createProjectView()
     addDockWidget(Qt::LeftDockWidgetArea, dock_projectview);
 }
 
+bool Mycroft::createPythonTerminal()
+{
+    /* Create dock */
+    dock_pyterm = new QDockWidget("Python Terminal", this);
+    dock_pyterm->setAllowedAreas(Qt::LeftDockWidgetArea|Qt::RightDockWidgetArea|Qt::BottomDockWidgetArea);
+
+    /* Create project view and add to dock */
+    pyterm = new QTextEdit(this);
+    dock_pyterm->setWidget(pyterm);
+
+    /* Connect templateeditor and the main window */
+    connect(this, SIGNAL(fileFocused(mc_file_t*)),
+            pyterm, SLOT(setFile(mc_file_t*)));
+
+    /* Add dock to window */
+    addDockWidget(Qt::BottomDockWidgetArea, dock_pyterm);
+}
+
 bool Mycroft::createWindowToggleMenu()
 {
     menu_dockable_widgets = ui->menu_window->addMenu("Dockable Widgets");
@@ -106,6 +139,9 @@ bool Mycroft::createWindowToggleMenu()
     dock_templateeditor->toggleViewAction()->setText("Template Editor");
     menu_dockable_widgets->addAction(dock_templateeditor->toggleViewAction());
 
+    /* Add action for projectview */
+    dock_pyterm->toggleViewAction()->setText("Python Terminal");
+    menu_dockable_widgets->addAction(dock_pyterm->toggleViewAction());
 }
 
 bool Mycroft::destroyMainEditor()
@@ -119,6 +155,11 @@ bool Mycroft::destroyTemplateEditor()
 }
 
 bool Mycroft::destroyProjectView()
+{
+
+}
+
+bool Mycroft::destroyPythonTerminal()
 {
 
 }

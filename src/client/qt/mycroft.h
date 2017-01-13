@@ -3,6 +3,7 @@
 
 #include <QMainWindow>
 #include <QDockWidget>
+#include <QTextEdit>
 #include <QMenu>
 #include <mycroft/project.h>
 #include <mycroft/file.h>
@@ -28,10 +29,12 @@ private:
     bool createMainEditor();
     bool createTemplateEditor();
     bool createProjectView();
+    bool createPythonTerminal();
     bool createWindowToggleMenu();
     bool destroyMainEditor();
     bool destroyTemplateEditor();
     bool destroyProjectView();
+    bool destroyPythonTerminal();
     bool destroyWindowToggleMenu();
 
     bool openFile(QString filename);
@@ -45,11 +48,14 @@ public:
 private:
     MainEditor* editor;
     HexEditor* hexeditor; // TODO: delete me and place this in maineditor
+    QMenu* menu_dockable_widgets;
+
     ProjectView* projectview;
     QDockWidget* dock_projectview;
     TemplateEditor* templateeditor;
     QDockWidget* dock_templateeditor;
-    QMenu* menu_dockable_widgets;
+    QTextEdit* pyterm;
+    QDockWidget* dock_pyterm;
 
 private slots:
     void on_action_file_open();
