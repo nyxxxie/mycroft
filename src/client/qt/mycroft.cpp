@@ -12,10 +12,11 @@ Mycroft::Mycroft(QWidget* parent) :
     ui(new Ui::Mycroft)
 {
     ui->setupUi(this);
-    connectMenuActions();
     createMainEditor();
     createProjectView();
     createTemplateEditor();
+    connectMenuActions();
+    createWindowToggleMenu();
 }
 
 Mycroft::~Mycroft()
@@ -54,30 +55,30 @@ bool Mycroft::createMainEditor()
 bool Mycroft::createTemplateEditor()
 {
     /* Create dock */
-    QDockWidget* dock = new QDockWidget("Template", this);
-    dock->setAllowedAreas(Qt::LeftDockWidgetArea|Qt::RightDockWidgetArea|Qt::BottomDockWidgetArea);
+    dock_templateeditor = new QDockWidget("Template", this);
+    dock_templateeditor->setAllowedAreas(Qt::LeftDockWidgetArea|Qt::RightDockWidgetArea|Qt::BottomDockWidgetArea);
 
     /* Create project view and add to dock */
     templateeditor = new TemplateEditor(this);
-    dock->setWidget(templateeditor);
+    dock_templateeditor->setWidget(templateeditor);
 
     /* Connect templateeditor and the main window */
     connect(this, SIGNAL(fileFocused(mc_file_t*)),
             templateeditor, SLOT(setFile(mc_file_t*)));
 
     /* Add dock to window */
-    addDockWidget(Qt::BottomDockWidgetArea, dock);
+    addDockWidget(Qt::BottomDockWidgetArea, dock_templateeditor);
 }
 
 bool Mycroft::createProjectView()
 {
     /* Create dock */
-    QDockWidget* dock = new QDockWidget("Projects", this);
-    dock->setAllowedAreas(Qt::LeftDockWidgetArea | Qt::RightDockWidgetArea);
+    dock_projectview = new QDockWidget("Projects", this);
+    dock_projectview->setAllowedAreas(Qt::LeftDockWidgetArea | Qt::RightDockWidgetArea);
 
     /* Connect projectview and the main window */
     projectview = new ProjectView(this);
-    dock->setWidget(projectview);
+    dock_projectview->setWidget(projectview);
 
     /* Connect projectview signals with our slots */
     connect(projectview, SIGNAL(focusProject(mc_project_t*)),
@@ -90,7 +91,21 @@ bool Mycroft::createProjectView()
             projectview, SLOT(projectAdded(mc_project_t*)));
 
     /* Add dock to window */
-    addDockWidget(Qt::LeftDockWidgetArea, dock);
+    addDockWidget(Qt::LeftDockWidgetArea, dock_projectview);
+}
+
+bool Mycroft::createWindowToggleMenu()
+{
+    menu_dockable_widgets = ui->menu_window->addMenu("Dockable Widgets");
+
+    /* Add action for projectview */
+    dock_projectview->toggleViewAction()->setText("Project View");
+    menu_dockable_widgets->addAction(dock_projectview->toggleViewAction());
+
+    /* Add action for projectview */
+    dock_templateeditor->toggleViewAction()->setText("Template Editor");
+    menu_dockable_widgets->addAction(dock_templateeditor->toggleViewAction());
+
 }
 
 bool Mycroft::destroyMainEditor()
@@ -107,6 +122,12 @@ bool Mycroft::destroyProjectView()
 {
 
 }
+
+bool Mycroft::destroyWindowToggleMenu()
+{
+
+}
+
 bool Mycroft::openFile(QString filename)
 {
     mc_file_t* file = NULL;

@@ -2,6 +2,8 @@
 #define MYCROFT_QT_H
 
 #include <QMainWindow>
+#include <QDockWidget>
+#include <QMenu>
 #include <mycroft/project.h>
 #include <mycroft/file.h>
 #include "maineditor.h"
@@ -26,9 +28,11 @@ private:
     bool createMainEditor();
     bool createTemplateEditor();
     bool createProjectView();
+    bool createWindowToggleMenu();
     bool destroyMainEditor();
     bool destroyTemplateEditor();
     bool destroyProjectView();
+    bool destroyWindowToggleMenu();
 
     bool openFile(QString filename);
     bool openProject(QString projectname);
@@ -41,9 +45,11 @@ public:
 private:
     MainEditor* editor;
     HexEditor* hexeditor; // TODO: delete me and place this in maineditor
-    TemplateEditor* templateeditor;
-    HexEditor* hexedit;
     ProjectView* projectview;
+    QDockWidget* dock_projectview;
+    TemplateEditor* templateeditor;
+    QDockWidget* dock_templateeditor;
+    QMenu* menu_dockable_widgets;
 
 private slots:
     void on_action_file_open();

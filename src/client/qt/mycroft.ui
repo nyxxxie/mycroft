@@ -19,7 +19,7 @@
   <property name="windowTitle">
    <string>Mycroft</string>
   </property>
-  <widget class="QWidget" name="main_editor">
+  <widget class="QWidget" name="mainwidget">
    <layout class="QVBoxLayout" name="windowlayout">
     <property name="spacing">
      <number>0</number>
@@ -164,6 +164,21 @@
   <action name="action_script_run_file">
    <property name="text">
     <string>Run File...</string>
+   </property>
+  </action>
+  <action name="action_window_dockable_projectview">
+   <property name="text">
+    <string>ProjectView</string>
+   </property>
+  </action>
+  <action name="action">
+   <property name="text">
+    <string>TemplateEditor</string>
+   </property>
+  </action>
+  <action name="actionSdfg">
+   <property name="text">
+    <string>sdfg</string>
    </property>
   </action>
  </widget>
