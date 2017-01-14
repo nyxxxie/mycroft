@@ -1,4 +1,4 @@
-#include "template/typesystem.h"
+#include "typesystem/typesystem.h"
 #include "binds/template/typesystem.h"
 
 static PyObject* mcore_typesystem_add_type(PyObject* self, PyObject* args)

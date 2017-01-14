@@ -35,10 +35,10 @@ set(MYCROFT_CORE_SRC
     binds/core.c
     template/template.c
     template/template_parser.c
-    template/typedef.c
-    template/typesystem.c
-    template/types/byte.c
-    template/types/char.c
+    typesystem/typedef.c
+    typesystem/typesystem.c
+    typesystem/types/byte.c
+    typesystem/types/char.c
     binds/file.c
     binds/project.c
     binds/template/typesystem.c

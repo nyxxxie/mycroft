@@ -6,7 +6,7 @@ extern "C" {
 #endif
 
 #include <Python.h>
-#include "template/typesystem.h"
+#include "typesystem/typesystem.h"
 
 int init_binds_typesystem();
 

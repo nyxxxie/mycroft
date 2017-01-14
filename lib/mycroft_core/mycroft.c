@@ -8,6 +8,7 @@
 #include "interpreter.h"
 #include "project.h"
 #include "plugin.h"
+#include "typesystem/typesystem.h"
 
 mc_ctx_t* _ctx = NULL;
 
@@ -29,6 +30,13 @@ mc_error_t mc_init() {
     _ctx->interpreter = mc_interpreter_create();
     if (_ctx->interpreter == NULL) {
         MC_ERROR("Failed to create interpreter.\n");
+        return MC_ERR;
+    }
+
+    /* */
+    _ctx->typesystem = mc_typesystem_create();
+    if (_ctx->typesystem == NULL) {
+        MC_ERROR("Failed to create typesystem.\n");
         return MC_ERR;
     }
 

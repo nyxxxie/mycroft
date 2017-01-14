@@ -6,7 +6,7 @@ extern "C" {
 #endif
 
 #include <stdint.h>
-#include "template/typedef.h"
+#include "typesystem/typedef.h"
 
 typedef struct {
     mc_typedef_t** typedefs;
