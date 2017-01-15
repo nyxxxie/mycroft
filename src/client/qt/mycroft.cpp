@@ -1,5 +1,6 @@
 #include <QFileDialog>
 #include <QDockWidget>
+#include <QMessageBox>
 #include <mycroft/mycroft.h>
 #include <mycroft/file.h>
 #include <mycroft/script.h>
@@ -53,6 +54,7 @@ bool Mycroft::connectMenuActions()
     connect(ui->action_script_run_file, SIGNAL(triggered()), this, SLOT(on_action_script_run_file()));
     connect(ui->action_project_new, SIGNAL(triggered()), this, SLOT(on_action_project_new()));
     connect(ui->action_project_open, SIGNAL(triggered()), this, SLOT(on_action_project_open()));
+    connect(ui->action_project_saveas, SIGNAL(triggered()), this, SLOT(on_action_project_saveas()));
     connect(ui->action_template_open, SIGNAL(triggered()), this, SLOT(on_action_template_open()));
 }
 
@@ -227,8 +229,8 @@ bool Mycroft::openTemplate(QString file)
 
 void Mycroft::on_action_file_open()
 {
-    QString filters("Mycroft Project File (*.mpf);;All files (*.*)");
-    QString defaultFilter("All files (*.*)");
+    QString filters("Mycroft Project File (*.mpf);;All files (*)");
+    QString defaultFilter("All files (*)");
 
     QString file = QFileDialog::getOpenFileName(
         NULL,
@@ -291,7 +293,7 @@ void Mycroft::on_action_selectall()
 
 void Mycroft::on_action_script_run_file()
 {
-    QString filters("Python Scripts (*.py);;All files (*.*)");
+    QString filters("Python Scripts (*.py);;All files (*)");
     QString defaultFilter("Python Scripts (*.py)");
 
     /* Static method approach */
@@ -316,13 +318,13 @@ void Mycroft::on_action_project_new()
 
 void Mycroft::on_action_project_open()
 {
-    QString filters("Mycroft Project File (*.mpf);;All files (*.*)");
+    QString filters("Mycroft Project File (*.mpf);;All files (*)");
     QString defaultFilter("Mycroft Project File (*.mpf)");
 
     /* Static method approach */
     QString file = QFileDialog::getOpenFileName(
         NULL,
-        "Open Script File",
+        "Open Project File",
         QDir::currentPath(),
         filters,
         &defaultFilter);
@@ -334,9 +336,33 @@ void Mycroft::on_action_project_open()
     //}
 }
 
+void Mycroft::on_action_project_saveas()
+{
+    QFileDialog fd(this, "Choose file to save");
+    fd.setNameFilter("Mycroft Project File (*.mpf)");
+    fd.setDefaultSuffix("mpf");
+    fd.setAcceptMode(QFileDialog::AcceptSave);
+    fd.exec();
+    QString file = fd.selectedFiles().first();
+
+    printf("Saving project file: \"%s\"\n", file.toStdString().c_str());
+    if (mc_get_focused_project()) {
+        if (mc_project_save(mc_get_focused_project(), file.toStdString().c_str())) {
+
+        }
+    }
+    else {
+        QMessageBox::information(this, "Failed to save project", "No project currently in focus.", QMessageBox::Ok);
+    }
+    //int rc = mc_plugin_runfile(file.toStdString().c_str());
+    //if (rc < 0) {
+    //    printf("Failed to run script!\n");
+    //}
+}
+
 void Mycroft::on_action_template_open()
 {
-    QString filters("Mycroft Template File (*.mtf);;All files (*.*)");
+    QString filters("Mycroft Template File (*.mtf);;All files (*)");
     QString defaultFilter("Mycroft Template File (*.mtf)");
 
     /* Static method approach */

@@ -70,6 +70,7 @@ private slots:
     void on_action_script_run_file();
     void on_action_project_new();
     void on_action_project_open();
+    void on_action_project_saveas();
     void on_action_template_open();
 
 public slots:

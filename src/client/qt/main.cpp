@@ -4,6 +4,7 @@
 #include <mycroft/mycroft.h>
 #include <mycroft/plugin.h>
 #include <mycroft/script.h>
+#include <mycroft/template.h>
 #include "mycroft.h"
 #include "config.h"
 
@@ -29,6 +30,7 @@ int main(int argc, char *argv[])
         {{"p", "project"},  "Mycroft project to open.",                    "project",    ""},
         {"plugdir",         "Additional directory to search for plugins.", "directory",  ""},
         {"testprojects",    "Create test projects for testing."},
+        {"testfile",        "Create test file ."},
     });
     args.process(a);
 
@@ -87,6 +89,37 @@ int main(int argc, char *argv[])
             }
 
             mc_add_project(project);
+        }
+    }
+
+    /* Create test projects (this should be deleted later) */
+    if (args.isSet("testfile")) {
+        template_t* t;
+        mc_file_t* file;
+
+        /* Open file */
+        file = mc_file_open("testfile");
+        if (file == NULL) {
+            printf("Failed to open test file.\n");
+            return 1;
+        }
+
+        /* */
+        t = template_create_from_file("testfile.mtf");
+        if (t == NULL) {
+            printf("Failed to open template file.\n");
+            return 1;
+        }
+
+        /* */
+        if (mc_file_set_template(file, t) < 0) {
+            printf("Failed to set file template.\n");
+            return 1;
+        }
+
+        if (!w.addFile(project, file)) {
+            printf("Failed to add file to project.\n");
+            return 1;
         }
     }
 

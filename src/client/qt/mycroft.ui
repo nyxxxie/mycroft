@@ -67,6 +67,7 @@
     </property>
     <addaction name="action_project_new"/>
     <addaction name="action_project_open"/>
+    <addaction name="action_project_saveas"/>
    </widget>
    <widget class="QMenu" name="menu_template">
     <property name="title">
@@ -179,6 +180,11 @@
   <action name="actionSdfg">
    <property name="text">
     <string>sdfg</string>
+   </property>
+  </action>
+  <action name="action_project_saveas">
+   <property name="text">
+    <string>Save As...</string>
    </property>
   </action>
  </widget>
