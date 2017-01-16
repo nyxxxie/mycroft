@@ -74,7 +74,7 @@ int main(int argc, char *argv[])
 
         for (mc_project_t* project : projects) {
             for (const char* file : files) {
-                mc_project_add_file(project, mc_file_open(file));
+                mc_project_add_file(project, mc_file_open(file, NULL));
             }
 
             mc_add_project(project);
@@ -102,7 +102,7 @@ int main(int argc, char *argv[])
             MC_DEBUG("\tfile: \"%s\".\n", path);
 
             /* Open file */
-            file = mc_file_open(path);
+            file = mc_file_open(path, NULL);
             if (file == NULL) {
                 printf("Failed to open file \"%s\", exiting...\n", path);
                 return 1;

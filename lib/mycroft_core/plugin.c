@@ -120,10 +120,11 @@ int load_plugin(const char* plugins_dir, const char* plugin_dir)
     strcat(initfile, "/" PLUGIN_INIT_FILE);
 
     /* Check if the init file exists for this plugin */
-    rc = file_exists(initfile);
-    if (rc < 0) {
-        fprintf(stderr, "Failed to load plugin at \"%s\": couldn't find init file.\n",
-            plugin_dir);
+    rc = mc_file_access(initfile);
+    if (rc != 0) {
+        fprintf(stderr,
+                "Failed to load plugin at \"%s\": couldn't find init file.\n",
+                plugin_dir);
         printf("%s\n", initfile);
         return rc;
     }

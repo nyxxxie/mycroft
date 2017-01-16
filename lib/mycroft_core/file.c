@@ -23,9 +23,10 @@
  *
  * @param file_name File to check.
  *
- * @return Returns 0 on success, negative value on error.
+ * @return Returns 0 if file exists, other value otherwise.
  */
-int file_exists(const char* file_name)
+/* NOTE: return type is subject to change */
+int mc_file_access(const char* file_name)
 {
     FILE* fp;
     if ((fp = fopen(file_name, "r")) != NULL) {
@@ -71,16 +72,19 @@ mc_file_t* mc_file_create()
  * without closing and reinitializing it.
  *
  * @param file_name File to open.
+ * @param err Pointer to mc_error_t to return error to.  May be NULL.
  *
  * @return Returns the created mc_file_t, NULL otherwise.
  */
-mc_file_t* mc_file_open(const char* file_name)
+mc_file_t* mc_file_open(const char* file_name, mc_error_t *err)
 {
     mc_file_t* file = NULL;
 
     /* Make sure we're passed a nonempty path */
     if (file_name == 0 || strlen(file_name) == 0) {
         MC_ERROR("Filename is null or empty.");
+        if (err != NULL)
+            (*err) = MC_FILE_ERR_FILENAME;
         return NULL;
     }
 
@@ -88,6 +92,8 @@ mc_file_t* mc_file_open(const char* file_name)
     file = mc_file_create();
     if (file == NULL) {
         MC_ERROR("Failed to alloc mc_file_t struct.");
+        if (err != NULL)
+            (*err) = MC_FILE_ERR_MALLOC;
         return NULL;
     }
 
@@ -95,6 +101,8 @@ mc_file_t* mc_file_open(const char* file_name)
     file->path = (char*)malloc(strlen(file_name)+1);
     if (file->path == NULL) {
         MC_ERROR("Failed to copy file path to mc_file_t struct.");
+        if (err != NULL)
+            (*err) = MC_FILE_ERR_MALLOC;
         return NULL;
     }
     strcpy(file->path, file_name);
@@ -102,14 +110,17 @@ mc_file_t* mc_file_open(const char* file_name)
 
     /* Try to open file */
     if ((file->fp = fopen(file->path, "rb+")) == NULL) {
-        MC_ERROR("Failed to fopen file \"%s\": %s [%i]\n", file->path, strerror(errno), errno);
+        MC_ERROR("Failed to fopen file \"%s\": %s [%i]\n",
+                 file->path, strerror(errno), errno);
+        if (err != NULL)
+            (*err) = MC_FILE_ERR_IO;
         return NULL;
     }
 
     /* Get file size */
-    fseek(file->fp, 0, SEEK_END);
-    file->size = ftell(file->fp);
-    fseek(file->fp, 0, SEEK_SET);
+    fseeko(file->fp, 0, SEEK_END);
+    file->size = ftello(file->fp);
+    fseeko(file->fp, 0, SEEK_SET);
 
     return file;
 }
@@ -120,19 +131,16 @@ mc_file_t* mc_file_open(const char* file_name)
  *
  * @param file mc_file_t struct to close.
  *
- * @return Returns 0 on success, negative value on error.
+ * @return Returns mc_error_t status.
  */
-int mc_file_close(mc_file_t* file)
+mc_error_t mc_file_close(mc_file_t* file)
 {
-    if (file->fp != NULL) {
+    if (file->fp != NULL)
         fclose(file->fp);
-    }
-
-    if (file->path != NULL) {
+    if (file->path != NULL)
         free(file->path);
-    }
 
-    return 0;
+    return MC_OK;
 }
 
 /**
@@ -152,12 +160,12 @@ template_t* mc_file_get_template(mc_file_t* file)
  *
  * @param file mc_file_t struct to operate on.
  *
- * @return Returns 0 on success, negative value on error.
+ * @return Returns mc_error_t status.
  */
-int mc_file_set_template(mc_file_t* file, template_t* t)
+mc_error_t mc_file_set_template(mc_file_t* file, template_t* t)
 {
     file->t = t;
-    return 0;
+    return MC_OK;
 }
 
 /**
@@ -166,12 +174,12 @@ int mc_file_set_template(mc_file_t* file, template_t* t)
  *
  * @param file mc_file_t struct to operate on.
  *
- * @return Returns 0 on success, negative value on error.
+ * @return Returns cursor.
  */
-int mc_file_get_cursor(mc_file_t* file)
+fsize_t mc_file_get_cursor(mc_file_t* file)
 {
-    //file->cursor = ftell(file->fp);
-    return file->cursor;
+    //file->cursor = ftello(file->fp);
+    return (fsize_t) file->cursor;
 }
 
 /**
@@ -181,24 +189,21 @@ int mc_file_get_cursor(mc_file_t* file)
  * @param file mc_file_t struct to operate on.
  * @param cursor Value to set cursor to.
  *
- * @return Returns 0 on success, negative value on error.
+ * @return Returns mc_error_t status.
  */
-int mc_file_set_cursor(mc_file_t* file, int cursor)
+mc_error_t mc_file_set_cursor(mc_file_t* file, fsize_t cursor)
 {
     if (cursor > file->size) {
         fprintf(stderr, "Tried to set cursor past the end of the file.");
-        return -1;
+        return MC_FILE_ERR_BOUNDS;
     }
-
-    int ret = fseek(file->fp, cursor, SEEK_SET);
-    if (ret < 0) {
+    int ret = fseeko(file->fp, (off_t) cursor, SEEK_SET);
+    if (ret != 0) {
         perror("DEBUG: Error in mc_file_set_cursor: ");
-        return -1;
+        return MC_FILE_ERR_IO;
     }
-
     file->cursor = cursor;
-
-    return 0;
+    return MC_OK;
 }
 
 /**
@@ -247,15 +252,15 @@ char* mc_file_path(mc_file_t* file)
  * @param file mc_file_t struct to operate on.
  * @param size Size of the cache to allocate.
  *
- * @return Returns 0 on success, negative value on error.
+ * @return Returns mc_error_t status.
  */
-int mc_file_cache_init(mc_file_t* file, int size)
+mc_error_t mc_file_cache_init(mc_file_t* file, fsize_t size)
 {
     /* Create cache struct */
     file->cache = (file_cache_t*)malloc(sizeof(file_cache_t));
     if (file->cache == NULL) {
         fprintf(stderr, "Failed to allocate space for cache struct.");
-        return -1;
+        return MC_FILE_ERR_MALLOC;
     }
 
     /* Determine if the cache is larger than the file, and resize it accordingly */
@@ -269,10 +274,10 @@ int mc_file_cache_init(mc_file_t* file, int size)
     file->cache->buf = (uint8_t*)malloc(file->cache->size);
     if (file->cache->buf == NULL) {
         fprintf(stderr, "Failed to allocate space for cache buffer.");
-        return -1;
+        return MC_FILE_ERR_MALLOC;
     }
 
-    return 0;
+    return MC_OK;
 }
 
 /**
@@ -281,12 +286,13 @@ int mc_file_cache_init(mc_file_t* file, int size)
  * @param file mc_file_t struct to operate on.
  * @param cursor Position to start at.
  *
- * @return Returns 0 on success, negative value on error.
+ * @return Returns mc_error_t status.
  */
-int mc_file_cache_loadzone(mc_file_t* file, int cursor)
+mc_error_t mc_file_cache_loadzone(mc_file_t* file, fsize_t cursor)
 {
     file->cache->base = cursor;
-    return mc_file_cache_reload(file); // Why duplicate efforts?
+    /* This will then load data from file from a newly set cursor */
+    return mc_file_cache_reload(file);
 }
 
 /**
@@ -294,25 +300,20 @@ int mc_file_cache_loadzone(mc_file_t* file, int cursor)
  *
  * @param file mc_file_t struct to operate on.
  *
- * @return Returns 0 on success, negative value on error.
+ * @return Returns mc_error_t status.
  */
-int mc_file_cache_reload(mc_file_t* file)
+mc_error_t mc_file_cache_reload(mc_file_t* file)
 {
-    int diff = 0;
-    int rc = 0;
-
     /* If our cache extends off the end of the current file, relocate it */
-    diff = (file->cache->base+file->cache->size) - mc_file_size(file);
+    fsize_t diff = (file->cache->base+file->cache->size) - mc_file_size(file);
     if (diff > 0)
         file->cache->base -= diff;
-
     /* Read bytes from file into cache */
-    rc = mc_file_read_raw(file, file->cache->size, file->cache->buf);
-    if (rc < 0) {
+    mc_error_t rc = mc_file_read_raw(file, file->cache->size,
+                                     file->cache->buf, NULL);
+    if (rc != MC_OK)
         return rc;
-    }
-
-    return 0;
+    return MC_OK;
 }
 
 /**
@@ -322,21 +323,24 @@ int mc_file_cache_reload(mc_file_t* file)
  * @param file mc_file_t struct to operate on.
  * @param amount Amount of bytes to read.
  * @param outbuf Buffer to place bytes in.
+ * @param amount_read Amount of bytes read.  Can be NULL.
  *
- * @return Returns 0 on success, negative value on error.
+ * @return Returns mc_error_t status.
  */
-int mc_file_read(mc_file_t* file, fsize_t amount, uint8_t* outbuf)
+mc_error_t mc_file_read(mc_file_t* file, fsize_t amount,
+                        uint8_t* outbuf, fsize_t* amount_read)
 {
     /* Read desired content */
-    long int res = fread(outbuf, 1, amount, file->fp);
+    size_t res = fread(outbuf, 1, amount, file->fp);
+    if (amount_read != NULL)
+        (*amount_read) = (fsize_t) res;
     if (res != amount) {
         if (ferror(file->fp)) {
             perror("DEBUG: Error in mc_file_read");
-            return -1;
+            return MC_FILE_ERR_IO;
         }
     }
-
-    return res;
+    return MC_OK;
 }
 
 /**
@@ -346,21 +350,24 @@ int mc_file_read(mc_file_t* file, fsize_t amount, uint8_t* outbuf)
  * @param file mc_file_t struct to operate on.
  * @param amount Amount of bytes to read.
  * @param outbuf Buffer to place bytes in.
+ * @param amount_read Amount of bytes read.  Can be NULL.
  *
- * @return Returns 0 on success, negative value on error.
+ * @return Returns mc_error_t status.
  */
-int mc_file_read_raw(mc_file_t* file, fsize_t amount, uint8_t* outbuf)
+mc_error_t mc_file_read_raw(mc_file_t* file, fsize_t amount,
+                            uint8_t* outbuf, fsize_t* amount_read)
 {
     /* Read desired content */
-    long int res = fread(outbuf, 1, amount, file->fp);
+    size_t res = fread(outbuf, 1, amount, file->fp);
+    if (amount_read != NULL)
+        (*amount_read) = (fsize_t) res;
     if (res != amount) {
-        if (ferror(file->fp)) {
+        if (ferror(file->fp) != 0) {
             perror("DEBUG: Error in mc_file_read_raw");
-            return -1;
+            return MC_FILE_ERR_IO;
         }
     }
-
-    return res;
+    return MC_OK;
 }
 
 /**
@@ -373,50 +380,61 @@ int mc_file_read_raw(mc_file_t* file, fsize_t amount, uint8_t* outbuf)
  * @param offset Offset into the file to start reading at.
  * @param amount Amount of bytes to read.
  * @param outbuf Buffer to place bytes in.
+ * @param amount_read Amount of bytes read.  Can be NULL.
  *
- * @return Returns 0 on success, negative value on error.
+ * @return Returns mc_error_t status.
  */
-int mc_file_read_value(mc_file_t* file, fsize_t offset, fsize_t amount, uint8_t* outbuf)
+mc_error_t mc_file_read_value(mc_file_t* file, fsize_t offset,
+                              fsize_t amount, uint8_t* outbuf,
+                              fsize_t* amount_read)
 {
+    mc_error_t rc;
+
     /* Make sure that we don't read off the end of the file */
     if ((offset + amount) >= file->size) {
         fprintf(stderr, "Tried to read off the end of the file.\n");
-        return -1;
+        return MC_FILE_ERR_BOUNDS;
     }
 
     //TODO: check to see if we can read from editor_buffer's buf?
 
     /* Save old position and move to offset */
     fsize_t old_cursor = file->cursor;
-    if (mc_file_set_cursor(file, offset) < 0) {
+    rc = mc_file_set_cursor(file, offset);
+    if (rc != MC_OK) {
         perror("DEBUG: Error in mc_file_set_cursor: ");
-        return -1;
+        return rc;
     }
 
     /* Read desired content */
-    long int res = fread(outbuf, 1, amount, file->fp);
+    size_t res = fread(outbuf, 1, amount, file->fp);
+    if (amount_read != NULL)
+        (*amount_read) = (fsize_t) res;
     if (res != amount) {
         if (ferror(file->fp)) {
             perror("DEBUG: Error in mc_file_write_pos");
-            return -1;
+            return MC_FILE_ERR_IO;
         }
         else if (feof(file->fp)) {
             fprintf(stderr, "Tried to read past end of file.\n");
-            return -1;
+            return MC_FILE_ERR_IO;
         }
         else {
-            fprintf(stderr, "fread failed for some unknown reason.  Report this!\n");
-            return -1;
+            fprintf(stderr,
+                    "fread failed for some unknown reason.  "
+                    "Report this!\n");
+            return MC_ERR;
         }
     }
 
     /* Set original position */
-    if (mc_file_set_cursor(file, old_cursor) < 0) {
+    rc = mc_file_set_cursor(file, old_cursor);
+    if (rc != MC_OK) {
         perror("DEBUG: Error in mc_file_set_cursor: ");
-        return -1;
+        return rc;
     }
 
-    return 0;
+    return MC_OK;
 }
 
 /**
@@ -426,21 +444,24 @@ int mc_file_read_value(mc_file_t* file, fsize_t offset, fsize_t amount, uint8_t*
  * @param file mc_file_t struct to operate on.
  * @param amount Amount of bytes to write.
  * @param outbuf Buffer to place bytes in.
+ * @param amount_written Amount of bytes written.
  *
- * @return Returns 0 on success, negative value on error.
+ * @return Returns mc_error_t status.
  */
-int mc_file_write(mc_file_t* file, fsize_t amount, uint8_t* outbuf)
+mc_error_t mc_file_write(mc_file_t* file, fsize_t amount,
+                         uint8_t* outbuf, fsize_t* amount_written)
 {
     /* Read desired content */
-    long int res = fwrite(outbuf, 1, amount, file->fp);
+    size_t res = fwrite(outbuf, 1, amount, file->fp);
+    if (amount_written != NULL)
+        (*amount_written) = (fsize_t) res;
     if (res != amount) {
         if (ferror(file->fp)) {
             perror("DEBUG: Error in mc_file_write");
-            return -1;
+            return MC_FILE_ERR_IO;
         }
     }
-
-    return res;
+    return MC_OK;
 }
 
 /**
@@ -454,47 +475,55 @@ int mc_file_write(mc_file_t* file, fsize_t amount, uint8_t* outbuf)
  * @param offset Offset into the file to start reading at.
  * @param amount Amount of bytes to read.
  * @param outbuf Buffer to place bytes in.
+ * @param amount_written Amount of bytes written.
  *
- * @return Returns 0 on success, negative value on error.
+ * @return Returns mc_error_t status.
  */
-int mc_file_write_value(mc_file_t* file, fsize_t offset, fsize_t amount, uint8_t* outbuf)
+mc_error_t mc_file_write_value(mc_file_t* file, fsize_t offset,
+                               fsize_t amount, uint8_t* outbuf,
+                               fsize_t* amount_written)
 {
+    mc_error_t rc;
+
     /* Make sure that we don't write past file contents */
     if ((offset + amount) >= file->size) {
         fprintf(stderr, "Tried to write off the end of the file.\n");
-        return -1;
+        return MC_FILE_ERR_BOUNDS;
     }
 
     /* Save old position and move to offset */
     fsize_t old_cursor = file->cursor;
-    if (mc_file_set_cursor(file, offset) < 0) {
-        return -1;
+    rc = mc_file_set_cursor(file, offset);
+    if (rc != MC_OK) {
+        perror("DEBUG: Error in mc_file_set_cursor: ");
+        return rc;
     }
 
     /* Read desired content */
-    long int res = fwrite(outbuf, 1, amount, file->fp);
+    size_t res = fwrite(outbuf, 1, amount, file->fp);
+    if (amount_written != NULL)
+        (*amount_written) = (fsize_t) res;
     if (res != amount) {
         if (ferror(file->fp)) {
             perror("DEBUG: Error in mc_file_write_pos");
-            return -1;
-        }
-        else if (feof(file->fp)) {
-            // Reached eof (HOW??)
-            return -1;
+            return MC_FILE_ERR_IO;
         }
         else {
-            fprintf(stderr, "fwrite failed for some unknown reason.  Report this!\n");
-            return -1;
+            fprintf(stderr,
+                    "fwrite failed for some unknown reason.  "
+                    "Report this!\n");
+            return MC_ERR;
         }
     }
 
     /* Set original position */
-    if (mc_file_set_cursor(file, old_cursor) < 0) {
+    rc = mc_file_set_cursor(file, old_cursor);
+    if (rc != MC_OK) {
         perror("DEBUG: Error in mc_file_set_cursor");
-        return -1;
+        return rc;
     }
 
-    return 0;
+    return MC_OK;
 }
 
 /**
@@ -509,20 +538,23 @@ int mc_file_write_value(mc_file_t* file, fsize_t offset, fsize_t amount, uint8_t
  * @param offset Offset into the file to start reading at.
  * @param amount Amount of bytes to read.
  * @param outbuf Buffer to place bytes in.
+ * @param amount_written Amount of bytes read.
  *
- * @return Returns 0 on success, negative value on error.
+ * @return Returns mc_error_t status.
  */
-int mc_file_read_cache(mc_file_t* file, fsize_t offset, fsize_t amount, uint8_t* outbuf)
+mc_error_t mc_file_read_cache(mc_file_t* file, fsize_t offset,
+                              fsize_t amount, uint8_t* outbuf,
+                              fsize_t* amount_read)
 {
-    int rc = mc_file_cache_loadzone(file, offset);
-    if (rc < 0) {
+    mc_error_t rc;
+
+    rc = mc_file_cache_loadzone(file, offset);
+    if (rc != MC_OK)
         return rc;
-    }
 
     rc = mc_file_set_cursor(file, offset);
-    if (rc < 0) {
+    if (rc < 0)
         return rc;
-    }
 
-    return mc_file_read(file, amount, outbuf);
+    return mc_file_read(file, amount, outbuf, amount_read);
 }

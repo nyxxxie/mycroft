@@ -4,9 +4,12 @@
 #include <errno.h>
 
 typedef enum {
-    MC_ERR_INVALID = 0,
-    MC_ERR, /** Generic error. */
-    MC_OK
+    MC_OK                = 0,
+    MC_ERR               = -1,
+    MC_FILE_ERR_FILENAME = -2,
+    MC_FILE_ERR_MALLOC   = -3,
+    MC_FILE_ERR_IO       = -4,
+    MC_FILE_ERR_BOUNDS   = -5,
 } mc_error_t;
 
 // Optional arguments

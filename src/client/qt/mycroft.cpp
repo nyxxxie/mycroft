@@ -31,7 +31,7 @@ bool Mycroft::openFile(QString filename)
     }
 
     /* */
-    file = mc_file_open(filename.toStdString().c_str());
+    file = mc_file_open(filename.toStdString().c_str(), NULL);
     if (file == NULL) {
         MC_ERROR("Failed to open file.\n");
         return false;

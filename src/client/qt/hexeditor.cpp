@@ -532,11 +532,13 @@ void HexView::render(QPainter& painter)
         uint8_t bytes[QMC_HEXEDIT_BYTESPERROW];
 
         //TODO: maintain a single cache/file buffer?
-        int amnt = mc_file_read(editor->file, QMC_HEXEDIT_BYTESPERROW, bytes);
+        fsize_t amnt;
+        mc_error_t rc = mc_file_read(editor->file, QMC_HEXEDIT_BYTESPERROW,
+                                     bytes, &amnt);
         if (amnt == 0) {
             break;
         }
-        else if (amnt < 0) {
+        else if (rc != MC_OK) {
             return;
         }
 
@@ -598,7 +600,7 @@ void HexView::mousePressEvent(QMouseEvent* event)
 }
 
 /**
- * 
+ *
  */
 AsciiView::AsciiView(HexEditor* editor)
 {
@@ -608,14 +610,14 @@ AsciiView::AsciiView(HexEditor* editor)
 }
 
 /**
- * 
+ *
  */
 void AsciiView::renderHighlight(HighlightArea* area, QPainter& painter)
 {
 }
 
 /**
- * 
+ *
  */
 void AsciiView::render(QPainter& painter)
 {
@@ -632,11 +634,13 @@ void AsciiView::render(QPainter& painter)
 
         /* Read file bytes */
         uint8_t bytes[QMC_HEXEDIT_BYTESPERROW];
-        int amnt = mc_file_read(editor->file, QMC_HEXEDIT_BYTESPERROW, bytes);
+        fsize_t amnt;
+        mc_error_t rc = mc_file_read(editor->file, QMC_HEXEDIT_BYTESPERROW,
+                                     bytes, &amnt);
         if (amnt == 0) {
             break;
         }
-        else if (amnt < 0) {
+        else if (rc != MC_OK) {
             return;
         }
 
@@ -674,4 +678,3 @@ void AsciiView::mouseMoveEvent(QMouseEvent* event)
 void AsciiView::mousePressEvent(QMouseEvent* event)
 {
 }
-
