@@ -211,8 +211,8 @@ static PyObject* mcore_file_exists(PyObject* self, PyObject* args)
 
     printf("DEBUG: does %s exist? ", fname);
 
-    rc = file_exists(fname);
-    if (rc < 0) {
+    rc = mc_file_access(fname);
+    if (rc != 0) {
         Py_RETURN_FALSE;
     }
 

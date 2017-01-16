@@ -6,17 +6,17 @@
 #include <openssl/sha.h>
 
 /**
- * Tests file_exist function on a existing file.
+ * Tests mc_file_access function on a existing file.
  */
-TEST(file_basic, file_exists_valid) {
-    ASSERT_EQ(file_exists("res/testfile1"), 0);
+TEST(file_basic, file_access_valid) {
+    ASSERT_EQ(mc_file_access("res/testfile1"), 0);
 }
 
 /**
- * Tests file_exist function on a nonexistant file.
+ * Tests mc_file_access function on a nonexistant file.
  */
-TEST(file_basic, file_exists_invalid) {
-    ASSERT_EQ(file_exists("thisfiledoesntexist"), -1);
+TEST(file_basic, file_access_invalid) {
+    ASSERT_NE(mc_file_access("thisfiledoesntexist"), 0);
 }
 
 /**
@@ -25,7 +25,7 @@ TEST(file_basic, file_exists_invalid) {
 TEST(file_basic, file_init) {
     mc_file_t* f = mc_file_open("res/testfile1");
     ASSERT_TRUE(f != NULL);
-    ASSERT_EQ(mc_file_close(f), 0);
+    ASSERT_EQ(mc_file_close(f), MC_OK);
 }
 
 /**
@@ -34,7 +34,7 @@ TEST(file_basic, file_init) {
 TEST(file_basic, file_open_valid) {
     mc_file_t* f = mc_file_open("res/testfile1");
     ASSERT_TRUE(f != NULL);
-    ASSERT_EQ(mc_file_close(f), 0);
+    ASSERT_EQ(mc_file_close(f), MC_OK);
 }
 
 /**
@@ -68,9 +68,9 @@ TEST(file_mgmt, file_get_cursor) {
     mc_file_t* f = mc_file_open("res/testfile1");
     ASSERT_TRUE(f != NULL);
 
-    ASSERT_EQ(mc_file_get_cursor(f), 0);
+    ASSERT_EQ(mc_file_get_cursor(f), MC_OK);
 
-    ASSERT_EQ(mc_file_close(f), 0);
+    ASSERT_EQ(mc_file_close(f), MC_OK);
 }
 
 /**
@@ -80,11 +80,11 @@ TEST(file_mgmt, file_set_cursor) {
     mc_file_t* f = mc_file_open("res/testfile1");
     ASSERT_TRUE(f != NULL);
 
-    ASSERT_GE(mc_file_set_cursor(f, 5), 0);
+    ASSERT_GE(mc_file_set_cursor(f, 5), MC_OK);
 
     ASSERT_EQ(mc_file_get_cursor(f), 5);
 
-    ASSERT_EQ(mc_file_close(f), 0);
+    ASSERT_EQ(mc_file_close(f), MC_OK);
 }
 
 /**
@@ -95,9 +95,9 @@ TEST(file_mgmt, file_set_cursor_invalid_value) {
     mc_file_t* f = mc_file_open("res/testfile1");
     ASSERT_TRUE(f != NULL);
 
-    ASSERT_LT(mc_file_set_cursor(f, 9999), 0);
+    ASSERT_NE(mc_file_set_cursor(f, 9999), MC_OK);
 
-    ASSERT_EQ(mc_file_close(f), 0);
+    ASSERT_EQ(mc_file_close(f), MC_OK);
 }
 
 /**
@@ -107,9 +107,9 @@ TEST(file_mgmt, file_cursor_manip) {
     mc_file_t* f = mc_file_open("res/testfile1");
     ASSERT_TRUE(f != NULL);
 
-    ASSERT_EQ(mc_file_set_cursor(f, 0), 0);
+    ASSERT_EQ(mc_file_set_cursor(f, 0), MC_OK);
 
-    ASSERT_EQ(mc_file_close(f), 0);
+    ASSERT_EQ(mc_file_close(f), MC_OK);
 }
 
 /**
@@ -120,12 +120,12 @@ TEST(file_read, file_read_value) {
     ASSERT_TRUE(f != NULL);
 
     uint8_t recieved[4];
-    ASSERT_EQ(mc_file_read_value(f, 0, 4, recieved), 0);
+    ASSERT_EQ(mc_file_read_value(f, 0, 4, recieved, NULL), MC_OK);
 
     uint8_t expected[] = {0x61, 0x62, 0x63, 0x64};
-    ASSERT_EQ(memcmp(expected, recieved, 4), 0);
+    ASSERT_EQ(memcmp(expected, recieved, 4), MC_OK);
 
-    ASSERT_EQ(mc_file_close(f), 0);
+    ASSERT_EQ(mc_file_close(f), MC_OK);
 }
 
 /**
@@ -146,11 +146,11 @@ TEST(file_read, file_read) {
 
     uint8_t readbuf[32];
     while (1) {
-        int amnt = mc_file_read(f, sizeof(readbuf), readbuf);
-        ASSERT_GE(amnt, 0);
-        if (amnt == 0) {
+        fsize_t amnt;
+        mc_error_t rc = mc_file_read(f, sizeof(readbuf), readbuf, &amnt);
+        ASSERT_EQ(rc, MC_OK);
+        if (amnt == 0)
             break;
-        }
         SHA1_Update(&ctx, readbuf, amnt);
     }
 
@@ -159,7 +159,7 @@ TEST(file_read, file_read) {
 
     ASSERT_EQ(memcmp(hash, expected_hash, 4), 0);
 
-    ASSERT_EQ(mc_file_close(f), 0);
+    ASSERT_EQ(mc_file_close(f), MC_OK);
 }
 
 /**
@@ -170,12 +170,12 @@ TEST(file_read, file_read_value_offset) {
     ASSERT_TRUE(f != NULL);
 
     uint8_t recieved[3] = {0};
-    ASSERT_EQ(mc_file_read_value(f, 3, 3, recieved), 0);
+    ASSERT_EQ(mc_file_read_value(f, 3, 3, recieved, NULL), MC_OK);
 
     uint8_t expected[] = {0x64, 0x65, 0x66};
     ASSERT_EQ(memcmp(expected, recieved, 3), 0);
 
-    ASSERT_EQ(mc_file_close(f), 0);
+    ASSERT_EQ(mc_file_close(f), MC_OK);
 }
 
 /**
@@ -191,14 +191,14 @@ TEST(file_read, file_read_value_multi) {
 
     /* Perform first read */
     uint8_t recieved[4];
-    ASSERT_EQ(mc_file_read_value(f, 0, 4, recieved), 0);
+    ASSERT_EQ(mc_file_read_value(f, 0, 4, recieved, NULL), MC_OK);
     ASSERT_EQ(memcmp(expected, recieved, 4), 0);
 
     /* Perform second read */
-    ASSERT_EQ(mc_file_read_value(f, 0, 4, recieved), 0);
+    ASSERT_EQ(mc_file_read_value(f, 0, 4, recieved, NULL), MC_OK);
     ASSERT_EQ(memcmp(expected, recieved, 4), 0);
 
-    ASSERT_EQ(mc_file_close(f), 0);
+    ASSERT_EQ(mc_file_close(f), MC_OK);
 }
 
 /**
@@ -210,9 +210,9 @@ TEST(file_read, file_read_value_bad_offset) {
     ASSERT_TRUE(f != NULL);
 
     uint8_t recieved[4] = {0};
-    ASSERT_LT(mc_file_read_value(f, 999, 4, recieved), 0);
+    ASSERT_NE(mc_file_read_value(f, 999, 4, recieved, NULL), MC_OK);
 
-    ASSERT_EQ(mc_file_close(f), 0);
+    ASSERT_EQ(mc_file_close(f), MC_OK);
 }
 
 /**
@@ -224,9 +224,9 @@ TEST(file_read, file_read_value_off_end) {
     ASSERT_TRUE(f != NULL);
 
     uint8_t recieved[4] = {0};
-    ASSERT_LT(mc_file_read_value(f, 30, 4, recieved), 0);
+    ASSERT_NE(mc_file_read_value(f, 30, 4, recieved, NULL), MC_OK);
 
-    ASSERT_EQ(mc_file_close(f), 0);
+    ASSERT_EQ(mc_file_close(f), MC_OK);
 }
 
 /**
@@ -237,14 +237,14 @@ TEST(file_read, file_write_value) {
     ASSERT_TRUE(f != NULL);
 
     uint8_t bytes[] = {0xff, 0xff, 0xff};
-    ASSERT_EQ(mc_file_write_value(f, 0, sizeof(bytes), bytes), 0);
+    ASSERT_EQ(mc_file_write_value(f, 0, sizeof(bytes), bytes, NULL), MC_OK);
 
     uint8_t recieved[3] = {0};
-    ASSERT_EQ(mc_file_read_value(f, 0, sizeof(bytes), recieved), 0);
+    ASSERT_EQ(mc_file_read_value(f, 0, sizeof(bytes), recieved, NULL), MC_OK);
 
     ASSERT_EQ(memcmp(bytes, recieved, sizeof(bytes)), 0);
 
-    ASSERT_EQ(mc_file_close(f), 0);
+    ASSERT_EQ(mc_file_close(f), MC_OK);
 }
 
 /**
@@ -255,14 +255,14 @@ TEST(file_read, file_write_value_offset) {
     ASSERT_TRUE(f != NULL);
 
     uint8_t bytes[] = {0xbb, 0xbb, 0xbb};
-    ASSERT_EQ(mc_file_write_value(f, 5, sizeof(bytes), bytes), 0);
+    ASSERT_EQ(mc_file_write_value(f, 5, sizeof(bytes), bytes, NULL), MC_OK);
 
     uint8_t recieved[3] = {0};
-    ASSERT_EQ(mc_file_read_value(f, 5, sizeof(bytes), recieved), 0);
+    ASSERT_EQ(mc_file_read_value(f, 5, sizeof(bytes), recieved, NULL), MC_OK);
 
     ASSERT_EQ(memcmp(bytes, recieved, sizeof(bytes)), 0);
 
-    ASSERT_EQ(mc_file_close(f), 0);
+    ASSERT_EQ(mc_file_close(f), MC_OK);
 }
 
 /**
@@ -274,9 +274,9 @@ TEST(file_read, file_write_value_bad_offset) {
     ASSERT_TRUE(f != NULL);
 
     uint8_t bytes[] = {0xaa, 0xaa, 0xaa};
-    ASSERT_LT(mc_file_write_value(f, 9999, sizeof(bytes), bytes), 0);
+    ASSERT_NE(mc_file_write_value(f, 9999, sizeof(bytes), bytes, NULL), MC_OK);
 
-    ASSERT_EQ(mc_file_close(f), 0);
+    ASSERT_EQ(mc_file_close(f), MC_OK);
 }
 
 /**
@@ -285,8 +285,8 @@ TEST(file_read, file_write_value_bad_offset) {
 TEST(file_cache, file_cache_init) {
     mc_file_t* f = mc_file_open("res/testfile1");
     ASSERT_TRUE(f != NULL);
-    ASSERT_EQ(mc_file_cache_init(f, 32), 0);
-    ASSERT_EQ(mc_file_close(f), 0);
+    ASSERT_EQ(mc_file_cache_init(f, 32), MC_OK);
+    ASSERT_EQ(mc_file_close(f), MC_OK);
 }
 
 /**
@@ -295,8 +295,8 @@ TEST(file_cache, file_cache_init) {
 TEST(file_cache, file_cache_init_big) {
     mc_file_t* f = mc_file_open("res/testfile1");
     ASSERT_TRUE(f != NULL);
-    ASSERT_EQ(mc_file_cache_init(f, 1024), 0);
-    ASSERT_EQ(mc_file_close(f), 0);
+    ASSERT_EQ(mc_file_cache_init(f, 1024), MC_OK);
+    ASSERT_EQ(mc_file_close(f), MC_OK);
 }
 
 /**
@@ -305,8 +305,8 @@ TEST(file_cache, file_cache_init_big) {
 TEST(file_cache, file_cache_init_tiny) {
     mc_file_t* f = mc_file_open("res/testfile1");
     ASSERT_TRUE(f != NULL);
-    ASSERT_EQ(mc_file_cache_init(f, 8), 0);
-    ASSERT_EQ(mc_file_close(f), 0);
+    ASSERT_EQ(mc_file_cache_init(f, 8), MC_OK);
+    ASSERT_EQ(mc_file_close(f), MC_OK);
 }
 
 ///**
