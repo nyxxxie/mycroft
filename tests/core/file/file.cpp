@@ -369,3 +369,28 @@ TEST(file_cache, file_cache_init_tiny) {
 //TEST(file_cache, file_cache_write_partial) {
 //
 //}
+
+/**
+ * Try to create the cache (with a really small size)
+ */
+TEST(file, file_hash) {
+    const uint8_t hash_expected[] = {
+        0xd1, 0xbc, 0x8d, 0x3b, 0xa4, 0xaf, 0xc7, 0xe1,
+        0x09, 0x61, 0x2c, 0xb7, 0x3a, 0xcb, 0xdd, 0xda,
+        0xc0, 0x52, 0xc9, 0x30, 0x25, 0xaa, 0x1f, 0x82,
+        0x94, 0x2e, 0xda, 0xbb, 0x7d, 0xeb, 0x82, 0xa1
+    };
+    uint8_t* hash_calculated;
+    size_t hash_len;
+
+    mc_file_t* f = mc_file_open("res/hashme");
+    ASSERT_TRUE(f != NULL);
+
+    ASSERT_TRUE(mc_file_hash(f, &hash_calculated, &hash_len));
+
+    ASSERT_TRUE(memcmp(hash_expected, hash_calculated, hash_len) == 0);
+
+    free(hash_calculated);
+
+    ASSERT_EQ(mc_file_close(f), 0);
+}

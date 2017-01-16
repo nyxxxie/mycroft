@@ -7,6 +7,7 @@ extern "C" {
 
 #include <stdint.h>
 #include <mycroft/template.h>
+#include <mycroft/error.h>
 
 /** Size used by internal file functions */
 typedef long int fsize_t;
@@ -47,6 +48,9 @@ int mc_file_write_value(mc_file_t* file, fsize_t offset, fsize_t amount, uint8_t
 int mc_file_write_insert(mc_file_t* file, fsize_t offset, fsize_t amount, uint8_t* outbuf);
 int mc_file_read_cache(mc_file_t* file, fsize_t offset, fsize_t amount, uint8_t* outbuf);
 int mc_file_read_editor_area(mc_file_t* file, fsize_t offset, fsize_t amount, uint8_t* outbuf);
+
+/* Misc functions */
+mc_error_t mc_file_hash(mc_file_t* file, uint8_t** hash, size_t* hashlen);
 
 #ifdef __cplusplus
 }

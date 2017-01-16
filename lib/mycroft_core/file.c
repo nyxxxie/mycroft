@@ -12,6 +12,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <libgen.h>
+#include <openssl/sha.h>
 #include <mycroft/file.h>
 #include <mycroft/error.h>
 #include "file.h"
@@ -525,4 +526,40 @@ int mc_file_read_cache(mc_file_t* file, fsize_t offset, fsize_t amount, uint8_t*
     }
 
     return mc_file_read(file, amount, outbuf);
+}
+
+/**
+ * Generate a sha256 hash of the file.  Output buffer must be manually freed
+ * after use.
+ *
+ * @return mc_error_t code indicating success or error.
+ */
+mc_error_t mc_file_hash(mc_file_t* file, uint8_t** hash, size_t* hashlen)
+{
+    SHA256_CTX hash_ctx;
+    uint8_t readbuf[32];
+
+    SHA256_Init(&hash_ctx);
+    *hashlen = SHA256_DIGEST_LENGTH;
+
+    /* */
+    *hash = (uint8_t*)malloc(*hashlen);
+    if (*hash == NULL) {
+        MC_ERROR("Failed to allocate space for hash.\n");
+        return MC_ERR;
+    }
+
+    /* */
+    while (1) {
+        int amnt = mc_file_read(file, sizeof(readbuf), readbuf);
+        if (amnt == 0) {
+            break;
+        }
+
+        SHA256_Update(&hash_ctx, readbuf, amnt);
+    }
+
+    SHA256_Final(*hash, &hash_ctx);
+
+    return MC_OK;
 }
