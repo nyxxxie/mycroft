@@ -21,7 +21,7 @@ int mc_file_access(const char* file_name);
 
 /* Init/free functions */
 mc_file_t* mc_file_create();
-mc_file_t* mc_file_open(const char* file_name, mc_error_t* err);
+mc_file_t* mc_file_open(const char* file_name);
 mc_error_t mc_file_close(mc_file_t* file);
 /*
  * NOTE: not implemented

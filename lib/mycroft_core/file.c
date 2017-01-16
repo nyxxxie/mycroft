@@ -76,15 +76,13 @@ mc_file_t* mc_file_create()
  *
  * @return Returns the created mc_file_t, NULL otherwise.
  */
-mc_file_t* mc_file_open(const char* file_name, mc_error_t *err)
+mc_file_t* mc_file_open(const char* file_name)
 {
     mc_file_t* file = NULL;
 
     /* Make sure we're passed a nonempty path */
     if (file_name == 0 || strlen(file_name) == 0) {
         MC_ERROR("Filename is null or empty.");
-        if (err != NULL)
-            (*err) = MC_FILE_ERR_FILENAME;
         return NULL;
     }
 
@@ -92,8 +90,6 @@ mc_file_t* mc_file_open(const char* file_name, mc_error_t *err)
     file = mc_file_create();
     if (file == NULL) {
         MC_ERROR("Failed to alloc mc_file_t struct.");
-        if (err != NULL)
-            (*err) = MC_FILE_ERR_MALLOC;
         return NULL;
     }
 
@@ -101,8 +97,6 @@ mc_file_t* mc_file_open(const char* file_name, mc_error_t *err)
     file->path = (char*)malloc(strlen(file_name)+1);
     if (file->path == NULL) {
         MC_ERROR("Failed to copy file path to mc_file_t struct.");
-        if (err != NULL)
-            (*err) = MC_FILE_ERR_MALLOC;
         return NULL;
     }
     strcpy(file->path, file_name);
@@ -112,8 +106,6 @@ mc_file_t* mc_file_open(const char* file_name, mc_error_t *err)
     if ((file->fp = fopen(file->path, "rb+")) == NULL) {
         MC_ERROR("Failed to fopen file \"%s\": %s [%i]\n",
                  file->path, strerror(errno), errno);
-        if (err != NULL)
-            (*err) = MC_FILE_ERR_IO;
         return NULL;
     }
 
@@ -420,9 +412,7 @@ mc_error_t mc_file_read_value(mc_file_t* file, fsize_t offset,
             return MC_FILE_ERR_IO;
         }
         else {
-            fprintf(stderr,
-                    "fread failed for some unknown reason.  "
-                    "Report this!\n");
+            fprintf(stderr, "fread failed for some unknown reason.  Report this!\n");
             return MC_ERR;
         }
     }
@@ -509,9 +499,7 @@ mc_error_t mc_file_write_value(mc_file_t* file, fsize_t offset,
             return MC_FILE_ERR_IO;
         }
         else {
-            fprintf(stderr,
-                    "fwrite failed for some unknown reason.  "
-                    "Report this!\n");
+            fprintf(stderr, "fwrite failed for some unknown reason.  Report this!\n");
             return MC_ERR;
         }
     }

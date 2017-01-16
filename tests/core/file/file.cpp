@@ -23,7 +23,7 @@ TEST(file_basic, file_access_invalid) {
  * Tests to see if the file_init function works
  */
 TEST(file_basic, file_init) {
-    mc_file_t* f = mc_file_open("res/testfile1", NULL);
+    mc_file_t* f = mc_file_open("res/testfile1");
     ASSERT_TRUE(f != NULL);
     ASSERT_EQ(mc_file_close(f), MC_OK);
 }
@@ -32,7 +32,7 @@ TEST(file_basic, file_init) {
  * Open an existing file
  */
 TEST(file_basic, file_open_valid) {
-    mc_file_t* f = mc_file_open("res/testfile1", NULL);
+    mc_file_t* f = mc_file_open("res/testfile1");
     ASSERT_TRUE(f != NULL);
     ASSERT_EQ(mc_file_close(f), MC_OK);
 }
@@ -41,7 +41,7 @@ TEST(file_basic, file_open_valid) {
  * Open a nonexistant file
  */
 TEST(file_basic, file_open_invalid) {
-    mc_file_t* f = mc_file_open("thisfiledoesntexist", NULL);
+    mc_file_t* f = mc_file_open("thisfiledoesntexist");
     ASSERT_TRUE(f == NULL);
 }
 
@@ -49,7 +49,7 @@ TEST(file_basic, file_open_invalid) {
  * See how file_init handles an empty string as a file path
  */
 TEST(file_basic, file_open_emptystr) {
-    mc_file_t* f = mc_file_open("", NULL);
+    mc_file_t* f = mc_file_open("");
     ASSERT_TRUE(f == NULL);
 }
 
@@ -57,7 +57,7 @@ TEST(file_basic, file_open_emptystr) {
  * See how file_init handles NULL as a file path
  */
 TEST(file_basic, file_open_nullstr) {
-    mc_file_t* f = mc_file_open(NULL, NULL);
+    mc_file_t* f = mc_file_open(NULL);
     ASSERT_TRUE(f == NULL);
 }
 
@@ -65,7 +65,7 @@ TEST(file_basic, file_open_nullstr) {
  * See if we can get the cursor position
  */
 TEST(file_mgmt, file_get_cursor) {
-    mc_file_t* f = mc_file_open("res/testfile1", NULL);
+    mc_file_t* f = mc_file_open("res/testfile1");
     ASSERT_TRUE(f != NULL);
 
     ASSERT_EQ(mc_file_get_cursor(f), MC_OK);
@@ -77,7 +77,7 @@ TEST(file_mgmt, file_get_cursor) {
  * See if we can set the cursor position
  */
 TEST(file_mgmt, file_set_cursor) {
-    mc_file_t* f = mc_file_open("res/testfile1", NULL);
+    mc_file_t* f = mc_file_open("res/testfile1");
     ASSERT_TRUE(f != NULL);
 
     ASSERT_GE(mc_file_set_cursor(f, 5), MC_OK);
@@ -92,7 +92,7 @@ TEST(file_mgmt, file_set_cursor) {
  * the file.
  */
 TEST(file_mgmt, file_set_cursor_invalid_value) {
-    mc_file_t* f = mc_file_open("res/testfile1", NULL);
+    mc_file_t* f = mc_file_open("res/testfile1");
     ASSERT_TRUE(f != NULL);
 
     ASSERT_NE(mc_file_set_cursor(f, 9999), MC_OK);
@@ -104,7 +104,7 @@ TEST(file_mgmt, file_set_cursor_invalid_value) {
  * Some more testing on file_set_cursor.
  */
 TEST(file_mgmt, file_cursor_manip) {
-    mc_file_t* f = mc_file_open("res/testfile1", NULL);
+    mc_file_t* f = mc_file_open("res/testfile1");
     ASSERT_TRUE(f != NULL);
 
     ASSERT_EQ(mc_file_set_cursor(f, 0), MC_OK);
@@ -116,7 +116,7 @@ TEST(file_mgmt, file_cursor_manip) {
  * See if the file_read_value reads properly.
  */
 TEST(file_read, file_read_value) {
-    mc_file_t* f = mc_file_open("res/testfile1", NULL);
+    mc_file_t* f = mc_file_open("res/testfile1");
     ASSERT_TRUE(f != NULL);
 
     uint8_t recieved[4];
@@ -138,7 +138,7 @@ TEST(file_read, file_read) {
         0x7e, 0xcd, 0xa6, 0xd4, 0x3f, 0x6b, 0x4f, 0x97, 0xf0, 0x42
     };
 
-    mc_file_t* f = mc_file_open("res/longboringdocument.txt", NULL);
+    mc_file_t* f = mc_file_open("res/longboringdocument.txt");
     ASSERT_TRUE(f != NULL);
 
     SHA_CTX ctx;
@@ -166,7 +166,7 @@ TEST(file_read, file_read) {
  * See if the file_read reads properly when we provide an offset.
  */
 TEST(file_read, file_read_value_offset) {
-    mc_file_t* f = mc_file_open("res/testfile1", NULL);
+    mc_file_t* f = mc_file_open("res/testfile1");
     ASSERT_TRUE(f != NULL);
 
     uint8_t recieved[3] = {0};
@@ -186,7 +186,7 @@ TEST(file_read, file_read_value_multi) {
 
     uint8_t expected[] = {0x61, 0x62, 0x63, 0x64};
 
-    mc_file_t* f = mc_file_open("res/testfile1", NULL);
+    mc_file_t* f = mc_file_open("res/testfile1");
     ASSERT_TRUE(f != NULL);
 
     /* Perform first read */
@@ -206,7 +206,7 @@ TEST(file_read, file_read_value_multi) {
  * rediculous offset.
  */
 TEST(file_read, file_read_value_bad_offset) {
-    mc_file_t* f = mc_file_open("res/testfile1", NULL);
+    mc_file_t* f = mc_file_open("res/testfile1");
     ASSERT_TRUE(f != NULL);
 
     uint8_t recieved[4] = {0};
@@ -220,7 +220,7 @@ TEST(file_read, file_read_value_bad_offset) {
  * end.
  */
 TEST(file_read, file_read_value_off_end) {
-    mc_file_t* f = mc_file_open("res/testfile1", NULL);
+    mc_file_t* f = mc_file_open("res/testfile1");
     ASSERT_TRUE(f != NULL);
 
     uint8_t recieved[4] = {0};
@@ -233,7 +233,7 @@ TEST(file_read, file_read_value_off_end) {
  * Try and write a value
  */
 TEST(file_read, file_write_value) {
-    mc_file_t* f = mc_file_open("res/testfile1", NULL);
+    mc_file_t* f = mc_file_open("res/testfile1");
     ASSERT_TRUE(f != NULL);
 
     uint8_t bytes[] = {0xff, 0xff, 0xff};
@@ -251,7 +251,7 @@ TEST(file_read, file_write_value) {
  * Try and write a value at an offset
  */
 TEST(file_read, file_write_value_offset) {
-    mc_file_t* f = mc_file_open("res/testfile1", NULL);
+    mc_file_t* f = mc_file_open("res/testfile1");
     ASSERT_TRUE(f != NULL);
 
     uint8_t bytes[] = {0xbb, 0xbb, 0xbb};
@@ -270,7 +270,7 @@ TEST(file_read, file_write_value_offset) {
  * should fail)
  */
 TEST(file_read, file_write_value_bad_offset) {
-    mc_file_t* f = mc_file_open("res/testfile1", NULL);
+    mc_file_t* f = mc_file_open("res/testfile1");
     ASSERT_TRUE(f != NULL);
 
     uint8_t bytes[] = {0xaa, 0xaa, 0xaa};
@@ -283,7 +283,7 @@ TEST(file_read, file_write_value_bad_offset) {
  * Try to create the cache
  */
 TEST(file_cache, file_cache_init) {
-    mc_file_t* f = mc_file_open("res/testfile1", NULL);
+    mc_file_t* f = mc_file_open("res/testfile1");
     ASSERT_TRUE(f != NULL);
     ASSERT_EQ(mc_file_cache_init(f, 32), MC_OK);
     ASSERT_EQ(mc_file_close(f), MC_OK);
@@ -293,7 +293,7 @@ TEST(file_cache, file_cache_init) {
  * Try to create the cache (with a really big size)
  */
 TEST(file_cache, file_cache_init_big) {
-    mc_file_t* f = mc_file_open("res/testfile1", NULL);
+    mc_file_t* f = mc_file_open("res/testfile1");
     ASSERT_TRUE(f != NULL);
     ASSERT_EQ(mc_file_cache_init(f, 1024), MC_OK);
     ASSERT_EQ(mc_file_close(f), MC_OK);
@@ -303,7 +303,7 @@ TEST(file_cache, file_cache_init_big) {
  * Try to create the cache (with a really small size)
  */
 TEST(file_cache, file_cache_init_tiny) {
-    mc_file_t* f = mc_file_open("res/testfile1", NULL);
+    mc_file_t* f = mc_file_open("res/testfile1");
     ASSERT_TRUE(f != NULL);
     ASSERT_EQ(mc_file_cache_init(f, 8), MC_OK);
     ASSERT_EQ(mc_file_close(f), MC_OK);

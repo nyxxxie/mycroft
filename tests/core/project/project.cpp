@@ -31,9 +31,9 @@ TEST(project_new, add_file) {
     ASSERT_TRUE(project != NULL);
 
     mc_file_t* files[3] = {NULL};
-    ASSERT_TRUE((files[0] = mc_file_open("res/testfile1", NULL)) != NULL);
-    ASSERT_TRUE((files[1] = mc_file_open("res/testfile2", NULL)) != NULL);
-    ASSERT_TRUE((files[2] = mc_file_open("res/testfile3", NULL)) != NULL);
+    ASSERT_TRUE((files[0] = mc_file_open("res/testfile1")) != NULL);
+    ASSERT_TRUE((files[1] = mc_file_open("res/testfile2")) != NULL);
+    ASSERT_TRUE((files[2] = mc_file_open("res/testfile3")) != NULL);
 
     ASSERT_TRUE(mc_project_add_file(project, files[0]) == MC_OK);
     ASSERT_TRUE(mc_project_add_file(project, files[1]) == MC_OK);
@@ -52,8 +52,8 @@ TEST(project_new, add_duplicate_file) {
     ASSERT_TRUE(project != NULL);
 
     mc_file_t* files[2] = {NULL};
-    ASSERT_TRUE((files[0] = mc_file_open("res/testfile1", NULL)) != NULL);
-    ASSERT_TRUE((files[1] = mc_file_open("res/testfile1", NULL)) != NULL);
+    ASSERT_TRUE((files[0] = mc_file_open("res/testfile1")) != NULL);
+    ASSERT_TRUE((files[1] = mc_file_open("res/testfile1")) != NULL);
 
     ASSERT_TRUE(mc_project_add_file(project, files[0]) == MC_OK);
     ASSERT_TRUE(mc_project_add_file(project, files[1]) != MC_OK);
@@ -72,7 +72,7 @@ TEST(project_new, add_duplicate_file2) {
     ASSERT_TRUE(project != NULL);
 
     mc_file_t* file = NULL;
-    ASSERT_TRUE((file = mc_file_open("res/testfile1", NULL)) != NULL);
+    ASSERT_TRUE((file = mc_file_open("res/testfile1")) != NULL);
 
     ASSERT_TRUE(mc_project_add_file(project, file) == MC_OK);
     ASSERT_TRUE(mc_project_add_file(project, file) != MC_OK);
@@ -103,9 +103,9 @@ TEST(project_new, get_file) {
     ASSERT_TRUE(project != NULL);
 
     mc_file_t* files[3] = {NULL};
-    ASSERT_TRUE((files[0] = mc_file_open("res/testfile1", NULL)) != NULL);
-    ASSERT_TRUE((files[1] = mc_file_open("res/testfile2", NULL)) != NULL);
-    ASSERT_TRUE((files[2] = mc_file_open("res/testfile3", NULL)) != NULL);
+    ASSERT_TRUE((files[0] = mc_file_open("res/testfile1")) != NULL);
+    ASSERT_TRUE((files[1] = mc_file_open("res/testfile2")) != NULL);
+    ASSERT_TRUE((files[2] = mc_file_open("res/testfile3")) != NULL);
 
     ASSERT_TRUE(mc_project_add_file(project, files[0]) == MC_OK);
     ASSERT_TRUE(mc_project_add_file(project, files[1]) == MC_OK);
@@ -138,9 +138,9 @@ TEST(project_new, remove_file) {
     ASSERT_TRUE(project != NULL);
 
     mc_file_t* files[3] = {NULL};
-    ASSERT_TRUE((files[0] = mc_file_open("res/testfile1", NULL)) != NULL);
-    ASSERT_TRUE((files[1] = mc_file_open("res/testfile2", NULL)) != NULL);
-    ASSERT_TRUE((files[2] = mc_file_open("res/testfile3", NULL)) != NULL);
+    ASSERT_TRUE((files[0] = mc_file_open("res/testfile1")) != NULL);
+    ASSERT_TRUE((files[1] = mc_file_open("res/testfile2")) != NULL);
+    ASSERT_TRUE((files[2] = mc_file_open("res/testfile3")) != NULL);
 
     ASSERT_TRUE(mc_project_add_file(project, files[0]) == MC_OK);
     ASSERT_TRUE(mc_project_add_file(project, files[1]) == MC_OK);
@@ -163,9 +163,9 @@ TEST(project_new, remove_file_2) {
     ASSERT_TRUE(project != NULL);
 
     mc_file_t* files[3] = {NULL};
-    ASSERT_TRUE((files[0] = mc_file_open("res/testfile1", NULL)) != NULL);
-    ASSERT_TRUE((files[1] = mc_file_open("res/testfile2", NULL)) != NULL);
-    ASSERT_TRUE((files[2] = mc_file_open("res/testfile3", NULL)) != NULL);
+    ASSERT_TRUE((files[0] = mc_file_open("res/testfile1")) != NULL);
+    ASSERT_TRUE((files[1] = mc_file_open("res/testfile2")) != NULL);
+    ASSERT_TRUE((files[2] = mc_file_open("res/testfile3")) != NULL);
 
     ASSERT_TRUE(mc_project_add_file(project, files[0]) == MC_OK);
     ASSERT_TRUE(mc_project_add_file(project, files[1]) == MC_OK);
@@ -188,9 +188,9 @@ TEST(project_new, remove_shiftover) {
     ASSERT_TRUE(project != NULL);
 
     mc_file_t* files[3] = {NULL};
-    ASSERT_TRUE((files[0] = mc_file_open("res/testfile1", NULL)) != NULL);
-    ASSERT_TRUE((files[1] = mc_file_open("res/testfile2", NULL)) != NULL);
-    ASSERT_TRUE((files[2] = mc_file_open("res/testfile3", NULL)) != NULL);
+    ASSERT_TRUE((files[0] = mc_file_open("res/testfile1")) != NULL);
+    ASSERT_TRUE((files[1] = mc_file_open("res/testfile2")) != NULL);
+    ASSERT_TRUE((files[2] = mc_file_open("res/testfile3")) != NULL);
 
     ASSERT_TRUE(mc_project_add_file(project, files[0]) == MC_OK);
     ASSERT_TRUE(mc_project_add_file(project, files[1]) == MC_OK);
@@ -267,9 +267,9 @@ TEST(project_save, add_and_save) {
     ASSERT_TRUE(project != NULL);
 
     mc_file_t* files[3] = {NULL};
-    ASSERT_TRUE((files[0] = mc_file_open("res/testfile1", NULL)) != NULL);
-    ASSERT_TRUE((files[1] = mc_file_open("res/testfile2", NULL)) != NULL);
-    ASSERT_TRUE((files[2] = mc_file_open("res/testfile3", NULL)) != NULL);
+    ASSERT_TRUE((files[0] = mc_file_open("res/testfile1")) != NULL);
+    ASSERT_TRUE((files[1] = mc_file_open("res/testfile2")) != NULL);
+    ASSERT_TRUE((files[2] = mc_file_open("res/testfile3")) != NULL);
 
     ASSERT_TRUE(mc_project_add_file(project, files[0]) == MC_OK);
     ASSERT_TRUE(mc_project_add_file(project, files[1]) == MC_OK);
