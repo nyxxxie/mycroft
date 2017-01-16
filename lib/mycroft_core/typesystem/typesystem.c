@@ -1,7 +1,8 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include "template/typesystem.h"
-#include "template/typedef.h"
+#include "typesystem/typesystem.h"
+#include "typesystem/typedef.h"
+#include "typesystem/types.h"
 
 /**
  * Function that copies all of the types registered with the MC_TYPE_REGISTER

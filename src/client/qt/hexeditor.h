@@ -134,6 +134,8 @@ public:
 
     int getWidth() { return width; }
     bool isMouseInside(const QPoint& point);
+    int pxToRow(int px_y);
+    int pxToColumn(int px_x);
 
     virtual void render(QPainter& painter) = 0;
     virtual void mouseMoveEvent(QMouseEvent* event) = 0;

@@ -2,8 +2,15 @@
 #define MYCROFT_QT_H
 
 #include <QMainWindow>
+#include <QDockWidget>
+#include <QTextEdit>
+#include <QMenu>
 #include <mycroft/project.h>
 #include <mycroft/file.h>
+#include "maineditor.h"
+#include "templateeditor.h"
+#include "hexeditor.h"
+#include "projectview.h"
 
 class MainHexEditor;
 
@@ -17,9 +24,19 @@ class Mycroft : public QMainWindow
 
     Ui::Mycroft* ui;
 
-    MainHexEditor* editor;
-
 private:
+    bool connectMenuActions();
+    bool createMainEditor();
+    bool createTemplateEditor();
+    bool createProjectView();
+    bool createPythonTerminal();
+    bool createWindowToggleMenu();
+    bool destroyMainEditor();
+    bool destroyTemplateEditor();
+    bool destroyProjectView();
+    bool destroyPythonTerminal();
+    bool destroyWindowToggleMenu();
+
     bool openFile(QString filename);
     bool openProject(QString projectname);
     bool openTemplate(QString templatename);
@@ -27,6 +44,18 @@ private:
 public:
     explicit Mycroft(QWidget* parent = 0);
     ~Mycroft();
+
+private:
+    MainEditor* editor;
+    HexEditor* hexeditor; // TODO: delete me and place this in maineditor
+    QMenu* menu_dockable_widgets;
+
+    ProjectView* projectview;
+    QDockWidget* dock_projectview;
+    TemplateEditor* templateeditor;
+    QDockWidget* dock_templateeditor;
+    QTextEdit* pyterm;
+    QDockWidget* dock_pyterm;
 
 private slots:
     void on_action_file_open();

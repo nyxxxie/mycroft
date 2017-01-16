@@ -1,11 +1,13 @@
 #include <stdio.h>
 #include <wchar.h>
 #include <Python.h>
+#include <mycroft/script.h>
 #include "interpreter.h"
-#include "script.h"
+#include "config.h"
 #include "binds/core.h"
 #include "binds/project.h"
 #include "binds/file.h"
+#include "binds/template/typesystem.h"
 
 mc_interpreter_t* _interpreter = NULL;
 
@@ -21,13 +23,19 @@ mc_error_t init_bindings()
 
     rc = init_binds_project();
     if (rc < 0) {
-        MC_ERROR("Failed to initialize file bindings.\n");
+        MC_ERROR("Failed to initialize project bindings.\n");
         return MC_ERR;
     }
 
     rc = init_binds_file();
     if (rc < 0) {
         MC_ERROR("Failed to initialize file bindings.\n");
+        return MC_ERR;
+    }
+
+    rc = init_binds_typesystem();
+    if (rc < 0) {
+        MC_ERROR("Failed to initialize typesystem bindings.\n");
         return MC_ERR;
     }
 
@@ -67,41 +75,32 @@ void mc_interpreter_free(mc_interpreter_t* i)
 
 mc_error_t mc_interpreter_add_path(mc_interpreter_t* i, const char* directory)
 {
-    wchar_t* dir_conv = NULL;
-    wchar_t* curpath = NULL;
-    wchar_t* newpath = NULL;
-    size_t newpath_size = 0;
-    #ifdef __linux__
-    const wchar_t* separator = L":";
-    #else
-    const char* separator = L";";
-    #endif
+    PyObject *pypath=NULL, *localname=NULL;
 
-    /* Convert directory argument to wchat_t */
-    dir_conv = (wchar_t*)calloc(sizeof(*dir_conv) * (strlen(directory) + 1), 1);
-    swprintf(dir_conv, strlen(directory) + 1, L"%hs", directory);
+    MC_DEBUG("Adding \"%s\" to python path.\n", directory);
 
-    /* Get current path */
-    curpath = Py_GetPath();
-    if (curpath == NULL) {
-        MC_ERROR("Bad path returned by Py_GetPath\n");
-        return MC_ERR;
+    pypath = PySys_GetObject("path");
+    localname = PyUnicode_FromString(directory);
+
+    PyList_Append(pypath, localname);
+
+    Py_DECREF(localname);
+
+    return MC_OK;
+
+}
+
+mc_error_t mc_interpreter_run_init_scripts(mc_interpreter_t* i)
+{
+    const char* init_script = MYCROFT_INSTALL_SCRIPT_PATH "/init.py";
+    mc_error_t rc;
+
+    /* */
+    rc = mc_script_runfile(init_script);
+    if (rc != MC_OK) {
+        MC_ERROR("Failed to run init script \"%s\".\n", init_script);
+        return rc;
     }
 
-    newpath_size = wcslen(curpath) + wcslen(separator) + wcslen(dir_conv) + 1;
-    newpath_size *= sizeof(*newpath);
-    newpath = (wchar_t*)calloc(newpath_size, 1);
-    if (newpath == NULL) {
-        MC_ERROR("Failed to calloc space for path.\n");
-        return MC_ERR;
-    }
-    memset(newpath, 0, newpath_size); // set all to null for safety
-
-    /* Concat to create new string */
-    wcscpy(newpath, curpath);
-    wcscat(newpath, separator);
-    wcscat(newpath, dir_conv);
-
-    /* Add to path */
-    PySys_SetPath(newpath);
+    return MC_OK;
 }

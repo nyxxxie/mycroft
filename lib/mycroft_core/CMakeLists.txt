@@ -33,14 +33,15 @@ set(MYCROFT_CORE_SRC
     script.c
     interpreter.c
     binds/core.c
-    binds/file.c
-    binds/project.c
     template/template.c
     template/template_parser.c
-    template/typedef.c
-    template/typesystem.c
-    template/types/byte.c
-    template/types/char.c
+    typesystem/typedef.c
+    typesystem/typesystem.c
+    typesystem/types/byte.c
+    typesystem/types/char.c
+    binds/file.c
+    binds/project.c
+    binds/template/typesystem.c
 )
 
 # Save me from manually including the files ;)

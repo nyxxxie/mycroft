@@ -320,6 +320,21 @@ bool HexEditorWidget::isMouseInside(const QPoint& point)
     return (point.x() >= start && point.y() <= start+width);
 }
 
+int HexEditorWidget::pxToColumn(int px_x) {
+}
+
+int HexEditorWidget::pxToRow(int px_y) {
+    const int bytespace = editor->font_cheight+editor->row_offset;
+    int column;
+
+    /* First we need to calculate the column in the view */
+    column = ((px_y/bytespace)     // Get vertical offset for row based on pointer
+        + editor->row_top)         // Account for how far we've scrolled
+        * QMC_HEXEDIT_BYTESPERROW; // Translate row number to byte number
+
+    return column;
+}
+
 /**
  *
  */
@@ -394,6 +409,9 @@ int HexView::byteToPxEnd(int byte)
     return ret;
 }
 
+
+
+
 bool HexView::getPos(const QPoint& point, int* byte, int* nybble)
 {
     int s = start + editor->widget_text_offset;
@@ -406,7 +424,7 @@ bool HexView::getPos(const QPoint& point, int* byte, int* nybble)
         if (byte != NULL) {
             int vert_mul = 0;
             if (y >= 0) {
-                vert_mul = QMC_HEXEDIT_BYTESPERROW*(y/(editor->font_cheight+editor->row_offset));
+                vert_mul = pxToRow(y);
             }
 
             *byte = vert_mul + ((x-s) / sep);

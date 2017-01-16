@@ -6,6 +6,7 @@
 #include <QModelIndex>
 #include <QMenu>
 #include <QAbstractItemModel>
+#include <mycroft/project.h>
 
 class ProjectView;
 

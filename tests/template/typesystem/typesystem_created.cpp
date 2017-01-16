@@ -2,7 +2,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <math.h>
-#include "template/typesystem.h"
+#include "typesystem/typesystem.h"
 
 /* This function is overcomplicated because I was using it to test an idea for
    converter that would be able to operate on integers of an arbitrary size.

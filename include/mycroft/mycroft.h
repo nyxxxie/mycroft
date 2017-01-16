@@ -5,6 +5,7 @@
 extern "C" {
 #endif
 
+#include <stdlib.h>
 #include <mycroft/project.h>
 
 /** Expected file extension for a mycroft template file */
@@ -15,6 +16,7 @@ extern "C" {
 
 /* Create/free */
 mc_error_t mc_init();
+mc_error_t mc_init_scripting(const char* path[], size_t amount);
 void mc_destroy();
 
 /* Context management */
