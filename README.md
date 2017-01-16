@@ -17,6 +17,7 @@ platform.
 
 * [Gentoo](doc/install/gentoo.md)
 * [Arch Linux](doc/install/archlinux.md)
+* [Fedora](/doc/install/fedora.md)
 
 Worst case, if no document exists for your platform, the general form for an
 install consists of installing dependencies (openssl, sqlite, qt5, capstone),
