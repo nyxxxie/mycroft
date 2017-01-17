@@ -13,6 +13,15 @@ this program; if not, write to the Free Software Foundation, Inc., 51 Franklin
 Street, Fifth Floor, Boston, MA  02110-1301, USA.
 \*****************************************************************************/
 
+/**
+ * @file
+ * @brief Provides a project container for a files and related data.
+ *
+ * Projects currently serve as a method to store files, project metadata, and
+ * templates.  They also handle storing/resuming the state of a reverse
+ * engineering session using the save and load functions.
+ */
+
 #include <stdlib.h>
 #include <string.h>
 #include "error.h"
@@ -23,7 +32,7 @@ Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #define QUERYNO 3
 
 /**
- * Creates the tables in a newly created mycroft database.
+ * Creates the tables for a newly created mycroft database.
  *
  * @param db sqlite3 database to operate on.
  * @return mc_error_t code indicating success or failure.
@@ -83,7 +92,17 @@ int db_create_default_tables(sqlite3* db)
 
     return 1;
 }
-
+/**
+ * Handles saving an in-memory sqlite database to disk and loading that same
+ * database from disk into memory.
+ *
+ * @param db Pointer to in-memory sqlite db
+ * @param filename File name to save to or load from.
+ * @param save Indicates to the function if it should save to or load from
+ *        the file indicated by filename.  1 is defined as save, 0 as load.
+ * @return 1 on success, 0 on error.
+ * @internal
+ */
 int db_saveload(sqlite3* db, const char* filename, int save)
 {
     sqlite3_backup* backup;
@@ -139,6 +158,7 @@ mc_project_t* mc_project_create(const char* name)
     /* Alloc the project */
     project = (mc_project_t*)malloc(sizeof(mc_project_t));
     if (project == NULL) {
+        MC_ERROR("Failed to alloc space for md_project_t.\n");
         return NULL;
     }
 
@@ -151,6 +171,7 @@ mc_project_t* mc_project_create(const char* name)
 
     /* Set file name */
     if (mc_project_set_name(project, name) == MC_ERR) {
+        MC_ERROR("Failed to alloc space for md_project_t.\n");
         return NULL;
     }
 
@@ -158,17 +179,27 @@ mc_project_t* mc_project_create(const char* name)
     rc = sqlite3_open_v2(":memory:", &project->db,
         SQLITE_OPEN_READWRITE|SQLITE_OPEN_CREATE, NULL);
     if (rc != SQLITE_OK) {
+        MC_ERROR("Failed to create in-memory sqlite database [%i]: %s\n", rc, sqlite3_errmsg(db));
         return NULL;
     }
 
     /* Create default tables for this project */
     if (!db_create_default_tables(project->db)) {
+        MC_ERROR("Failed to create default table.\n");
         return NULL;
     }
 
     return project;
 }
 
+/**
+ * Adds a file to the internal to a project's internal file array.
+ *
+ * @param project mc_project_t to insert file into.
+ * @param file mc_file_t to insert into project.
+ * @return 1 on success, 0 on error.
+ * @internal
+ */
 int project_add_file(mc_project_t* project, mc_file_t* file)
 {
     mc_error_t rc = MC_ERR;
@@ -209,6 +240,14 @@ int project_add_file(mc_project_t* project, mc_file_t* file)
     return 1;
 }
 
+/**
+ * Reads a given database and attempts to load all the files it contains into a
+ * project.
+ * @param db Sqlite db that contains a list of files to open.
+ * @param project mc_project_t that we should load files into.
+ * @return 1 on success, 0 on error
+ * @internal
+ */
 int db_open_files(sqlite3* db, mc_project_t* project)
 {
     const char* query = "select hash, path from files";
@@ -386,7 +425,13 @@ void mc_project_free(mc_project_t* project)
     }
 }
 
-
+/**
+ * (re)sets the project's name.
+ *
+ * @param project mc_project_t to set the name of.
+ * @param name name that the project should adopt.
+ * @return mc_error_t indicating success or failure.
+ */
 mc_error_t mc_project_set_name(mc_project_t* project, const char* name)
 {
     int name_len = 0;
@@ -416,7 +461,8 @@ mc_error_t mc_project_set_name(mc_project_t* project, const char* name)
 /**
  * Gets project name, or returns (unnamed) if it is unnamed.
  *
- * @return Returns project name associated with this project.
+ * @param project mc_project_t to get the name of.
+ * @return Returns name associated with this project.
  * @internal
  */
 char* mc_project_get_name(mc_project_t* project)
