@@ -1,6 +1,5 @@
 /*****************************************************************************\
-Mycroft - A hex editor and file format reverse engineering tool.
-Copyright (C) 2016 Nyxxie <github.com/nyxxxie>
+Copyright (C) 2016-2017 Nyxxie <github.com/nyxxxie>
 
 This program is free software; you can redistribute it and/or modify it under
 the terms of the GNU General Public License as published by the Free Software
