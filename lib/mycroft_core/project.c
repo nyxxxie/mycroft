@@ -14,7 +14,7 @@
  * @return mc_error_t code indicating success or failure.
  * @internal
  */
-mc_error_t create_default_tables(sqlite3* db)
+int db_create_default_tables(sqlite3* db)
 {
     const char* create_queries[QUERYNO] = {
         /* This table stores project information like name, date created, date
@@ -27,8 +27,8 @@ mc_error_t create_default_tables(sqlite3* db)
            the file attribute is the name of the file (including extension),
            whereas path contains the full path to the file. */
         "create table files("
-        "file      text  unique,"
-        "path      text);",
+        "hash      blob primary key,"
+        "path      text unique);",
 
         /* This stores generic metadata about a file.  More detailed metadata
            can be found in other tables using the datatype specified (for
@@ -50,23 +50,64 @@ mc_error_t create_default_tables(sqlite3* db)
             create_queries[i], -1,
             &stmt, NULL)) != SQLITE_OK) {
             MC_ERROR("SQL ERROR %i: %s\n", rc, sqlite3_errmsg(db));
-            return MC_ERR;
+            return 0;
         }
 
         rc = sqlite3_step(stmt);
         if (rc != SQLITE_DONE) {
             MC_ERROR("SQL ERROR %i: %s\n", rc, sqlite3_errmsg(db));
-            return MC_ERR;
+            return 0;
         }
 
         rc = sqlite3_finalize(stmt);
         if (rc != SQLITE_OK) {
             MC_ERROR("SQL ERROR %i: %s\n", rc, sqlite3_errmsg(db));
-            return MC_ERR;
+            return 0;
         }
     }
 
-    return MC_OK;
+    return 1;
+}
+
+int db_saveload(sqlite3* db, const char* filename, int save)
+{
+    sqlite3_backup* backup;
+    sqlite3* to, *from, *file;
+    int rc;
+
+    /* */
+    rc = sqlite3_open(filename, &file);
+    if (rc != SQLITE_OK) {
+        MC_ERROR("Failed to open file \"%s\".\n", filename);
+        return 0;
+    }
+
+    /* */
+    from = (save ? db   : file);
+    to   = (save ? file : db);
+
+    /* */
+    backup = sqlite3_backup_init(to, "main", from, "main");
+    if (backup == NULL) {
+        MC_ERROR("Failed to create backup %i: %s\n", rc, sqlite3_errmsg(db));
+        return 0;
+    }
+
+    rc = sqlite3_backup_step(backup, -1);
+    if (rc != SQLITE_DONE) {
+        MC_ERROR("SQL ERROR %i: %s\n", rc, sqlite3_errmsg(db));
+        return 0;
+    }
+
+    rc = sqlite3_backup_finish(backup);
+    if (rc != SQLITE_OK) {
+        MC_ERROR("SQL ERROR %i: %s\n", rc, sqlite3_errmsg(db));
+        return 0;
+    }
+
+    sqlite3_close(file);
+
+    return 1;
 }
 
 /**
@@ -106,11 +147,133 @@ mc_project_t* mc_project_create(const char* name)
     }
 
     /* Create default tables for this project */
-    if (create_default_tables(project->db) != MC_OK) {
+    if (!db_create_default_tables(project->db)) {
         return NULL;
     }
 
     return project;
+}
+
+int project_add_file(mc_project_t* project, mc_file_t* file)
+{
+    mc_error_t rc = MC_ERR;
+    uint32_t cur_index = 0;
+    uint32_t i = 0;
+
+    /* Ensure that file isn't null */
+    if (file == NULL) {
+        MC_ERROR("Input file is null.\n");
+        return 0;
+    }
+
+    /* Ensure we haven't already added the file */
+    for (i=0; i < project->file_amt; i++) {
+        mc_file_t* curfile = project->files[i];
+        if (curfile == file ||
+            strcmp(curfile->name, file->name) == 0 ||
+            strcmp(curfile->path, file->path) == 0) {
+            MC_ERROR("Input file already has been added to project.\n");
+            return 0;
+        }
+    }
+
+    /* Save index that the file should be saved to, then iterate total */
+    cur_index = project->file_amt;
+    project->file_amt++;
+
+    /* Create more space in the file array */
+    project->files = realloc(project->files, sizeof(*project->files) * project->file_amt);
+    if (project->files == NULL) {
+        MC_ERROR("Failed to (re)alloc file array.\n");
+        return 0;
+    }
+
+    /* Add file to the array */
+    project->files[cur_index] = file;
+
+    return 1;
+}
+
+int db_open_files(sqlite3* db, mc_project_t* project)
+{
+    const char* query = "select hash, path from files";
+    sqlite3_stmt* stmt;
+    int rc;
+
+    /* Prepare query */
+    rc = sqlite3_prepare_v2(db, query, -1, &stmt, NULL);
+    if (rc != SQLITE_OK) {
+        MC_ERROR("SQL ERROR %i: %s\n", rc, sqlite3_errmsg(db));
+        return 0;
+    }
+
+    /* */
+    while (1) {
+        rc = sqlite3_step(stmt);
+        if (rc == SQLITE_DONE) {
+            break;
+        }
+        else if (rc == SQLITE_ROW) {
+            mc_file_t* file;
+            uint8_t* stored_hash, *calc_hash;
+            char* filepath;
+            size_t stored_hashlen, calc_hashlen;
+
+            /* Get hash length */
+            stored_hashlen = sqlite3_column_bytes(stmt, 0);
+
+            /* Allocate space for hash */
+            stored_hash = (uint8_t*)malloc(stored_hashlen);
+            if (stored_hash == NULL) {
+                MC_ERROR("Failed to alloc memory for hash.\n");
+                return 0;
+            }
+
+            /* Copy hash from sqlite to hash buffer */
+            memcpy(stored_hash, sqlite3_column_blob(stmt, 0), stored_hashlen);
+
+            /* Get file path */
+            filepath = (char*)sqlite3_column_text(stmt, 1);
+
+            /* Open file */
+            file = mc_file_open(filepath);
+            if (file == NULL) {
+                MC_ERROR("Failed to open \"%s\".\n", filepath);
+                return 0;
+            }
+
+            /* Calculate hash for this file */
+            if (mc_file_hash(file, &calc_hash, &calc_hashlen) != MC_OK) {
+                MC_ERROR("Failed to hash file \"%s\".\n", filepath);
+                return 0;
+            }
+
+            /* Compare hashes */
+            if (calc_hashlen != stored_hashlen ||
+                memcmp(calc_hash, stored_hash, calc_hashlen) != 0) {
+                MC_ERROR("Hash mismatch when loading file \"%s\".\n", filepath);
+                return 0;
+            }
+
+            if (!project_add_file(project, file)) {
+                MC_ERROR("Failed to add file \"%s\" to project.\n", filepath);
+                return 0;
+            }
+        }
+        else {
+            MC_ERROR("SQL ERROR %i: %s\n", rc, sqlite3_errmsg(db));
+            return 0;
+        }
+    }
+
+    /* */
+    rc = sqlite3_finalize(stmt);
+    if (rc != SQLITE_OK) {
+        MC_ERROR("SQL ERROR %i: %s\n", rc, sqlite3_errmsg(db));
+        return 0;
+    }
+
+    return 1;
 }
 
 /**
@@ -125,18 +288,29 @@ mc_project_t* mc_project_load(const char* mdb_file)
 
     /* Make sure our target database exists */
     if (file_exists(mdb_file) < 0) {
+        MC_ERROR("No such project file \"%s\".\n", mdb_file);
         return NULL;
     }
 
     /* Alloc the project */
-    project = (mc_project_t*)malloc(sizeof(mc_project_t));
+    project = mc_project_create(mdb_file);
     if (project == NULL) {
+        MC_ERROR("Failed to allocate mc_project_t.\n");
         return NULL;
     }
 
-    // TODO: open database and read project values, open files, etc
+    /* */
+    if (!db_saveload(project->db, mdb_file, 0)) {
+        MC_ERROR("Failed to load database.\n");
+        return NULL;
+    }
 
-    return NULL;
+    if (!db_open_files(project->db, project) == MC_ERR) {
+        MC_ERROR("Failed to open all files.\n");
+        return NULL;
+    }
+
+    return project;
 }
 
 /**
@@ -152,25 +326,10 @@ mc_error_t mc_project_save(mc_project_t* project, const char* mdb_file)
     sqlite3* savefile = NULL;
     sqlite3_backup* backup = NULL;
 
-    /* Open the database to save to */
-    rc = sqlite3_open(mdb_file, &savefile);
-    if (rc == SQLITE_OK) {
-
-        /* */
-        backup = sqlite3_backup_init(savefile, "main", project->db, "main");
-        if (backup == NULL) {
-            return MC_ERR;
-        }
-        else {
-            sqlite3_backup_step(backup, -1);
-            sqlite3_backup_finish(backup);
-        }
-
-        /* */
-        rc = sqlite3_errcode(savefile);
-        if (rc != SQLITE_OK) {
-            return MC_ERR;
-        }
+    /* */
+    if (!db_saveload(project->db, mdb_file, 1)) {
+        MC_ERROR("Failed to save database.\n");
+        return MC_ERR;
     }
 
     sqlite3_close(savefile);
@@ -262,41 +421,50 @@ char* mc_project_get_name(mc_project_t* project)
  * @return mc_error_t indicating success or failure.
  * @internal
  */
-mc_error_t db_add_file(sqlite3* db, mc_file_t* file)
+int db_add_file(sqlite3* db, mc_file_t* file)
 {
-    int rc = 0;
-    sqlite3_stmt* stmt = NULL;
     const char* query = "insert into files values (?, ?);";
+    int rc;
+    sqlite3_stmt* stmt;
+    uint8_t* hash;
+    size_t hashlen;
 
     /* Prepare query */
     rc = sqlite3_prepare_v2(db, query, -1, &stmt, NULL);
     if (rc != SQLITE_OK) {
         MC_ERROR("SQL ERROR %i: %s\n", rc, sqlite3_errmsg(db));
-        return MC_ERR;
+        return 0;
+    }
+
+    /* Hash file */
+    if (mc_file_hash(file, &hash, &hashlen) != MC_OK) {
+        MC_ERROR("Failed to hash file.\n");
+        return 0;
     }
 
     /* Bind values to SQL statement */
-    if (sqlite3_bind_text(stmt, 1, file->name, -1, SQLITE_TRANSIENT) != SQLITE_OK ||
-        sqlite3_bind_text(stmt, 2, file->path, -1, SQLITE_TRANSIENT) != SQLITE_OK) {
+    if (sqlite3_bind_blob(stmt, 1, hash, hashlen, SQLITE_TRANSIENT) != SQLITE_OK ||
+        sqlite3_bind_text(stmt, 2, mc_file_path(file), -1, SQLITE_TRANSIENT) != SQLITE_OK) {
         MC_ERROR("SQL ERROR %i: %s\n", rc, sqlite3_errmsg(db));
-        return MC_ERR;
+        return 0;
     }
+    free(hash); // Don't need this anymore after we insert the hash
 
     /* */
     rc = sqlite3_step(stmt);
     if (rc != SQLITE_DONE) {
         MC_ERROR("SQL ERROR %i: %s\n", rc, sqlite3_errmsg(db));
-        return MC_ERR;
+        return 0;
     }
 
     /* */
     rc = sqlite3_finalize(stmt);
     if (rc != SQLITE_OK) {
         MC_ERROR("SQL ERROR %i: %s\n", rc, sqlite3_errmsg(db));
-        return MC_ERR;
+        return 0;
     }
 
-    return MC_OK;
+    return 1;
 }
 
 /**
@@ -308,46 +476,16 @@ mc_error_t db_add_file(sqlite3* db, mc_file_t* file)
  */
 mc_error_t mc_project_add_file(mc_project_t* project, mc_file_t* file)
 {
-    mc_error_t rc = MC_ERR;
-    uint32_t cur_index = 0;
-    uint32_t i = 0;
-
-    /* Ensure that file isn't null */
-    if (file == NULL) {
-        MC_ERROR("Input file is null.\n");
-        return rc;
+    /* */
+    if (!project_add_file(project, file)) {
+        MC_ERROR("Failed to add file to database.\n");
+        return MC_ERR;
     }
-
-    /* Ensure we haven't already added the file */
-    for (i=0; i < project->file_amt; i++) {
-        mc_file_t* curfile = project->files[i];
-        if (curfile == file ||
-            strcmp(curfile->name, file->name) == 0 ||
-            strcmp(curfile->path, file->path) == 0) {
-            MC_ERROR("Input file already has been added to project.\n");
-            return rc;
-        }
-    }
-
-    /* Save index that the file should be saved to, then iterate total */
-    cur_index = project->file_amt;
-    project->file_amt++;
-
-    /* Create more space in the file array */
-    project->files = realloc(project->files, sizeof(*project->files) * project->file_amt);
-    if (project->files == NULL) {
-        MC_ERROR("Failed to (re)alloc file array.\n");
-        return rc;
-    }
-
-    /* Add file to the array */
-    project->files[cur_index] = file;
 
     /* */
-    rc = db_add_file(project->db, file);
-    if (rc != MC_OK) {
+    if (!db_add_file(project->db, file)) {
         MC_ERROR("Failed to add file to database.\n");
-        return rc;
+        return MC_ERR;
     }
 
     /* Focus ctx */

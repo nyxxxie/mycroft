@@ -211,7 +211,7 @@ TEST(project_new, focused_file) {
     ASSERT_TRUE(project != NULL);
 
     mc_file_t* file = NULL;
-    ASSERT_TRUE((file = mc_file_create()) != NULL);
+    ASSERT_TRUE((file = mc_file_open("res/testfile1")) != NULL);
 
     ASSERT_TRUE(mc_project_add_file(project, file) == MC_OK);
 
@@ -231,7 +231,7 @@ TEST(project_new, focused_file_unadded) {
     ASSERT_TRUE(project != NULL);
 
     mc_file_t* file = NULL;
-    ASSERT_TRUE((file = mc_file_create()) != NULL);
+    ASSERT_TRUE((file = mc_file_open("res/testfile1")) != NULL);
 
     mc_project_set_focused_file(project, file);
 
@@ -247,7 +247,7 @@ TEST(project_new, focused_file_remove_null) {
     ASSERT_TRUE(project != NULL);
 
     mc_file_t* file = NULL;
-    ASSERT_TRUE((file = mc_file_create()) != NULL);
+    ASSERT_TRUE((file = mc_file_open("res/testfile1")) != NULL);
     ASSERT_TRUE(mc_project_add_file(project, file) == MC_OK);
 
     mc_project_set_focused_file(project, file);
@@ -278,6 +278,18 @@ TEST(project_save, add_and_save) {
     ASSERT_TRUE(mc_project_get_file_amount(project) == 3);
 
     ASSERT_TRUE(mc_project_save(project, "testprojectdb1.mdb") == MC_OK);
+
+    mc_project_free(project);
+}
+
+/**
+ * See if we can reopen the saved database
+ */
+TEST(project_open, open_basic) {
+    mc_project_t* project = mc_project_load("testprojectdb1.mdb");
+    ASSERT_TRUE(project != NULL);
+
+    ASSERT_EQ(mc_project_get_file_amount(project), 3);
 
     mc_project_free(project);
 }
