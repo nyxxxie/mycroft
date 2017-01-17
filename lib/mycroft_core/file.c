@@ -23,6 +23,7 @@ Street, Fifth Floor, Boston, MA  02110-1301, USA.
  * initializing and opening files on two mc_file_t structs and then simply
  * switching which pointer it uses.
  */
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
