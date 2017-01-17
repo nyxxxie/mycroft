@@ -38,14 +38,7 @@ int file_exists(const char* file_name)
     }
 }
 
-/**
- * Initializes an mc_file_t struct.  It is REQURIED that this function is
- * called prior to using any other function that takes the same mc_file_t
- * struct as an* argument.  Failure to do so will yeild undefined behavior.
- *
- * @return Returns the created mc_file_t, NULL otherwise.
- */
-mc_file_t* mc_file_create()
+mc_file_t* file_create()
 {
     mc_file_t* file = NULL;
 
@@ -86,7 +79,7 @@ mc_file_t* mc_file_open(const char* file_name)
     }
 
     /* Create file */
-    file = mc_file_create();
+    file = file_create();
     if (file == NULL) {
         MC_ERROR("Failed to alloc mc_file_t struct.");
         return NULL;

@@ -18,7 +18,6 @@ typedef struct mc_file_t mc_file_t;
 int file_exists(const char* file);
 
 /* Init/free functions */
-mc_file_t* mc_file_create();
 mc_file_t* mc_file_open(const char* file_name);
 int mc_file_close(mc_file_t* file);
 int mc_file_reload(mc_file_t* file);
