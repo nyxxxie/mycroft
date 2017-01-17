@@ -287,7 +287,7 @@ mc_project_t* mc_project_load(const char* mdb_file)
     mc_project_t* project = NULL;
 
     /* Make sure our target database exists */
-    if (file_exists(mdb_file) < 0) {
+    if (mc_file_access(mdb_file) != 0) {
         MC_ERROR("No such project file \"%s\".\n", mdb_file);
         return NULL;
     }

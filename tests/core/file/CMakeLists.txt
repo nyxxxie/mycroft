@@ -1,5 +1,7 @@
 cmake_minimum_required(VERSION 2.8.11)
 
+#add_subdirectory(largefile)
+
 # Create a variable that tells us where our resources are
 set(TEST_FILE_SRC_RES ${CMAKE_CURRENT_SOURCE_DIR}/res)
 set(TEST_FILE_BIN_RES ${CMAKE_CURRENT_BINARY_DIR}/res)
