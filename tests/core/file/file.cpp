@@ -386,7 +386,7 @@ TEST(file, file_hash) {
     mc_file_t* f = mc_file_open("res/hashme");
     ASSERT_TRUE(f != NULL);
 
-    ASSERT_TRUE(mc_file_hash(f, &hash_calculated, &hash_len));
+    ASSERT_TRUE(mc_file_hash(f, &hash_calculated, &hash_len) == MC_OK);
 
     ASSERT_TRUE(memcmp(hash_expected, hash_calculated, hash_len) == 0);
 

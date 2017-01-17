@@ -564,8 +564,11 @@ mc_error_t mc_file_hash(mc_file_t* file, uint8_t** hash, size_t* hashlen)
 
     /* */
     while (1) {
-        int amnt = mc_file_read(file, sizeof(readbuf), readbuf);
-        if (amnt == 0) {
+        fsize_t amnt;
+        if (mc_file_read(file, sizeof(readbuf), readbuf, &amnt) != MC_OK) {
+            return MC_ERR;
+        }
+        else if (amnt == 0) {
             break;
         }
 
