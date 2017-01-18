@@ -179,7 +179,7 @@ mc_project_t* mc_project_create(const char* name)
     rc = sqlite3_open_v2(":memory:", &project->db,
         SQLITE_OPEN_READWRITE|SQLITE_OPEN_CREATE, NULL);
     if (rc != SQLITE_OK) {
-        MC_ERROR("Failed to create in-memory sqlite database [%i]: %s\n", rc, sqlite3_errmsg(db));
+        MC_ERROR("Failed to create in-memory sqlite database [%i]: %s\n", rc, sqlite3_errmsg(project->db));
         return NULL;
     }
 
