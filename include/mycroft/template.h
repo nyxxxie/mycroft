@@ -20,17 +20,9 @@ Street, Fifth Floor, Boston, MA  02110-1301, USA.
 extern "C" {
 #endif
 
-/**
- * Placeholder until type system gets completed.
- */
-typedef struct {
-    char* name;
-} datatype_t;
-
-datatype_t* datatype_create(const char* name);
-void datatype_free(datatype_t* type);
-
-///////////////////////////////////////////////////////////////////////////////
+typedef struct mc_template_t mc_template_t;
+mc_template_t* mc_template_create();
+mc_template_t* mc_template_parse(const char* path);
 
 /**
  * AST node types.
@@ -38,103 +30,39 @@ void datatype_free(datatype_t* type);
 typedef enum {
     AST_TYPE_ROOT = 0, /** Root node      */
     AST_TYPE_VAR,      /** Variable node. */
+    AST_TYPE_ARRAY,    /** Variable node. */
     AST_TYPE_STRUCT    /** Struct node.   */
 } ast_type_t;
 
-/**
- * Generic node in the abstract syntax tree.  The ast is meant to be used
- * directly to parse a file
- */
-typedef struct {
-    int        index;
-    ast_type_t type;
-    char*      name;
-} ast_node_t;
+typedef struct ast_node_t ast_node_t;
+void mc_template_node_free(ast_node_t* node);
+ast_type_t mc_template_node_get_type(ast_node_t* node);
 
-typedef struct ast_struct_t ast_struct_t; // forward decl
+typedef struct ast_struct_t ast_struct_t;
+int mc_template_struct_get_field_amount(ast_struct_t* s);
+ast_node_t* mc_template_struct_get_field(ast_struct_t* s, int index);
 
-/**
- * Var in the ast.
- */
-typedef struct {
-    int           index;
-    ast_type_t    type;
-    char*         name;
-    ast_struct_t* parent;
-    datatype_t*   datatype;
-} ast_var_t;
+typedef struct ast_var_t ast_var_t;
+const char* mc_template_var_get_type(ast_var_t* var);
+const char* mc_template_var_get_name(ast_var_t* var);
 
-ast_var_t* ast_var_create();
-void ast_var_free(ast_var_t* ast);
+typedef struct ast_array_t ast_array_t;
+const char* mc_template_array_get_type(ast_var_t* var);
+const char* mc_template_array_get_name(ast_var_t* var);
+int mc_template_array_get_size(ast_var_t* var);
+
 
 /**
- * Struct in the ast.
+ * This function gets a field from a struct using a syntax.
+ *
+ * EG:
+ *   * "ENTRY.header.signature"
+ *   * "ENTRY.body.somestructinbody."
+ *
+ * TODO: new name?
  */
-struct ast_struct_t {
-    int           index;
-    ast_type_t    type;
-    char*         name;
-    ast_struct_t* parent;
-    ast_node_t**  nodes;
-    unsigned int  node_amt;
-};
-
-/**
- * Root of the ast.
- */
-typedef struct {
-    int           index;
-    ast_type_t    type;
-    char*         name;
-    ast_struct_t* entry;
-} ast_root_t;
-
-ast_root_t* ast_root_create();
-void ast_root_free(ast_root_t* ast);
-
-ast_struct_t* ast_struct_create();
-void ast_struct_free(ast_struct_t* ast);
-int ast_struct_add_node(ast_struct_t* strct, ast_node_t* node);
-
-///////////////////////////////////////////////////////////////////////////////
-
-typedef struct {
-    char* name;
-    char* type;
-} member_t;
-
-member_t* member_create();
-void member_free(member_t* var);
-
-/**
- * Represents a structure defined by the template file.  Used to create ast
- * struct nodes.
- */
-typedef struct {
-    char*         name;
-    member_t**    members;
-    unsigned int  member_amt;
-} struct_def_t;
-
-struct_def_t* struct_def_create();
-void struct_def_free(struct_def_t* sdef);
-int struct_def_add_member(struct_def_t* def, member_t* member);
-
-///////////////////////////////////////////////////////////////////////////////
-
-/**
- * Contains information on a template.
- */
-typedef struct {
-    struct_def_t** struct_defs;
-    unsigned int   struct_def_amt;
-    ast_root_t*    root;
-} template_t;
-
-template_t* template_create();
-template_t* template_create_from_file(const char* file);
-void template_free(template_t* t);
-int template_add_struct_def(template_t* t, struct_def_t* def);
+ast_node_t* mc_template_get_field(const char* field);
+ast_struct_t* mc_template_get_entry();
 
 #ifdef __cplusplus
 }
