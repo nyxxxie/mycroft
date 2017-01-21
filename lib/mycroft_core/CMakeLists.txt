@@ -28,7 +28,6 @@ set(MYCROFT_CORE_SRC
     mycroft.c
     project.c
     file.c
-    hook.c
     plugin.c
     script.c
     interpreter.c
